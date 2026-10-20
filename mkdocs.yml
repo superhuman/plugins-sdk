@@ -3,8 +3,8 @@
 site_name: Superhuman Packs SDK
 site_description: "Documentation for the SDK to build Superhuman Packs."
 site_url: !ENV [MK_DOCS_SITE_URL, "https://docs.superhuman.com/packs/build/latest/"]
-repo_url: https://github.com/coda/packs-sdk
-repo_name: coda/packs-sdk
+repo_url: https://github.com/superhuman/plugins-sdk
+repo_name: superhuman/plugins-sdk
 edit_uri: edit/main/docs
 docs_dir: docs
 
