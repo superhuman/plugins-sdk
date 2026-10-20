@@ -12,7 +12,7 @@ This repo ships a [Claude Code skill](.claude/skills/create-agent-pack) that wal
 uploading an agent pack. Install it with the [`skills` CLI](https://github.com/vercel-labs/skills):
 
 ```bash
-bunx skills add coda/packs-sdk --skill create-agent-pack --global
+bunx skills add superhuman/plugins-sdk --skill create-agent-pack --global
 ```
 
 ## Contributing

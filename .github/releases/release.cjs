@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const {execFileSync} = require('node:child_process');
 const fs = require('node:fs');
-const REPOSITORY = 'coda/packs-sdk';
+const REPOSITORY = 'superhuman/plugins-sdk';
 const PNPM = '.pnpm_install/bin/pnpm';
 
 function command(program, args, options = {}) {
