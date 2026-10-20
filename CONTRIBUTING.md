@@ -33,7 +33,7 @@ Dependency installation uses pnpm 10.28.2, pinned in `package.json`.
 
 An easy way to get setup is to use [Google Cloud Shell][cloud_shell], an hosted command-line environment and web IDE that comes with most of the dependencies already installed. You can launch Google Cloud Shell and clone this repo using the button below:
 
-[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/coda/packs-sdk.git&cloudshell_workspace=.&cloudshell_open_in_editor=docs/index.md)
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/superhuman/plugins-sdk.git&cloudshell_workspace=.&cloudshell_open_in_editor=docs/index.md)
 
 In Google Cloud Shell, also install `pipenv`:
 
