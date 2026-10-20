@@ -18,3 +18,5 @@ bunx skills add superhuman/plugins-sdk --skill create-agent-pack --global
 ## Contributing
 
 See our [Contributing guide](CONTRIBUTING.md) for more information on how to contribute to this project.
+
+Hello world!
