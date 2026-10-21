@@ -1,4 +1,4 @@
-import type * as sdk from "@superhuman/plugins-sdk";
+import type * as sdk from "@codahq/packs-sdk";
 
 async function snippet(context: sdk.ExecutionContext) {
   // BEGIN

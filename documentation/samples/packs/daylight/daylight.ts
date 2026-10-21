@@ -6,7 +6,7 @@
  */
 
 // This import statement provides access to all parts of the Packs SDK.
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 
 // This line creates the new Pack.
 export const pack = sdk.newPack();

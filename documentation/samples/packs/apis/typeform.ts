@@ -1,4 +1,4 @@
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Configure per-user authentication for the Typeform API, using OAuth2.

@@ -48,7 +48,7 @@ A sync table that uses a parameter. This sample syncs the list of emojis.
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 const EmojiSchema = sdk.makeObjectSchema({
@@ -119,7 +119,7 @@ A sync table that uses continuations to sync data using multiple executions. Thi
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // How many spells to fetch in each sync formula execution.
@@ -280,7 +280,7 @@ A sync table that pulls from an API using authentication. This sample syncs the 
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // A schema defining the data in the sync table.
@@ -371,7 +371,7 @@ A sync table that contains a reference to a row in another sync table. This samp
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // A schema defining the data in the Projects sync table.
@@ -520,7 +520,7 @@ Demonstrates how to index PDF content and contacts. This sample syncs informatio
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 
 export const pack = sdk.newPack();
 

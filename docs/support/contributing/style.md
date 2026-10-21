@@ -21,13 +21,13 @@ Import the entire SDK into a single variable named `sdk` instead of using multip
 
 ```{.ts .yes}
 // Yes
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 ```
 
 ```{.ts .no}
 // No
-import {makeFormula} from '@superhuman/plugins-sdk';
-import {makeParameter} from '@superhuman/plugins-sdk';
+import {makeFormula} from '@codahq/packs-sdk';
+import {makeParameter} from '@codahq/packs-sdk';
 ```
 
 Having all usages of the SDK prefixed with `sdk.{something}` makes it easier to distinguish what's part of the SDK and what's not. It also makes it easier to copy and paste code from other places without having to worry about adding imports.

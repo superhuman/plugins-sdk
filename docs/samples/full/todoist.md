@@ -20,7 +20,7 @@ The Pack uses OAuth2 to connect to a user's Todoist account, which you can creat
 
 === "pack.ts"
     ```ts
-    import * as sdk from "@superhuman/plugins-sdk";
+    import * as sdk from "@codahq/packs-sdk";
 
     // #region Constants
 

@@ -4,10 +4,6 @@ This changelog keeps track of all changes to the Packs SDK. We follow convention
 
 ## [Unreleased]
 
-### Changed
-
-- Future SDK releases use `@superhuman/plugins-sdk`. Replace `@codahq/packs-sdk` in your dependencies and imports with `@superhuman/plugins-sdk`; SDK APIs and the `packs`, `coda`, and `superhuman` commands remain unchanged.
-
 ## [1.18.3] - 2026-10-15
 
 ### Added

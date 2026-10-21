@@ -1,4 +1,4 @@
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Column format that displays the cell's value within a random cat image,

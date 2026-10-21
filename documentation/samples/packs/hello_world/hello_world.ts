@@ -4,7 +4,7 @@ Try out the hello world sample below to create your first build.
 */
 
 // This import statement gives you access to all parts of the Packs SDK.
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 
 // This line creates your new Pack.
 export const pack = sdk.newPack();

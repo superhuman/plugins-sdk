@@ -1,4 +1,4 @@
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 
 // #region Constants
 

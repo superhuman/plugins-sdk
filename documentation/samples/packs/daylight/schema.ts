@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // BEGIN
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Define a schema for the information about the daylight at a given location.

@@ -1,5 +1,5 @@
 {
-  "name": "@superhuman/plugins-sdk-documentation-samples",
+  "name": "@codahq/packs-sdk-documentation-samples",
   "version": "0.0.1",
   "private": true,
   "description": "Documentation samples",
@@ -8,6 +8,6 @@
   },
   "license": "./LICENSE",
   "devDependencies": {
-    "@superhuman/plugins-sdk": "workspace:*"
+    "@codahq/packs-sdk": "workspace:@superhuman/plugins-sdk@*"
   }
 }

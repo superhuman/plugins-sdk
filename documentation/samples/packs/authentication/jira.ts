@@ -1,4 +1,4 @@
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Jira Cloud API, using OAuth2 with a

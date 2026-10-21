@@ -28,7 +28,7 @@ A formula without any parameters. This sample returns the name of the current da
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Formula that gets the current weekday, for example "Monday".
@@ -53,7 +53,7 @@ A formula that takes plain text as a parameter. This sample returns a greeting t
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Say Hello to the given name.
@@ -79,7 +79,7 @@ A formula that takes a number as a parameter. This sample converts a number of s
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Formula that converts slices of a pizza into a percentage eaten.
@@ -106,7 +106,7 @@ A formula that takes a date as a parameter. This sample determines if the year o
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 pack.addFormula({
@@ -139,7 +139,7 @@ A formula that takes an image as a parameter. This sample returns the file size 
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Regular expression that matches Superhuman-hosted images.
@@ -185,7 +185,7 @@ A formula that takes a string array as a parameter. This sample returns the long
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 pack.addFormula({
@@ -219,7 +219,7 @@ A formula that takes sparse number arrays as a parameter, useful when passing ta
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 pack.addFormula({
@@ -278,7 +278,7 @@ A formula with some required and some optional parameters. This sample formats t
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Formats text to look like screaming. For example, "Hello" => "HELLO!!!".
@@ -322,7 +322,7 @@ A formula with a parameter that defines a suggested value. This sample rolls vir
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Rolls virtual dice and returns the resulting numbers. Use it with a button in
@@ -365,7 +365,7 @@ A formula that accepts a variable number of arguments. This sample draws a simpl
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Takes an unknown number of steps and labels and outputs a simple diagram.
@@ -412,7 +412,7 @@ A Pack that reuses a parameter across multiple formulas. This sample includes ma
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // A "numbers" parameter shared by both formulas.
@@ -494,7 +494,7 @@ A Pack with a sync table that validates parameter values. This sample includes a
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 const PageSize = 100;

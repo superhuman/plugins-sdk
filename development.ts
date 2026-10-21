@@ -5,7 +5,7 @@
  * This module is imported using the following code:
  *
  * ```ts
- * import * as testing from "@superhuman/plugins-sdk/dist/development";
+ * import * as testing from "@codahq/packs-sdk/dist/development";
  * ```
  *
  * @module testing

@@ -31,7 +31,7 @@ An MCP integration that does not require authentication. This sample connects to
 
 ```ts
 {% raw %}
-import * as coda from "@superhuman/plugins-sdk";
+import * as coda from "@codahq/packs-sdk";
 
 export const pack = coda.newPack();
 
@@ -48,7 +48,7 @@ An MCP integration that authenticates using a static token. This sample connects
 
 ```ts
 {% raw %}
-import * as coda from "@superhuman/plugins-sdk";
+import * as coda from "@codahq/packs-sdk";
 
 export const pack = coda.newPack();
 
@@ -71,7 +71,7 @@ An MCP integration that authenticates using OAuth, with a static client. This sa
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 
 export const pack = sdk.newPack();
 
@@ -102,7 +102,7 @@ An MCP integration that authenticates using OAuth, with a dynamically registered
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 
 export const pack = sdk.newPack();
 
@@ -126,7 +126,7 @@ A Pack that uses an MCP for most tools, but includes a sync table for indexing. 
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // The REST API and MCP server are hosted on different domains.

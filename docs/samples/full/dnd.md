@@ -17,7 +17,7 @@ This Pack allows you to fetch information about spells in th game Dungeons and D
 
 === "pack.ts"
     ```ts
-    import * as sdk from "@superhuman/plugins-sdk";
+    import * as sdk from "@codahq/packs-sdk";
     export const pack = sdk.newPack();
 
     // How many spells to fetch in each sync formula execution.

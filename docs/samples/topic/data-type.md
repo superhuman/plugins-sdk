@@ -125,7 +125,7 @@ A formula that returns a number formatted as a percent value. This sample conver
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Formula that converts slices of a pizza into a percentage eaten.
@@ -152,7 +152,7 @@ A formula that returns a number formatted as a currency value. This sample conve
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 pack.addNetworkDomain("exchangerate.host");
@@ -201,7 +201,7 @@ A formula that returns a date and time, passed as a string. This sample adds fiv
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Formula that adds five minutes to an input date and time.
@@ -231,7 +231,7 @@ A formula that returns markdown content. This sample returns the contents of the
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Returns the contents of GitHub repo's README.md file as markdown.
@@ -266,7 +266,7 @@ A formula that returns HTML content. This sample returns HTML with every word of
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Returns HTML with every other word of the input text bolded.
@@ -299,7 +299,7 @@ A formula that a URL to embed. This sample returns an embed of the infamous YouT
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Returns the infamous YouTube video by Rick Astley as an embed.
@@ -320,7 +320,7 @@ A formula that returns an image, as a reference. This sample returns a random ph
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Formula that fetches a random cat photo, with various options.

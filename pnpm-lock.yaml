@@ -348,8 +348,8 @@ importers:
 
   documentation/samples:
     devDependencies:
-      '@superhuman/plugins-sdk':
-        specifier: workspace:*
+      '@codahq/packs-sdk':
+        specifier: workspace:@superhuman/plugins-sdk@*
         version: link:../..
 
 packages:

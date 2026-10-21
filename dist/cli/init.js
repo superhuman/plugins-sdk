@@ -76,8 +76,8 @@ async function getCliSdkVersion() {
 // Installs the SDK when missing. A pinned version keeps a stale pre-agent SDK
 // from shadowing the scaffold with `sdk.newAgent is not a function`.
 async function ensurePackSdkInstalled(version) {
-    if ((0, helpers_3.spawnProcess)('npm list @superhuman/plugins-sdk --depth=0').status !== 0) {
-        (0, helpers_3.spawnProcess)(`npm install --save @superhuman/plugins-sdk${version ? `@${version}` : ''}`);
+    if ((0, helpers_3.spawnProcess)('npm list @codahq/packs-sdk --depth=0').status !== 0) {
+        (0, helpers_3.spawnProcess)(`npm install --save @codahq/packs-sdk${version ? `@${version}` : ''}`);
     }
 }
 function appendGitIgnore() {
@@ -120,10 +120,6 @@ async function handleInit({ yes, agent, name } = {}) {
     // developers may run in NodeJs 16 where some packages need to be patched to avoid warnings.
     addPatches();
     fs_extra_1.default.copySync(`${PacksExamplesDirectory}/examples/template`, process.cwd());
-    // The external starter still imports the legacy SDK package.
-    const packPath = path_1.default.join(process.cwd(), 'pack.ts');
-    const packSource = fs_extra_1.default.readFileSync(packPath, 'utf8');
-    fs_extra_1.default.writeFileSync(packPath, packSource.replace(/(['"])@codahq\/packs-sdk\1/g, '$1@superhuman/plugins-sdk$1'));
     // npm removes .gitignore files when installing a package, so we can't simply put the .gitignore
     // in the template example alongside the other files. So we just create it explicitly
     // here as part of the init step.

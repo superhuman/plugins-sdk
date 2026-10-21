@@ -83,7 +83,7 @@ A formula that returns a card containing an title, subtitle, and snippet. This s
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // A schema defining the card, including all of metadata what specifically to
@@ -244,7 +244,7 @@ A formula that returns a card that includes an image. This samples returns a car
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Define the schema that will be used to render the card.
@@ -351,7 +351,7 @@ A card that can be created manually or automatically when pasting a link. This s
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // A schema defining the card, including all of metadata what specifically to

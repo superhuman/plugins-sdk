@@ -35,7 +35,7 @@ A column format that formats text. This sample displays the text in the cell in 
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Adds a column format to the Pack, which will display the contents of the
@@ -85,7 +85,7 @@ A column format that formats a number as text. This sample displays the number i
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Adds a column format to the Pack, which will display the contents of the
@@ -136,7 +136,7 @@ A column format that formats a number as graphic. This sample displays the numbe
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Adds a column format to the Pack, which will display the contents of the
@@ -176,7 +176,7 @@ A column format that formats text as an image. This sample displays the text in 
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Column format that displays the cell's value within a random cat image,
@@ -224,7 +224,7 @@ A column format that formats a URL as rich data. This sample displays the URL of
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 
 // Regular expressions that match Todoist task URLs. Used by the column format
 // and also the formula that powers it.

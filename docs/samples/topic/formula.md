@@ -37,7 +37,7 @@ A formula that returns an image. This sample gets a random cat image with an opt
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Formula that fetches a random cat photo, with various options.
@@ -89,7 +89,7 @@ A formula that returns rich data (a schema). This sample gets information about 
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // A schema defining the rich metadata to be returned about each task.
@@ -163,7 +163,7 @@ A formula that includes examples of how to use it. This sample formats text to l
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Formats text to look like screaming. For example, "Hello" => "HELLO!!!".

@@ -357,7 +357,7 @@ build: clean lint compile docs
 # allow debugging packs sdk with local packs repo.
 .PHONY: publish-local
 publish-local: build
-	cp -r dist/* ../packs/node_modules/@superhuman/plugins-sdk/dist/
+	cp -r dist/* ../packs/node_modules/@codahq/packs-sdk/dist/
 
 .PHONY: autoformat-ts
 autoformat-ts:
@@ -402,8 +402,8 @@ release:
 	@ test "" = "`git cherry`" || (echo "Refusing to publish with unpushed commits" && false)
 
 	npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
-	@npm owner ls @superhuman/plugins-sdk && echo
-	@echo "Check the list of owners above. If changes are needed, do that at https://www.npmjs.com/settings/superhuman/teams/team/developers/users"
+	@npm owner ls @codahq/packs-sdk && echo
+	@echo "Check the list of owners above. If changes are needed, do that at https://www.npmjs.com/settings/codahq/teams/team/developers/users"
 	@read -r -p "Press enter to continue" -n 1
 	npx release-it --npm.tag=latest --ci ${FLAGS}
 

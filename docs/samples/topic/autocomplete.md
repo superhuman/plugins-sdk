@@ -16,7 +16,7 @@ A formula with a parameter that provides autocomplete for acceptable values. Thi
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Returns the noise an animal makes. Ex) "cow" => "moo".
@@ -52,7 +52,7 @@ A formula with a parameter that provides autocomplete for acceptable values, whe
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Gets the price of a board game by ID, with autocomplete on the ID.
@@ -102,7 +102,7 @@ A formula with a parameter that provides autocomplete for acceptable values, whe
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Greet someone in their language, with the greeting autocomplete adjusting
@@ -158,7 +158,7 @@ A formula with vararg parameters that represent key-value pairs, which provides 
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Generates a fictitious ice cream order, using a flexible set of choices.

@@ -11,7 +11,7 @@ account. Full SDK docs: https://docs.superhuman.com/packs/build/latest.
 An agent is defined almost entirely by three builder calls on `pack.ts`:
 
 ```typescript
-import * as sdk from '@superhuman/plugins-sdk';
+import * as sdk from '@codahq/packs-sdk';
 
 export const pack = sdk.newAgent();
 pack.setInstructions('Print hello world.'); // the only required call
@@ -24,7 +24,7 @@ See `references/api.md` for the full `setTools`/trigger signatures (connector fo
 ## Work in your own directory
 
 Work in a directory that isn't a checkout of this SDK's own repo — a real pack author doesn't have this
-repo checked out, they just install the **published** `@superhuman/plugins-sdk` package. This is what gives
+repo checked out, they just install the **published** `@codahq/packs-sdk` package. This is what gives
 you the `packs` CLI (`npx packs <cmd>`).
 
 Each pack lives in its own directory. The pack ID (`.coda-pack.json`) is stored **per-directory**,
@@ -41,7 +41,7 @@ unset -f node npm npx pnpm corepack yarn 2>/dev/null
 node --version   # confirm >= 22
 
 mkdir <dir> && cd <dir>
-npm install --save-dev @superhuman/plugins-sdk@latest
+npm install --save-dev @codahq/packs-sdk@latest
 ```
 
 ### Register an API token (once per directory)
@@ -80,7 +80,7 @@ npx packs validate pack.ts
 ```
 
 This is the first command that actually imports `pack.ts`, so a too-old SDK surfaces here as
-`sdk.newAgent is not a function` (fix: `npm install @superhuman/plugins-sdk@latest`). Exit code 0 with no
+`sdk.newAgent is not a function` (fix: `npm install @codahq/packs-sdk@latest`). Exit code 0 with no
 output means it passed. Always run this after any edit, before uploading. Proceed when validation
 exits 0.
 

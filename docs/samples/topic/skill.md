@@ -36,7 +36,7 @@ A skill that orchestrates several MCP tools to perform a task. This sample uses 
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 
 export const pack = sdk.newPack();
 
@@ -76,7 +76,7 @@ A skill that uses Pack tools to perform a task. This sample uses the ExchangeRat
 
 ```ts
 {% raw %}
-import * as coda from "@superhuman/plugins-sdk";
+import * as coda from "@codahq/packs-sdk";
 export const pack = coda.newPack();
 
 pack.addSkill({

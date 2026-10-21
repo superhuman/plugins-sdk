@@ -21,7 +21,7 @@ The Pack uses OAuth2 to connect to a user's GitHub account. A more extensive Git
 
 === "pack.ts"
     ```ts
-    import * as sdk from "@superhuman/plugins-sdk";
+    import * as sdk from "@codahq/packs-sdk";
     export const pack = sdk.newPack();
 
     // Regular expression used to parse repo URLs.

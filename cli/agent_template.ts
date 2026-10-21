@@ -1,6 +1,6 @@
 export function renderAgentPackTemplate(agentName: string): string {
   const instructions = JSON.stringify(`You are ${agentName}. Keep replies short.`);
-  return `import * as sdk from "@superhuman/plugins-sdk";
+  return `import * as sdk from "@codahq/packs-sdk";
 
 export const pack = sdk.newAgent();
 

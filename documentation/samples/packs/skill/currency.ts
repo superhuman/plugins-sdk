@@ -1,4 +1,4 @@
-import * as coda from "@superhuman/plugins-sdk";
+import * as coda from "@codahq/packs-sdk";
 export const pack = coda.newPack();
 
 pack.addSkill({

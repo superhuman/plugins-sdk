@@ -10,8 +10,6 @@ categories:
 
 # The Coda Packs SDK is now the Superhuman Packs SDK
 
-**Update (2026-10-21):** Future releases use `@superhuman/plugins-sdk`. See the [current installation instructions](../../tutorials/get-started/cli.md). This post describes the May 2026 rename.
-
 The Coda Packs SDK has a new name: the **Superhuman Packs SDK**. It started out as the way to extend Coda, but over the past year it's grown into something bigger. It's also how you build agents for [Superhuman Go][go], and going forward it will be the integration layer for everything we're building across Superhuman. The new name reflects what the SDK has already become.
 
 

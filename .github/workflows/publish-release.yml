@@ -93,7 +93,7 @@ jobs:
         run: |
           if [[ "$RELEASE_SKIP_NPM" != true ]]; then
             if [[ -z "$NPM_TOKEN" ]]; then
-              echo '::error::Set NPM_TOKEN in the sdk-release environment to a granular npm token with stage-only access to @superhuman/plugins-sdk.'
+              echo '::error::Set NPM_TOKEN in the sdk-release environment to a granular npm token with stage-only access to @codahq/packs-sdk.'
               exit 1
             fi
             umask 077

@@ -204,7 +204,7 @@ Now that we've got the OAuth2 URLs, scopes, client ID and secret we're ready to 
     <div markdown>
 
     ```ts
-    import * as sdk from "@superhuman/plugins-sdk";
+    import * as sdk from "@codahq/packs-sdk";
     export const pack = sdk.newPack();
 
     pack.addNetworkDomain("todoist.com");
@@ -239,7 +239,7 @@ Now that we've got the OAuth2 URLs, scopes, client ID and secret we're ready to 
     <div markdown>
 
     ```{.ts hl_lines="9-18"}
-    import * as sdk from "@superhuman/plugins-sdk";
+    import * as sdk from "@codahq/packs-sdk";
     export const pack = sdk.newPack();
 
     pack.addNetworkDomain("todoist.com");
@@ -278,7 +278,7 @@ Now that we've got the OAuth2 URLs, scopes, client ID and secret we're ready to 
     <div markdown>
 
     ```{.ts hl_lines="4-6"}
-    import * as sdk from "@superhuman/plugins-sdk";
+    import * as sdk from "@codahq/packs-sdk";
     export const pack = sdk.newPack();
 
     pack.setUserAuthentication({
@@ -307,7 +307,7 @@ Now that we've got the OAuth2 URLs, scopes, client ID and secret we're ready to 
     <div markdown>
 
     ```{.ts hl_lines="6-7"}
-    import * as sdk from "@superhuman/plugins-sdk";
+    import * as sdk from "@codahq/packs-sdk";
     export const pack = sdk.newPack();
 
     pack.setUserAuthentication({
@@ -338,7 +338,7 @@ Now that we've got the OAuth2 URLs, scopes, client ID and secret we're ready to 
     <div markdown>
 
     ```{.ts hl_lines="8-9"}
-    import * as sdk from "@superhuman/plugins-sdk";
+    import * as sdk from "@codahq/packs-sdk";
     export const pack = sdk.newPack();
 
     pack.setUserAuthentication({
@@ -365,7 +365,7 @@ All the code is written, but we're not ready to start using the Pack just yet. B
 
 ??? example "View the full code"
     ```ts
-    import * as sdk from "@superhuman/plugins-sdk";
+    import * as sdk from "@codahq/packs-sdk";
     export const pack = sdk.newPack();
 
     pack.addNetworkDomain("todoist.com");

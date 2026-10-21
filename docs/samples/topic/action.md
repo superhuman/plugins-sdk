@@ -38,7 +38,7 @@ A formula that returns a random value. This sample rolls virtual dice and return
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Rolls virtual dice and returns the resulting numbers. Use it with a button in
@@ -81,7 +81,7 @@ A formula that posts data to an external API. This sample creates a new task in 
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Action formula (for buttons and automations) that adds a new task in Todoist.
@@ -130,7 +130,7 @@ A formula that updates an item on the server, and the existing row in a sync tab
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // A schema defining the data in the sync table.

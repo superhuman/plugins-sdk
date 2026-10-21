@@ -18,7 +18,7 @@ Authentication that passes a long-lived token in the Authorization header using 
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Todoist API, using a personal API token in
@@ -46,7 +46,7 @@ Authentication that passes a long-lived token in a custom header. This sample co
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // System-wide authentication to RapidAPI, using an API key in a custom header.
@@ -65,7 +65,7 @@ Authentication that passes multiple long-lived tokens in HTTP headers. This samp
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Copper API, using multiple HTTP headers.
@@ -100,7 +100,7 @@ Authentication that passes a long-lived token in a query parameter. This sample 
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // System-wide authentication to the Giphy API, using an API key in the query
@@ -119,7 +119,7 @@ Authentication that passes multiple long-lived tokens in query parameters. This 
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Smarty API, using multiple query parameters.
@@ -141,7 +141,7 @@ Authentication that passes any number of custom tokens in the URL, headers, or r
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Vonage API, using an API key and secret
@@ -220,7 +220,7 @@ Authentication that passes a username and password in the Authorization header u
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Twilio API, using an Account SID and token in
@@ -256,7 +256,7 @@ Authentication optimized for connecting to the Superhuman Docs API, which is a t
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Superhuman Docs API, using a token in the
@@ -278,7 +278,7 @@ Authentication that supports Amazon Web Services (AWS), using an access key and 
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the AWS S3 service, using AWS Signature Version 4.
@@ -310,7 +310,7 @@ Authentication that uses the Authorization Code OAuth2 flow. This sample connect
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Todoist API, using an OAuth2 flow.
@@ -340,7 +340,7 @@ Authentication that uses the Client Credentials OAuth2 flow. This sample connect
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // System-wide authentication to Blizzard's Battle.net APIs, using the OAuth2
@@ -361,7 +361,7 @@ Authentication that requires users to enter the endpoint URL for their account. 
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Okta API, using a custom token prefix and
@@ -398,7 +398,7 @@ Authentication that automatically determines the account-specific endpoint URL d
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Salesforce API, using OAuth2 and an
@@ -441,7 +441,7 @@ Authentication that presents a list of endpoints to the user for them to select 
 
 ```ts
 {% raw %}
-import * as sdk from "@superhuman/plugins-sdk";
+import * as sdk from "@codahq/packs-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Jira Cloud API, using OAuth2 with a
