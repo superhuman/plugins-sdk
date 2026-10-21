@@ -285,11 +285,7 @@ describe('Headless CLI', () => {
       assert.include(printedOutput(), 'Installed agent version 3 of pack 1234.');
       assert.include(printedOutput(), 'agent instance: ai-1');
       assert.include(printedOutput(), 'tenant: bt-1');
-      assert.deepEqual(configStorage.getAgentInstall(manifestDir, apiEndpoint), {
-        packId: 1234,
-        agentInstanceId: 'ai-1',
-        tenantId: 'bt-1',
-      });
+      assert.isFalse(fsExtra.existsSync(path.join(manifestDir, '.coda-agent.json')));
     });
 
     it('uses an explicit version and skips the version lookup', async () => {
@@ -321,7 +317,7 @@ describe('Headless CLI', () => {
       assert.include(printedOutput(), 'agent instance: ai-1');
     });
 
-    it('says the agent is already installed and still saves the ids', async () => {
+    it('says the agent is already installed', async () => {
       (global.fetch as unknown as sinon.SinonStub).callsFake(async (url: any, init: any) => {
         postedUrls.push(String(url));
         postedBodies.push(init?.body ? JSON.parse(String(init.body)) : undefined);
@@ -332,7 +328,7 @@ describe('Headless CLI', () => {
 
       assert.include(printedOutput(), 'Agent version 3 of pack 1234 is already installed.');
       assert.notInclude(printedOutput(), 'Installed agent version');
-      assert.deepEqual(configStorage.getAgentInstall(manifestDir, apiEndpoint)?.agentInstanceId, 'ai-1');
+      assert.isFalse(fsExtra.existsSync(path.join(manifestDir, '.coda-agent.json')));
     });
 
     it('exits without saving when the response has no agent instance id', async () => {
@@ -346,7 +342,7 @@ describe('Headless CLI', () => {
 
       assert.equal(exitCode, 1);
       assert.include(exitMessage, 'did not include an agent instance id');
-      assert.isUndefined(configStorage.getAgentInstall(manifestDir, apiEndpoint));
+      assert.isFalse(fsExtra.existsSync(path.join(manifestDir, '.coda-agent.json')));
     });
 
     it('prints the attempted URL and browser fallback for a missing route', async () => {
@@ -443,13 +439,13 @@ describe('Headless CLI', () => {
       assert.include(lines.join('\n'), 'Stopped polling after 5 minutes.');
     });
 
-    it('uses the saved install when tenant and instance are omitted', async () => {
+    it('looks up the install when tenant and instance are omitted', async () => {
       sinon.stub(configStorage, 'getPackId').returns(1234);
-      sinon.stub(configStorage, 'getAgentInstall').returns({
-        packId: 1234,
-        agentInstanceId: 'ai-saved',
-        tenantId: 'bt-saved',
-      });
+      sinon.stub(global, 'fetch').resolves(
+        new Response(JSON.stringify({agentInstanceId: 'ai-saved', tenantId: 'bt-saved', packId: 1234}), {
+          status: 200,
+        }),
+      );
       const listAgentSessionIds = sinon.stub().resolves({items: []});
       sinon.stub(helpers, 'createCodaClient').returns({
         listPackVersions: async () => ({items: []}),
@@ -473,9 +469,13 @@ describe('Headless CLI', () => {
       assert.include(exitMessage, 'No agent runs yet');
     });
 
-    it('points at install when no ids are saved', async () => {
+    it('points at install when this pack has no instance', async () => {
       sinon.stub(configStorage, 'getPackId').returns(1234);
-      sinon.stub(configStorage, 'getAgentInstall').returns(undefined);
+      sinon.stub(global, 'fetch').resolves(
+        new Response(JSON.stringify({statusCode: 404, message: 'Not Found', codaType: 'AgentInstanceNotFound'}), {
+          status: 404,
+        }),
+      );
       const createClient = sinon.stub(helpers, 'createCodaClient');
 
       try {
@@ -493,6 +493,28 @@ describe('Headless CLI', () => {
 
       sinon.assert.notCalled(createClient);
       assert.include(exitMessage, 'packs agent install pack.ts');
+    });
+
+    it('rejects a lone instance flag instead of pairing it with a looked-up tenant', async () => {
+      sinon.stub(configStorage, 'getPackId').returns(1234);
+      const fetchStub = sinon.stub(global, 'fetch');
+
+      try {
+        await handleAgentLogs({
+          manifestPath: 'pack.ts',
+          instance: 'agent-1',
+          apiEndpoint,
+          apiToken: 'test-token',
+          $0: '',
+          _: [],
+        } as any);
+        assert.fail('expected printAndExit');
+      } catch {
+        // printAndExit throws
+      }
+
+      sinon.assert.notCalled(fetchStub);
+      assert.include(exitMessage, '--tenant and --instance');
     });
   });
 

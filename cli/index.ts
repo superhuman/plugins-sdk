@@ -75,6 +75,7 @@ const CommandExamples: Record<string, Array<[string, string]>> = {
   whoami: [['$0 whoami', 'Print the account and token currently registered.']],
   agent: [
     ['$0 agent chat pack.ts "what can you do?"', 'Run your installed agent and print its reply.'],
+    ['$0 agent chat pack.ts --new "start over"', 'Start a new chat instead of continuing the last one.'],
     ['$0 agent install pack.ts', 'Install the latest uploaded agent version to your account.'],
     ['$0 agent logs pack.ts', 'Show recent logs for the installed agent.'],
   ],
@@ -105,6 +106,24 @@ const CommandExamples: Record<string, Array<[string, string]>> = {
     ['$0 setOption pack.ts apiEndpoint https://my-company.coda.io', 'Pin a single-tenant API endpoint.'],
   ],
 };
+
+export function buildAgentInstallCommand(argv: Argv): Argv {
+  // `--version` is the pack version. yargs treats that name as its own version flag unless this runs first.
+  return argv.version(false).options({
+    version: {
+      string: true,
+      desc: 'Agent version to install. Defaults to the latest upload.',
+    },
+    reinstall: {
+      boolean: true,
+      default: false,
+      desc: 'Rebind even if already installed. Needed after changing tools or triggers.',
+    },
+    yes: YesArg,
+    apiToken: ApiTokenArg,
+    apiEndpoint: ApiEndpointArg,
+  });
+}
 
 function withExamples(argv: Argv, examples: Array<[string, string]>): Argv {
   for (const [command, description] of examples) {
@@ -243,11 +262,21 @@ export const commands: yargs.CommandModule[] = [
           builder: {
             agentInstanceId: {
               string: true,
-              desc: 'Installed agent instance to run. Defaults to the instance saved by packs agent install.',
+              desc: "Installed agent instance to run. Defaults to this pack's install for the caller.",
             },
             tenantId: {
               string: true,
               desc: 'Brain tenant id for the agent install. Defaults to the trigger response.',
+            },
+            chatId: {
+              string: true,
+              conflicts: 'new',
+              desc: 'Continue this chat instead of the last one. Its agent runs unless --agentInstanceId is set.',
+            },
+            new: {
+              boolean: true,
+              conflicts: 'chatId',
+              desc: 'Start a new chat instead of continuing the last one.',
             },
             timeout: {
               number: true,
@@ -262,20 +291,7 @@ export const commands: yargs.CommandModule[] = [
         .command({
           command: 'install <manifestPath>',
           describe: 'Install an uploaded agent version to your account',
-          builder: {
-            version: {
-              string: true,
-              desc: 'Agent version to install. Defaults to the latest upload.',
-            },
-            reinstall: {
-              boolean: true,
-              default: false,
-              desc: 'Rebind even if already installed. Needed after changing tools or triggers.',
-            },
-            yes: YesArg,
-            apiToken: ApiTokenArg,
-            apiEndpoint: ApiEndpointArg,
-          },
+          builder: buildAgentInstallCommand,
           handler: handleAgentInstall as any,
         })
         .command({
@@ -284,11 +300,11 @@ export const commands: yargs.CommandModule[] = [
           builder: {
             tenant: {
               string: true,
-              desc: 'Tenant id owning the agent instance. Defaults to the install saved by packs agent install.',
+              desc: "Tenant id owning the agent instance. Defaults to the caller's tenant for this pack.",
             },
             instance: {
               string: true,
-              desc: 'Agent instance id. Defaults to the instance saved by packs agent install.',
+              desc: "Agent instance id. Defaults to this pack's install for the caller.",
             },
             session: {
               string: true,

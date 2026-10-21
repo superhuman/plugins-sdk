@@ -111,6 +111,24 @@ export interface AuthenticationMetadataTypeMap {
   [AuthenticationType.EntraCertificate]: AuthenticationToMetadata<EntraCertificateAuthentication>;
 }
 
+/**
+ * Resource descriptor carried in versioned Pack metadata.
+ * @hidden
+ */
+export interface PackResource {
+  key: string;
+  mimeType: 'text/html;profile=mcp-app';
+}
+
+/**
+ * Resource body submitted separately from metadata.
+ * @hidden
+ */
+export interface PackResourceArtifact {
+  resourceKey: string;
+  content: string;
+}
+
 // Stripped-down version of `PackVersionDefinition` that doesn't contain formula definitions.
 /** @hidden */
 export type PackVersionMetadata = Omit<
@@ -118,6 +136,11 @@ export type PackVersionMetadata = Omit<
   'formulas' | 'formats' | 'defaultAuthentication' | 'syncTables'
 > & {
   formulas: PackFormulaMetadata[];
+  /**
+   * Shared resources for top-level formula UIs.
+   * @hidden
+   */
+  resources?: PackResource[];
   formats: PackFormatMetadata[];
   syncTables: PackSyncTable[];
   defaultAuthentication?: AuthenticationMetadata;
@@ -172,6 +195,7 @@ type BasePackVersionMetadata = Omit<
   | 'skills'
   | 'agent'
   | 'defaultTriggers'
+  | 'defaultRoutines'
 >;
 
 // Further stripped-down version of `PackVersionMetadata` that contains only what the browser needs.
@@ -227,6 +251,11 @@ export interface PackUpload {
   // all the feature's we're relying on from legacy pack defs like quotas
   // have been migrated or retired.
   metadata: PackVersionMetadata | PackMetadata;
+  /**
+   * Resource bodies submitted separately from metadata.
+   * @hidden
+   */
+  resourceArtifacts?: PackResourceArtifact[];
   sdkVersion: string;
   bundle: string;
   sourceMap: string;

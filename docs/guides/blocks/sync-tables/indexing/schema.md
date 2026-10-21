@@ -7,60 +7,25 @@ description: Information about the schema metadata needed for indexing.
 
 A sync table's schema defines the resulting columns and their types, along with other metadata required by the sync engine. To index that content in the knowledge layer, additional metadata must be provided in the schema.
 
-At a minimum, the schema must specify:
+At a minimum, the schema must specify `index.properties`, which is the list of properties containing long-form text to index for search.
 
-- The title property, via `titleProperty`
-- The link property, via `linkProperty`
-- The properties to split into chunks, via `index.properties`
-
-Additional fields allow for better index tuning. Most schemas should set:
-
-- The properties to replicate in each chunk, via `index.contextProperties`
-- The properties to use to filter results, via `index.filterableProperties`
+Additional fields allow for better index tuning and presentation. Most schemas should set `index.contextProperties`, `index.filterableProperties`, and `linkProperty`.
 
 See the sections below for more information.
 
+!!! info "Set `indexing.default` on dynamic sync tables"
 
-## Title property
+    In addition to the schema fields above, for [dynamic sync tables][dynamic_sync_tables] you also need to set [`indexing.default`][indexing] to `Include` on the table definition.
 
-Set `titleProperty` to the property that contains the title of the record. This property is indexed and displayed to the user when the LLM provides a citation.
-
-<!-- TODO: Screenshot -->
-
-Often, the same property is used for both `displayProperty` and `titleProperty`. However, these may differ for records with both a short and a long identifier, with the former preferred for `displayProperty` and the latter preferred for `titleProperty`.
-
-```{.ts hl_lines="9"}
-const ProductSchema = sdk.makeObjectSchema({
-  properties: {
-    id: { type: sdk.ValueType.String },
-    sku: { type: sdk.ValueType.String },
-    name: { type: sdk.ValueType.String },
-  },
-  idProperty: "id",
-  displayProperty: "sku",
-  titleProperty: "name",
-});
-```
-
-
-## Link property
-
-Set `linkProperty` to the property that contains the user-visible link to the record. This link will be used by the LLM when creating citations to the record.
-
-<!-- TODO: Screenshot -->
-
-The property should contain a deep link to the record in the source application, which a user can open in their browser.
-
-```{.ts hl_lines="7"}
-const ProductSchema = sdk.makeObjectSchema({
-  properties: {
-    // ...
-    link: { type: sdk.ValueType.String, codaType: sdk.ValueHintType.Url },
-  },
-  // ...
-  linkProperty: "link",
-});
-```
+    ```{.ts hl_lines="4-6"}
+    pack.addDynamicSyncTable({
+      name: "Tasks",
+      // ...
+      indexing: {
+        default: sdk.DataIndexing.Include,
+      },
+    });
+    ```
 
 
 ## Properties to index
@@ -192,6 +157,32 @@ const ProductSchema = sdk.makeObjectSchema({
 });
 ```
 
+
+## Citations
+
+Set `linkProperty` to the property that contains a deep link to the record in the source application. When this property is set, :superhuman-go: Go shows a citation the user can open in their browser.
+
+{{screenshot("images/sync_table_indexing_citation.png", "A screenshot of a citation in Superhuman Go")}}
+
+Set `titleProperty` to customize how that citation is displayed. If you don't set it, the schema's `displayProperty` is shown in the citation. A separate title is useful when you want a short identifier for the row in :superhuman-docs: Docs and a longer name in the citation.
+
+
+```{.ts hl_lines="10-11"}
+const ProductSchema = sdk.makeObjectSchema({
+  properties: {
+    id: { type: sdk.ValueType.String },
+    sku: { type: sdk.ValueType.String },
+    link: { type: sdk.ValueType.String, codaType: sdk.ValueHintType.Url },
+    name: { type: sdk.ValueType.String },
+  },
+  idProperty: "id",
+  displayProperty: "sku",
+  linkProperty: "link",
+  titleProperty: "name",
+});
+```
+
+
 ## Additional semantic properties
 
 To help with filtering and ranking, set the following fields in your schema, if possible.
@@ -285,5 +276,6 @@ If you are upgrading an existing Pack, you'll need to denormalize any data you w
 [people]: ../../../basics/data-types.md#people
 [schemas]: ../../../advanced/schemas.md
 [dynamic_sync_tables]: ../dynamic.md
+[indexing]: ../../../../reference/sdk/core/interfaces/DynamicSyncTableOptions.md#indexing
 [contact_resolution_tool]: ../../skills.md#contacts
 [person]: ../../../../reference/sdk/core/enumerations/ValueHintType.md#person

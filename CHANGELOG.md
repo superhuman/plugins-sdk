@@ -4,11 +4,18 @@ This changelog keeps track of all changes to the Packs SDK. We follow convention
 
 ## [Unreleased]
 
+## [1.18.4] - 2026-10-21
+
+### Added
+
+- `packs agent chat` now continues the previous thread, so consecutive prompts share one chat. It saves the chat id per user in `~/.coda-agent-chats.json`, so nothing is added to your repo. Pass `--new` to start a fresh thread, or `--chatId` to continue a specific chat. A chat that no longer exists fails with a message telling you to rerun with `--new`. Requires a server that accepts `chatId`; an older server starts a new chat each time.
+- `packs agent chat` now says which chat it is continuing and when it was last used. A saved chat idle for more than 24 hours is no longer continued by default. Chat starts a new one and prints `--chatId <id>` to go back to the old one.
+
 ## [1.18.3] - 2026-10-15
 
 ### Added
 
-- `packs agent install` prints the agent instance id and tenant id, and saves them in `.coda-agent.json` for that directory. The next `packs agent chat` and `packs agent logs` in the directory use the saved ids, so you no longer copy them out of the builder URL. Pass `--agentInstanceId`, `--tenantId`, `--tenant`, or `--instance` to override. New `packs init` scaffolds ignore `.coda-agent.json`. Add that filename to `.gitignore` in directories created before this change.
+- `packs agent chat` and `packs agent logs` look up the caller's install for this pack, including the tenant id. Pass `--agentInstanceId`, `--tenantId`, `--tenant`, or `--instance` only to override. `packs agent install` still prints those ids and no longer writes them to a file. `packs agent install --version` selects the uploaded pack version.
 - `addSuggestedPrompt()` on agents, so an agent can declare up to 3 starter prompts that show as buttons on its chat landing. Agents no longer fail validation when they define `suggestedPrompts`.
 
 ## [1.18.2] - 2026-10-14
@@ -1183,7 +1190,7 @@ await myHelper(context);
 
 - Beginning of alpha versioning.
 
-[Unreleased]: https://github.com/coda/packs-sdk/compare/v1.18.3...HEAD
+[Unreleased]: https://github.com/superhuman/plugins-sdk/compare/v1.18.4...HEAD
 [1.7.5]: https://github.com/coda/packs-sdk/compare/v1.7.1...v1.7.5
 [1.7.4]: https://github.com/coda/packs-sdk/compare/v1.7.1...v1.7.4
 [1.7.3]: https://github.com/coda/packs-sdk/compare/v1.7.1...v1.7.3
@@ -1272,3 +1279,4 @@ await myHelper(context);
 [1.18.1]: https://github.com/coda/packs-sdk/compare/v1.7.8...v1.18.1
 [1.18.2]: https://github.com/coda/packs-sdk/compare/v1.7.8...v1.18.2
 [1.18.3]: https://github.com/coda/packs-sdk/compare/v1.18.2...v1.18.3
+[1.18.4]: https://github.com/superhuman/plugins-sdk/compare/v1.18.3...v1.18.4
