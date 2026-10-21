@@ -4,6 +4,8 @@ This changelog keeps track of all changes to the Packs SDK. We follow convention
 
 ## [Unreleased]
 
+## [1.18.4] - 2026-10-21
+
 ### Added
 
 - `packs agent chat` now continues the previous thread, so consecutive prompts share one chat. It saves the chat id per user in `~/.coda-agent-chats.json`, so nothing is added to your repo. Pass `--new` to start a fresh thread, or `--chatId` to continue a specific chat. A chat that no longer exists fails with a message telling you to rerun with `--new`. Requires a server that accepts `chatId`; an older server starts a new chat each time.
@@ -1188,7 +1190,7 @@ await myHelper(context);
 
 - Beginning of alpha versioning.
 
-[Unreleased]: https://github.com/coda/packs-sdk/compare/v1.18.3...HEAD
+[Unreleased]: https://github.com/superhuman/plugins-sdk/compare/v1.18.4...HEAD
 [1.7.5]: https://github.com/coda/packs-sdk/compare/v1.7.1...v1.7.5
 [1.7.4]: https://github.com/coda/packs-sdk/compare/v1.7.1...v1.7.4
 [1.7.3]: https://github.com/coda/packs-sdk/compare/v1.7.1...v1.7.3
@@ -1277,3 +1279,4 @@ await myHelper(context);
 [1.18.1]: https://github.com/coda/packs-sdk/compare/v1.7.8...v1.18.1
 [1.18.2]: https://github.com/coda/packs-sdk/compare/v1.7.8...v1.18.2
 [1.18.3]: https://github.com/coda/packs-sdk/compare/v1.18.2...v1.18.3
+[1.18.4]: https://github.com/superhuman/plugins-sdk/compare/v1.18.3...v1.18.4
