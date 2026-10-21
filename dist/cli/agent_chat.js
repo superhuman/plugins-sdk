@@ -23,16 +23,23 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleAgentChat = exports.nextBackoffMs = exports.joinAssistantTexts = exports.describeRunReason = exports.isApiErrorBody = exports.buildAgentChatMessagesUrl = exports.buildAgentRunStatusUrl = exports.buildTriggerAgentUrl = void 0;
+exports.handleAgentChat = exports.nextBackoffMs = exports.describeAge = exports.joinAssistantTexts = exports.describeRunReason = exports.isApiErrorBody = exports.buildAgentChatMessagesUrl = exports.buildAgentRunStatusUrl = exports.buildTriggerAgentUrl = void 0;
 const helpers_1 = require("./helpers");
 const helpers_2 = require("./helpers");
-const helpers_3 = require("./helpers");
 const config_storage_1 = require("./config_storage");
+const agent_api_1 = require("./agent_api");
+const helpers_3 = require("./helpers");
+const config_storage_2 = require("./config_storage");
+const agent_api_2 = require("./agent_api");
+const agent_api_3 = require("./agent_api");
 const path = __importStar(require("path"));
 const helpers_4 = require("../testing/helpers");
 const helpers_5 = require("../testing/helpers");
+const config_storage_3 = require("./config_storage");
 const errors_1 = require("./errors");
 const DEFAULT_TIMEOUT_SECS = 120;
+// A saved chat idle longer than this is not continued unless asked for with --chatId.
+const STALE_CHAT_MS = 24 * 60 * 60 * 1000;
 const POLL_INTERVAL_MS = 2000;
 const MAX_BACKOFF_MS = 10000;
 function buildTriggerAgentUrl(apiEndpoint) {
@@ -85,16 +92,32 @@ function describeRunReason(status, reason) {
     }
 }
 exports.describeRunReason = describeRunReason;
-// Every completed assistant text, oldest first. A run that writes, calls a
-// tool, then wraps up reads like the browser transcript, not just the tail.
+// Every completed assistant text of the latest turn, oldest first. A run that writes, calls a
+// tool, then wraps up reads like the browser transcript. Messages carry no execution id, so the
+// turn starts after the last user message. minimal: if that message fell outside the fetched tail, all of it is used.
 function joinAssistantTexts(messages) {
-    const texts = messages
+    const ordered = [...messages].sort((left, right) => left.createdAt < right.createdAt ? -1 : left.createdAt > right.createdAt ? 1 : 0);
+    const lastUser = ordered.map(message => message.messageType).lastIndexOf('user');
+    const texts = ordered
+        .slice(lastUser + 1)
         .filter(message => message.messageType === 'assistant' && message.isComplete && message.text)
-        .sort((left, right) => (left.createdAt < right.createdAt ? -1 : left.createdAt > right.createdAt ? 1 : 0))
         .map(message => message.text);
     return texts.length > 0 ? texts.join('\n\n') : undefined;
 }
 exports.joinAssistantTexts = joinAssistantTexts;
+function describeAge(ms) {
+    const minutes = Math.floor(ms / 60000);
+    if (minutes < 1) {
+        return 'just now';
+    }
+    const [value, unit] = minutes < 60
+        ? [minutes, 'minute']
+        : minutes < 60 * 24
+            ? [Math.floor(minutes / 60), 'hour']
+            : [Math.floor(minutes / (60 * 24)), 'day'];
+    return `${value} ${unit}${value === 1 ? '' : 's'} ago`;
+}
+exports.describeAge = describeAge;
 function nextBackoffMs(failedAttempts) {
     return Math.min(1000 * 2 ** failedAttempts, MAX_BACKOFF_MS);
 }
@@ -140,17 +163,44 @@ async function readErrorBody(response) {
 function isTransientStatus(status) {
     return status === 429 || status >= 500;
 }
-async function handleAgentChat({ manifestPath, prompt, agentInstanceId: agentInstanceIdFlag, tenantId: tenantIdFlag, timeout, apiToken, apiEndpoint, }) {
-    var _a;
+async function handleAgentChat({ manifestPath, prompt, agentInstanceId: agentInstanceIdFlag, tenantId: tenantIdFlag, chatId: chatIdFlag, new: startNewChat, timeout, apiToken, apiEndpoint, }) {
     const manifestDir = path.dirname(manifestPath);
     const formattedEndpoint = (0, helpers_3.formatEndpoint)(apiEndpoint);
     apiToken = (0, helpers_1.assertApiToken)(apiEndpoint, apiToken);
     const packId = (0, helpers_2.assertPackId)(manifestDir, apiEndpoint);
-    const agentInstanceId = agentInstanceIdFlag || ((_a = (0, config_storage_1.getAgentInstall)(manifestDir, apiEndpoint)) === null || _a === void 0 ? void 0 : _a.agentInstanceId);
-    if (!agentInstanceId) {
-        return (0, helpers_5.printAndExit)('Error: agent chat needs an installed agent instance.\n' +
-            '  packs agent install pack.ts\n' +
-            '  Or pass --agentInstanceId.');
+    if (startNewChat && chatIdFlag) {
+        return (0, helpers_5.printAndExit)('Pass --new or --chatId, not both.');
+    }
+    let agentInstanceId = agentInstanceIdFlag;
+    // An explicit chat id names its own agent on the server, so it needs no install lookup.
+    if (!agentInstanceId && !chatIdFlag) {
+        const lookup = await (0, agent_api_3.lookupInstalledAgent)({ apiToken, apiEndpoint, packId });
+        if (lookup.status !== 'found') {
+            return (0, helpers_5.printAndExit)((0, agent_api_2.installedAgentLookupError)(lookup, 'chat'));
+        }
+        agentInstanceId = lookup.agent.agentInstanceId;
+    }
+    // Continue the last thread for this install unless asked to start over or to use another chat.
+    let resumeChatId = chatIdFlag;
+    let resumingSavedChat = false;
+    let resumeNotice = resumeChatId ? `Continuing chat ${resumeChatId}.` : undefined;
+    if (!resumeChatId && !startNewChat) {
+        const saved = (0, config_storage_2.getAgentChat)(manifestDir, apiEndpoint);
+        if (saved && saved.agentInstanceId === agentInstanceId) {
+            const idleMs = saved.lastUsedAt ? Date.now() - Date.parse(saved.lastUsedAt) : undefined;
+            if (idleMs !== undefined && idleMs > STALE_CHAT_MS) {
+                (0, helpers_4.print)(`Your last chat was used ${describeAge(idleMs)}, so this starts a new one. ` +
+                    `Pass --chatId ${saved.chatId} to continue the old chat.`);
+            }
+            else {
+                resumeChatId = saved.chatId;
+                resumingSavedChat = true;
+                resumeNotice =
+                    `Continuing chat ${saved.chatId}` +
+                        (idleMs === undefined ? '' : `, last used ${describeAge(idleMs)}`) +
+                        '. Pass --new to start a new chat.';
+            }
+        }
     }
     const headers = { Authorization: `Bearer ${apiToken}`, 'Content-Type': 'application/json' };
     const timeoutSecs = timeout !== null && timeout !== void 0 ? timeout : DEFAULT_TIMEOUT_SECS;
@@ -159,7 +209,11 @@ async function handleAgentChat({ manifestPath, prompt, agentInstanceId: agentIns
         const triggerResponse = await fetch(buildTriggerAgentUrl(apiEndpoint), {
             method: 'POST',
             headers,
-            body: JSON.stringify({ input: prompt, agentInstanceId }),
+            body: JSON.stringify({
+                input: prompt,
+                ...(agentInstanceId ? { agentInstanceId } : {}),
+                ...(resumeChatId ? { chatId: resumeChatId } : {}),
+            }),
             signal: AbortSignal.timeout(30000),
         });
         if (!triggerResponse.ok) {
@@ -167,6 +221,14 @@ async function handleAgentChat({ manifestPath, prompt, agentInstanceId: agentIns
             if (triggerResponse.status === 404 && !isApiErrorBody(bodyText)) {
                 return (0, helpers_5.printAndExit)('The agent trigger endpoint is not available on this server.\n' +
                     'It ships with the agent runtime API — upgrade the server or verify in the browser agent directory.');
+            }
+            if (triggerResponse.status === 404 && (0, agent_api_1.codaTypeOf)(bodyText) === 'ChatNotFound') {
+                if (resumingSavedChat) {
+                    (0, config_storage_1.clearAgentChat)(manifestDir, apiEndpoint);
+                }
+                return (0, helpers_5.printAndExit)('That chat is gone, or it is not yours or not on this agent.\n' +
+                    (resumingSavedChat ? '  The saved chat was cleared. ' : '  ') +
+                    'Start a new one with --new.');
             }
             if (triggerResponse.status === 404) {
                 return (0, helpers_5.printAndExit)('Agent not found or agent triggering is not enabled.\n' +
@@ -184,6 +246,8 @@ async function handleAgentChat({ manifestPath, prompt, agentInstanceId: agentIns
         return (0, helpers_5.printAndExit)(errors.join('\n'));
     }
     const { executionId, chatId } = triggerBody;
+    // The server names the agent when only a chat id was sent.
+    agentInstanceId = triggerBody.agentInstanceId;
     if (triggerBody.packId !== packId) {
         return (0, helpers_5.printAndExit)(`Agent instance ${agentInstanceId} belongs to pack ${triggerBody.packId}, not pack ${packId}.\n` +
             '  A run has already been queued on that instance. Check it in the browser agent directory.\n' +
@@ -191,6 +255,15 @@ async function handleAgentChat({ manifestPath, prompt, agentInstanceId: agentIns
             '  Install this pack first, or point --agentInstanceId at its install.');
     }
     const tenantId = tenantIdFlag !== null && tenantIdFlag !== void 0 ? tenantIdFlag : triggerBody.tenantId;
+    try {
+        (0, config_storage_3.storeAgentChat)(manifestDir, apiEndpoint, { agentInstanceId, chatId });
+    }
+    catch (err) {
+        (0, helpers_4.print)(`Note: could not save the chat id, so the next prompt starts a new chat. ${err}`);
+    }
+    if (resumeNotice) {
+        (0, helpers_4.print)(resumeNotice);
+    }
     (0, helpers_4.print)(`Run queued for pack ${packId} (execution ${executionId}). Waiting for a reply…`);
     const deadlineMs = Date.now() + timeoutSecs * 1000;
     const statusUrl = buildAgentRunStatusUrl(formattedEndpoint, tenantId, agentInstanceId, chatId, executionId);

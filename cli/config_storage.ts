@@ -1,4 +1,5 @@
 import {TimerShimStrategy} from '../testing/compile';
+import * as os from 'os';
 import * as path from 'path';
 import {readJSONFile} from '../testing/helpers';
 import urlParse from 'url-parse';
@@ -10,7 +11,7 @@ export const DEFAULT_GIT_TAG = false;
 
 const API_KEY_FILE_NAME = '.coda.json';
 export const PACK_ID_FILE_NAME = '.coda-pack.json';
-export const AGENT_INSTALL_FILE_NAME = '.coda-agent.json';
+const AGENT_CHATS_FILE_NAME = '.coda-agent-chats.json';
 
 export interface ApiKeyFile {
   apiKey: string;
@@ -38,23 +39,18 @@ export interface PackOptions {
   [DeprecatedPackOptionKey.enableGitTags]?: boolean;
 }
 
+export interface AgentChatState {
+  agentInstanceId: string;
+  chatId: string;
+  // ISO time of the last prompt. Entries saved before this field existed have none.
+  lastUsedAt?: string;
+}
+
 export interface PackIdFile {
   packId: number;
   options?: PackOptions;
   // Codan-only overrides for storing pack ids for other environments.
   environmentPackIds?: {[host: string]: number};
-}
-
-export interface StoredAgentInstall {
-  packId: number;
-  agentInstanceId: string;
-  tenantId?: string;
-}
-
-interface AgentInstallFile {
-  agentInstall?: StoredAgentInstall;
-  // Codan-only overrides for storing installs against other environments.
-  environmentAgentInstalls?: {[host: string]: StoredAgentInstall};
 }
 
 function isDefaultApiEndpoint(apiEndpoint: string): boolean {
@@ -125,37 +121,6 @@ export function getPackId(manifestDir: string, codaApiEndpoint: string): number 
   }
 }
 
-export function storeAgentInstall(manifestDir: string, codaApiEndpoint: string, install: StoredAgentInstall): void {
-  const fileContents: AgentInstallFile = readAgentInstallFile(manifestDir) || {};
-  if (isDefaultApiEndpoint(codaApiEndpoint)) {
-    fileContents.agentInstall = install;
-  } else {
-    const {host} = urlParse(codaApiEndpoint);
-    fileContents.environmentAgentInstalls = fileContents.environmentAgentInstalls || {};
-    fileContents.environmentAgentInstalls[host] = install;
-  }
-  writeAgentInstallFile(manifestDir, fileContents);
-}
-
-// Returns the install only when it belongs to the pack id stored for this directory
-// and endpoint. A later `create` in the same directory must not reuse a stale instance.
-export function getAgentInstall(manifestDir: string, codaApiEndpoint: string): StoredAgentInstall | undefined {
-  const fileContents = readAgentInstallFile(manifestDir);
-  if (!fileContents) {
-    return;
-  }
-  const install = isDefaultApiEndpoint(codaApiEndpoint)
-    ? fileContents.agentInstall
-    : fileContents.environmentAgentInstalls?.[urlParse(codaApiEndpoint).host];
-  if (!install?.agentInstanceId) {
-    return;
-  }
-  if (getPackId(manifestDir, codaApiEndpoint) !== install.packId) {
-    return;
-  }
-  return install;
-}
-
 // Merges new options with existing ones, if any.
 export function storePackOptions(manifestDir: string, options: PackOptions): void {
   const fileContents: PackIdFile = readPackIdFile(manifestDir) || {packId: -1};
@@ -168,6 +133,39 @@ export function getPackOptions(manifestDir: string): PackOptions | undefined {
   return fileContents?.options;
 }
 
+// Chat ids are per-user state, so they live in the home directory. .coda-pack.json is committed with the pack.
+function agentChatsFile(): string {
+  return path.join(os.homedir(), AGENT_CHATS_FILE_NAME);
+}
+
+function agentChatKey(manifestDir: string, codaApiEndpoint: string): string {
+  return `${urlParse(codaApiEndpoint).host}|${path.resolve(manifestDir)}`;
+}
+
+function readAgentChats(): {[key: string]: AgentChatState} {
+  return readJSONFile(agentChatsFile()) || {};
+}
+
+export function getAgentChat(manifestDir: string, codaApiEndpoint: string): AgentChatState | undefined {
+  return readAgentChats()[agentChatKey(manifestDir, codaApiEndpoint)];
+}
+
+export function storeAgentChat(
+  manifestDir: string,
+  codaApiEndpoint: string,
+  chat: Omit<AgentChatState, 'lastUsedAt'>,
+): void {
+  const entry: AgentChatState = {...chat, lastUsedAt: new Date().toISOString()};
+  writeJSONFile(agentChatsFile(), {...readAgentChats(), [agentChatKey(manifestDir, codaApiEndpoint)]: entry}, 0o600);
+}
+
+export function clearAgentChat(manifestDir: string, codaApiEndpoint: string): void {
+  const {[agentChatKey(manifestDir, codaApiEndpoint)]: removed, ...rest} = readAgentChats();
+  if (removed) {
+    writeJSONFile(agentChatsFile(), rest, 0o600);
+  }
+}
+
 function readPackIdFile(manifestDir: string): PackIdFile | undefined {
   const filename = path.join(manifestDir, PACK_ID_FILE_NAME);
   return readJSONFile(filename);
@@ -176,12 +174,4 @@ function readPackIdFile(manifestDir: string): PackIdFile | undefined {
 function writePacksFile(manifestDir: string, fileContents: PackIdFile): void {
   const filename = path.join(manifestDir, PACK_ID_FILE_NAME);
   writeJSONFile(filename, fileContents);
-}
-
-function readAgentInstallFile(manifestDir: string): AgentInstallFile | undefined {
-  return readJSONFile(path.join(manifestDir, AGENT_INSTALL_FILE_NAME));
-}
-
-function writeAgentInstallFile(manifestDir: string, fileContents: AgentInstallFile): void {
-  writeJSONFile(path.join(manifestDir, AGENT_INSTALL_FILE_NAME), fileContents);
 }

@@ -1112,12 +1112,27 @@ type V2PackFormula<ParamDefsT extends ParamDefs, SchemaT extends Schema = Schema
 export type TypedPackFormula = Formula | GenericSyncFormula;
 
 export type TypedObjectPackFormula = ObjectPackFormula<ParamDefs, Schema>;
+
+/**
+ * UI configuration carried in top-level formula metadata.
+ * @hidden
+ */
+export interface PackFormulaUi {
+  /** References a resource descriptor's key. */
+  resourceKey: string;
+}
+
 /** @hidden */
 export type PackFormulaMetadata = Omit<
   TypedPackFormula,
   'execute' | 'executeUpdate' | 'executeGetPermissions' | 'validateParameters'
 > & {
   validateParameters?: MetadataFormulaMetadata<ExecutionContext, ParameterValidationResult>;
+  /**
+   * UI configuration for this top-level formula.
+   * @hidden
+   */
+  ui?: PackFormulaUi;
 };
 /** @hidden */
 export type ObjectPackFormulaMetadata = Omit<TypedObjectPackFormula, 'execute' | 'validateParameters'> & {

@@ -5,12 +5,17 @@ import {DeprecatedPackOptionKey} from '../cli/config_storage';
 import {PackOptionKey} from '../cli/config_storage';
 import {TimerShimStrategy} from '../testing/compile';
 import {backfillFromPackConfig} from '../cli/helpers';
+import {clearAgentChat} from '../cli/config_storage';
+import * as fs from 'fs';
+import {getAgentChat} from '../cli/config_storage';
 import {getApiKey} from '../cli/config_storage';
 import {getPackId} from '../cli/config_storage';
 import {getPackOptions} from '../cli/config_storage';
 import mockFs from 'mock-fs';
 import * as path from 'path';
+import {readJSONFile} from '../testing/helpers';
 import sinon from 'sinon';
+import {storeAgentChat} from '../cli/config_storage';
 import {storeCodaApiKey} from '../cli/config_storage';
 import {storePackId} from '../cli/config_storage';
 import {storePackOptions} from '../cli/config_storage';
@@ -111,6 +116,76 @@ describe('Config storage', () => {
 
       assert.equal(111, getPackId(dir1, endpoint));
       assert.equal(222, getPackId(dir2, endpoint));
+    });
+  });
+
+  describe('agent chats', () => {
+    const endpoint = DEFAULT_API_ENDPOINT;
+    const devEndpoint = 'https://dev.coda.io:8080';
+    const chat = {agentInstanceId: 'agent-1', chatId: 'chat-1'};
+
+    beforeEach(() => {
+      sinon.stub(process.env, 'HOME').value('/home/me');
+    });
+
+    it('stores and reads the chat for an endpoint', () => {
+      storeAgentChat(PROJECT_DIR, endpoint, chat);
+      assert.deepInclude(getAgentChat(PROJECT_DIR, endpoint), chat);
+    });
+
+    it('records when the chat was last used', () => {
+      const clock = sinon.useFakeTimers({now: Date.parse('2026-01-02T03:04:05.000Z'), toFake: ['Date']});
+      try {
+        storeAgentChat(PROJECT_DIR, endpoint, chat);
+      } finally {
+        clock.restore();
+      }
+      assert.equal(getAgentChat(PROJECT_DIR, endpoint)?.lastUsedAt, '2026-01-02T03:04:05.000Z');
+    });
+
+    it('reads an entry saved before timestamps existed', () => {
+      mockFs({'/home/me': {'.coda-agent-chats.json': JSON.stringify({[`coda.io|${PROJECT_DIR}`]: chat})}});
+      assert.deepEqual(getAgentChat(PROJECT_DIR, endpoint), chat);
+    });
+
+    it('keeps the chat out of the pack directory', () => {
+      mockFs({[PROJECT_DIR]: {'.coda-pack.json': JSON.stringify({packId: 123})}});
+      storeAgentChat(PROJECT_DIR, endpoint, chat);
+      assert.deepEqual(readJSONFile(path.join(PROJECT_DIR, '.coda-pack.json')), {packId: 123});
+      assert.deepEqual(fs.readdirSync(PROJECT_DIR), ['.coda-pack.json']);
+      assert.deepEqual(fs.readdirSync('/home/me'), ['.coda-agent-chats.json']);
+    });
+
+    it('keeps a separate chat per endpoint and per pack directory', () => {
+      storeAgentChat(PROJECT_DIR, endpoint, chat);
+      storeAgentChat(PROJECT_DIR, devEndpoint, {agentInstanceId: 'agent-2', chatId: 'chat-2'});
+      storeAgentChat('/other', endpoint, {agentInstanceId: 'agent-3', chatId: 'chat-3'});
+      assert.deepInclude(getAgentChat(PROJECT_DIR, endpoint), chat);
+      assert.equal(getAgentChat(PROJECT_DIR, devEndpoint)?.chatId, 'chat-2');
+      assert.equal(getAgentChat('/other', endpoint)?.chatId, 'chat-3');
+    });
+
+    it('has no chat until one is stored', () => {
+      assert.isUndefined(getAgentChat(PROJECT_DIR, endpoint));
+    });
+
+    it('clears only the chat for that endpoint', () => {
+      storeAgentChat(PROJECT_DIR, endpoint, chat);
+      storeAgentChat(PROJECT_DIR, devEndpoint, chat);
+      clearAgentChat(PROJECT_DIR, endpoint);
+      assert.isUndefined(getAgentChat(PROJECT_DIR, endpoint));
+      assert.deepInclude(getAgentChat(PROJECT_DIR, devEndpoint), chat);
+    });
+
+    it('ignores chats written into .coda-pack.json by an earlier version', () => {
+      mockFs({
+        [PROJECT_DIR]: {
+          '.coda-pack.json': JSON.stringify({packId: 123, agentChats: {'coda.io': chat}}),
+        },
+      });
+      assert.isUndefined(getAgentChat(PROJECT_DIR, endpoint));
+      storePackOptions(PROJECT_DIR, {gitTag: true});
+      assert.equal(getPackId(PROJECT_DIR, endpoint), 123);
     });
   });
 

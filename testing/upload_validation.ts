@@ -3,6 +3,7 @@ import type {AWSAssumeRoleAuthentication} from '../types';
 import type {AdminAuthentication} from '../types';
 import type {AdminAuthenticationTypes} from '../types';
 import type {AgentDefinition} from '../types';
+import type {AgentRoutineDefinition} from '../types';
 import type {AgentTool} from '../types';
 import {AllPrecannedDates} from '../api_types';
 import type {ArraySchema} from '../schema';
@@ -106,6 +107,9 @@ import {OptionsType} from '../api_types';
 import {PackCategory} from '../types';
 import type {PackFormatMetadata} from '../compiled_types';
 import type {PackFormulaMetadata} from '../api';
+import type {PackFormulaUi} from '../api';
+import type {PackResource} from '../compiled_types';
+import type {PackResourceArtifact} from '../compiled_types';
 import type {PackTool} from '../types';
 import type {PackVersionDefinition} from '..';
 import type {PackVersionMetadata} from '../compiled_types';
@@ -180,6 +184,7 @@ import {maybeSchemaOptionsValue} from '../schema';
 import {maybeUnwrapArraySchema} from '../schema';
 import {normalizePropertyValuePathIntoSchemaPath} from '../schema';
 import {objectSchemaHelper} from '../helpers/migration';
+import {parse} from 'parse5';
 import semver from 'semver';
 import {unwrappedSchemaSupportsOptions} from '../schema';
 import {validateRRuleString} from './rrule_validation';
@@ -199,8 +204,9 @@ const numberChar = String.raw`\p{N}`;
 const wordChar = String.raw`${letterChar}${numberChar}_`;
 const regexLetterChar = String.raw`[${letterChar}]`;
 const regexWordChar = String.raw`[${wordChar}]`;
-const regexFormulaNameStr = String.raw`^${regexLetterChar}(?:${regexWordChar}+)?$`;
-const regexFormulaName = new RegExp(regexFormulaNameStr, 'u');
+const regexBuildingBlockNameStr = String.raw`^${regexLetterChar}(?:${regexWordChar}+)?$`;
+const regexFormulaName = new RegExp(regexBuildingBlockNameStr, 'u');
+const regexResourceName = new RegExp(regexBuildingBlockNameStr, 'u');
 // This is currently the same as the tokenizer's restrictions except stricter
 // because we don't allow leading underscores.
 const regexParameterName = regexFormulaName;
@@ -229,6 +235,7 @@ export const Limits = {
   PermissionsBatchSize: 5000,
   PromptLength: 20000,
   RRuleStringLength: 512,
+  RoutineNameLength: 80,
   SuggestedPromptText: 500,
   UpdateBatchSize: 1000,
   FilterableProperties: 5,
@@ -249,6 +256,177 @@ export class PackMetadataValidationError extends Error {
     this.originalError = originalError;
     this.validationErrors = validationErrors;
   }
+}
+
+const resourceKeySchema = z
+  .string()
+  .max(Limits.BuildingBlockName)
+  .regex(
+    regexResourceName,
+    'Resource keys must start with a letter and contain only letters, numbers, and underscores.',
+  );
+const resourceDescriptorSchema = z.strictObject({
+  key: resourceKeySchema,
+  mimeType: z.literal('text/html;profile=mcp-app'),
+});
+const resourceListSchema = z.array(resourceDescriptorSchema).optional();
+const topLevelFormulaUiSchema = z.object({ui: z.object({resourceKey: resourceKeySchema}).optional()});
+
+interface PackResourceMetadata {
+  resources?: PackResource[];
+  formulas?: Array<{ui?: PackFormulaUi}>;
+}
+
+function validateResourceReferences(data: PackResourceMetadata, context: z.RefinementCtx) {
+  const resourceKeys = new Set<string>();
+  const normalizedResourceKeys = new Set<string>();
+  (data.resources || []).forEach((resource, i) => {
+    const normalizedKey = resource.key.toUpperCase();
+    if (normalizedResourceKeys.has(normalizedKey)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['resources', i, 'key'],
+        message: `Resource keys must be unique. Found duplicate key "${resource.key}".`,
+      });
+    }
+    normalizedResourceKeys.add(normalizedKey);
+    resourceKeys.add(resource.key);
+  });
+  (data.formulas || []).forEach((formula, i) => {
+    if (formula.ui !== undefined && !resourceKeys.has(formula.ui.resourceKey)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['formulas', i, 'ui', 'resourceKey'],
+        message: `Formula references undeclared resource "${formula.ui.resourceKey}".`,
+      });
+    }
+  });
+}
+
+const resourceMetadataSchema = z.union([
+  z
+    .object({
+      resources: resourceListSchema,
+      formulas: z.array(topLevelFormulaUiSchema).optional().default([]),
+    })
+    .superRefine(validateResourceReferences),
+  z
+    .object({
+      resources: z.array(z.never()).optional(),
+      formulas: z.record(z.string(), z.unknown()).optional(),
+    })
+    .transform(metadata => ({...metadata, formulas: []})),
+]);
+const resourceArtifactsSchema = z.array(z.strictObject({resourceKey: z.string(), content: z.string()}));
+
+/** @hidden */
+export function validatePackResourceArtifacts(
+  metadata: unknown,
+  artifacts: unknown,
+  options: {maxResourceBytes: number; maxResourceCount: number},
+): PackResourceArtifact[] {
+  const validatedMetadata = resourceMetadataSchema.safeParse(metadata);
+  if (!validatedMetadata.success) {
+    throw new PackMetadataValidationError(
+      'Pack App resource metadata failed validation.',
+      validatedMetadata.error,
+      validatedMetadata.error.issues.flatMap(issue => zodErrorDetailToValidationError(issue)),
+    );
+  }
+  const maxResourceBytes = options?.maxResourceBytes;
+  if (!Number.isSafeInteger(maxResourceBytes) || maxResourceBytes < 0) {
+    throw new PackMetadataValidationError('Pack metadata failed validation.', undefined, [
+      {path: 'maxResourceBytes', message: 'maxResourceBytes must be a nonnegative safe integer.'},
+    ]);
+  }
+  const maxResourceCount = options?.maxResourceCount;
+  if (!Number.isSafeInteger(maxResourceCount) || maxResourceCount < 0) {
+    throw new PackMetadataValidationError('Pack metadata failed validation.', undefined, [
+      {path: 'maxResourceCount', message: 'maxResourceCount must be a nonnegative safe integer.'},
+    ]);
+  }
+  if ((validatedMetadata.data.resources || []).length > maxResourceCount) {
+    throw new PackMetadataValidationError('Pack metadata failed validation.', undefined, [
+      {path: 'resources', message: `Pack Apps may declare at most ${maxResourceCount} resources.`},
+    ]);
+  }
+  const validatedArtifacts = resourceArtifactsSchema.safeParse(artifacts);
+  if (!validatedArtifacts.success) {
+    throw new PackMetadataValidationError(
+      'Pack App artifacts failed validation.',
+      validatedArtifacts.error,
+      validatedArtifacts.error.issues.flatMap(issue => zodErrorDetailToValidationError(issue, ['resourceArtifacts'])),
+    );
+  }
+  const resourceKeys = new Set((validatedMetadata.data.resources || []).map(resource => resource.key));
+  const seen = new Set<string>();
+  function reject(message: string): never {
+    throw new PackMetadataValidationError('Pack metadata failed validation.', undefined, [
+      {path: 'resourceArtifacts', message},
+    ]);
+  }
+  for (const [i, artifact] of validatedArtifacts.data.entries()) {
+    const {resourceKey} = artifact;
+    if (!resourceKeys.has(resourceKey)) {
+      reject(`Pack App artifact resource key "${resourceKey}" is not declared in metadata.resources.`);
+    }
+    if (seen.has(resourceKey)) {
+      reject(`Pack App artifact resource keys must be unique. Found duplicate key "${resourceKey}".`);
+    }
+    seen.add(resourceKey);
+    const encoded = Buffer.from(artifact.content, 'utf8');
+    if (encoded.byteLength > maxResourceBytes) {
+      reject('Pack App artifact exceeds size limit');
+    }
+    if (encoded.toString('utf8') !== artifact.content) {
+      reject(`Pack App artifact "${resourceKey}" must contain valid UTF-8 text.`);
+    }
+    try {
+      validatePackResourceHtml(artifact.content);
+    } catch (error) {
+      if (!(error instanceof PackMetadataValidationError)) {
+        throw error;
+      }
+      throw new PackMetadataValidationError(
+        'Pack App artifacts failed validation.',
+        error,
+        error.validationErrors?.map(detail => ({...detail, path: `resourceArtifacts[${i}].${detail.path}`})),
+      );
+    }
+  }
+  for (const key of resourceKeys) {
+    if (!seen.has(key)) {
+      reject(`Missing Pack App artifact for resource key "${key}".`);
+    }
+  }
+  return validatedArtifacts.data;
+}
+
+/**
+ * Reject parser diagnostics without rewriting executable HTML.
+ */
+function validatePackResourceHtml(content: unknown): string {
+  const validated = z.string().safeParse(content);
+  if (!validated.success) {
+    throw new PackMetadataValidationError(
+      'Pack resource HTML failed validation',
+      validated.error,
+      validated.error.issues.flatMap(issue => zodErrorDetailToValidationError(issue, ['content'])),
+    );
+  }
+  // parse5 diagnostics check partial HTML conformance, not execution safety.
+  parse(validated.data, {
+    scriptingEnabled: true,
+    onParseError: diagnostic => {
+      throw new PackMetadataValidationError('Pack resource HTML failed validation', undefined, [
+        {
+          path: 'content',
+          message: `Invalid HTML: ${diagnostic.code} at line ${diagnostic.startLine}, column ${diagnostic.startCol}.`,
+        },
+      ]);
+    },
+  });
+  return validated.data;
 }
 
 export async function validatePackVersionMetadata(
@@ -2606,34 +2784,14 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
     whileWritingTriggerSchema,
   ]);
 
-  const defaultTriggersSchema: z.ZodType<DefaultTriggerDefinition[]> = z
-    .array(defaultTriggerSchema)
-    .superRefine((triggers, context) => {
-      const seen = new Set<string>();
-      let eventTriggers = 0;
-      triggers.forEach((trigger, index) => {
-        // An agent listens to as many events as the server stores; the other kinds are one apiece.
-        if (trigger.kind === DefaultTriggerKind.Event) {
-          eventTriggers += 1;
-          if (eventTriggers > Limits.MaxDefaultEventTriggers) {
-            context.addIssue({
-              code: 'custom',
-              path: [index],
-              message: `An agent can only declare ${Limits.MaxDefaultEventTriggers} event default triggers.`,
-            });
-          }
-          return;
-        }
-        if (seen.has(trigger.kind)) {
-          context.addIssue({
-            code: 'custom',
-            path: [index],
-            message: `An agent can only declare one ${trigger.kind} default trigger.`,
-          });
-        }
-        seen.add(trigger.kind);
-      });
-    });
+  const defaultTriggersSchema: z.ZodType<DefaultTriggerDefinition[]> = z.array(defaultTriggerSchema);
+  const routineSchema = zodCompleteStrictObject<AgentRoutineDefinition>({
+    name: z.string().max(Limits.RoutineNameLength).optional(),
+    instructions: z.string().max(Limits.PromptLength).optional(),
+    trigger: defaultTriggerSchema,
+  }).refine(routine => Boolean(routine.name?.trim() || routine.instructions?.trim()), {
+    message: 'A routine needs a name or instructions containing non-whitespace text.',
+  });
 
   const skillEntrypointConfigSchema = zodCompleteStrictObject<SkillEntrypointConfig>({
     skillName: z.string(),
@@ -2697,6 +2855,8 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
     prompt: z.string().min(1).max(Limits.SuggestedPromptText),
   });
 
+  const topLevelFormulaMetadataSchema = formulaMetadataSchema.and(topLevelFormulaUiSchema);
+
   // Make sure to call the refiners on this after removing legacyPackMetadataSchema.
   // (Zod doesn't let you call .extends() after you've called .refine(), so we're only refining the top-level
   // schema we actually use.)
@@ -2728,8 +2888,9 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
     }),
     systemConnectionAuthentication: z.union(zodUnionInput(systemAuthenticationValidators)).optional(),
     adminAuthentications: z.array(adminAuthenticationValidator).optional(),
+    resources: resourceListSchema,
     formulas: z
-      .array(formulaMetadataSchema)
+      .array(topLevelFormulaMetadataSchema)
       .max(Limits.BuildingBlockCountPerType)
       .optional()
       .default([])
@@ -2817,6 +2978,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
     benchInitializationSkill: chatSkillSchema.optional(),
     agent: agentSchema.optional(),
     defaultTriggers: defaultTriggersSchema.optional(),
+    defaultRoutines: z.array(routineSchema).optional(),
     mcpServers: z
       .array(mcpServerSchema)
       .max(1)
@@ -2880,6 +3042,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
 
   function validateFormulas(schema: z.ZodObject<any>) {
     return schema
+      .superRefine(validateResourceReferences)
       .refine(
         (data: any) => {
           if (data.formulas && data.formulas.length > 0) {
@@ -3472,8 +3635,40 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
       });
     })
     .superRefine((data, context) => {
+      const metadata = data as PackVersionMetadata;
+      const triggers = [
+        ...(metadata.defaultTriggers ?? []).map((trigger, index) => ({trigger, path: ['defaultTriggers', index]})),
+        ...(metadata.defaultRoutines ?? []).map((routine, index) => ({
+          trigger: routine.trigger,
+          path: ['defaultRoutines', index, 'trigger'],
+        })),
+      ];
+      const seen = new Set<DefaultTriggerKind>();
+      let eventTriggers = 0;
+      for (const {trigger, path} of triggers) {
+        if (trigger.kind === DefaultTriggerKind.Event) {
+          eventTriggers += 1;
+          if (eventTriggers > Limits.MaxDefaultEventTriggers) {
+            context.addIssue({
+              code: 'custom',
+              path,
+              message: `An agent can only declare ${Limits.MaxDefaultEventTriggers} event default triggers.`,
+            });
+          }
+        } else if (seen.has(trigger.kind)) {
+          context.addIssue({
+            code: 'custom',
+            path,
+            message: `An agent can only declare one ${trigger.kind} default trigger.`,
+          });
+        }
+        seen.add(trigger.kind);
+      }
       // The builder can't add these to an agent, but a hand-written manifest can.
-      if (!(data as PackVersionMetadata).agent) {
+      if (!metadata.agent) {
+        if (metadata.defaultRoutines?.length) {
+          context.addIssue({code: 'custom', path: ['defaultRoutines'], message: 'Only an agent can define routines.'});
+        }
         if (((data as PackVersionMetadata).defaultTriggers || []).length) {
           context.addIssue({
             code: 'custom',

@@ -1,12 +1,10 @@
 import type {ArgumentsCamelCase} from 'yargs';
 import {buildAgentRouteUrl} from './agent_api';
 import {confirmOrFail} from './confirm';
-import * as path from 'path';
 import {postAgentRoute} from './agent_api';
 import {print} from '../testing/helpers';
 import {printAndExit} from '../testing/helpers';
 import {resolveAgentContext} from './agent_api';
-import {storeAgentInstall} from './config_storage';
 
 export interface AgentInstallArgs {
   manifestPath: string;
@@ -145,11 +143,6 @@ export async function handleAgentInstall({
     return printAndExit('Agent install failed: the server response did not include an agent instance id.');
   }
 
-  storeAgentInstall(path.dirname(manifestPath), apiEndpoint, {
-    packId,
-    agentInstanceId: install.agentInstanceId,
-    ...(install.tenantId ? {tenantId: install.tenantId} : {}),
-  });
   print(
     formatInstallResult({
       reinstall: reinstall ?? false,

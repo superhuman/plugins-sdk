@@ -30,12 +30,13 @@ const helpers_2 = require("./helpers");
 const helpers_3 = require("./helpers");
 const helpers_4 = require("./helpers");
 const errors_1 = require("./errors");
-const config_storage_1 = require("./config_storage");
+const agent_api_1 = require("./agent_api");
 const coda_1 = require("../helpers/external-api/coda");
+const agent_api_2 = require("./agent_api");
 const path = __importStar(require("path"));
 const helpers_5 = require("../testing/helpers");
 const helpers_6 = require("../testing/helpers");
-const agent_api_1 = require("./agent_api");
+const agent_api_3 = require("./agent_api");
 const errors_2 = require("./errors");
 const TAIL_POLL_INTERVAL_MS = 5000;
 const TAIL_MAX_POLLS = 60;
@@ -92,16 +93,26 @@ async function handleAgentLogs({ manifestPath, tenant, instance, session, limit,
     const formattedEndpoint = (0, helpers_4.formatEndpoint)(apiEndpoint);
     apiToken = (0, helpers_1.assertApiToken)(apiEndpoint, apiToken);
     const packId = (0, helpers_2.assertPackId)(manifestDir, apiEndpoint);
-    const saved = tenant && instance ? undefined : (0, config_storage_1.getAgentInstall)(manifestDir, apiEndpoint);
-    const tenantId = tenant || (saved === null || saved === void 0 ? void 0 : saved.tenantId);
-    const instanceId = instance || (saved === null || saved === void 0 ? void 0 : saved.agentInstanceId);
+    if (Boolean(tenant) !== Boolean(instance)) {
+        return missingIdentityError();
+    }
+    let tenantId = tenant;
+    let instanceId = instance;
+    if (!tenantId && !instanceId) {
+        const lookup = await (0, agent_api_2.lookupInstalledAgent)({ apiToken, apiEndpoint, packId });
+        if (lookup.status !== 'found') {
+            return (0, helpers_6.printAndExit)((0, agent_api_1.installedAgentLookupError)(lookup, 'logs'));
+        }
+        tenantId = lookup.agent.tenantId;
+        instanceId = lookup.agent.agentInstanceId;
+    }
     if (!tenantId || !instanceId) {
         return missingIdentityError();
     }
     const client = (0, helpers_3.createCodaClient)(apiToken, formattedEndpoint);
     let resolvedVersion;
     try {
-        resolvedVersion = await (0, agent_api_1.resolveAgentVersion)(client, packId);
+        resolvedVersion = await (0, agent_api_3.resolveAgentVersion)(client, packId);
     }
     catch (err) {
         if ((0, coda_1.isResponseError)(err)) {

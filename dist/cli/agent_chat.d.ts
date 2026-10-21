@@ -4,6 +4,8 @@ export interface AgentChatArgs {
     prompt: string;
     agentInstanceId?: string;
     tenantId?: string;
+    chatId?: string;
+    new?: boolean;
     timeout?: number;
     apiToken?: string;
     apiEndpoint: string;
@@ -21,5 +23,6 @@ export declare function buildAgentChatMessagesUrl(apiEndpoint: string, tenantId:
 export declare function isApiErrorBody(bodyText: string): boolean;
 export declare function describeRunReason(status: 'failed' | 'needs_input', reason: string | undefined): string;
 export declare function joinAssistantTexts(messages: AgentChatMessage[]): string | undefined;
+export declare function describeAge(ms: number): string;
 export declare function nextBackoffMs(failedAttempts: number): number;
-export declare function handleAgentChat({ manifestPath, prompt, agentInstanceId: agentInstanceIdFlag, tenantId: tenantIdFlag, timeout, apiToken, apiEndpoint, }: ArgumentsCamelCase<AgentChatArgs>): Promise<undefined>;
+export declare function handleAgentChat({ manifestPath, prompt, agentInstanceId: agentInstanceIdFlag, tenantId: tenantIdFlag, chatId: chatIdFlag, new: startNewChat, timeout, apiToken, apiEndpoint, }: ArgumentsCamelCase<AgentChatArgs>): Promise<undefined>;

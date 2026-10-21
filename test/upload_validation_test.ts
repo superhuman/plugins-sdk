@@ -35,10 +35,12 @@ import {NotetakerFilterField} from '../types';
 import type {ObjectSchemaDefinition} from '../schema';
 import type {OptionsReference} from '../api_types';
 import {OptionsType} from '../api_types';
-import type {PackFormulaMetadata} from '../api';
+import type {PackFormulaMetadata} from '../index';
+import type {PackFormulaUi} from '../index';
 import {PackMetadataValidationError} from '../testing/upload_validation';
 import type {PackTool} from '../types';
-import type {PackVersionMetadata} from '../compiled_types';
+import type {PackUpload} from '../index';
+import type {PackVersionMetadata} from '../index';
 import type {ParamDefs} from '../api_types';
 import {ParameterType} from '../api_types';
 import {PastLiveDates} from '../api_types';
@@ -95,6 +97,7 @@ import {makeSyncTableLegacy} from '../api';
 import {normalizeTool} from '../testing/upload_validation';
 import {numberArray} from '../api_types';
 import {validateCrawlHierarchy} from '../testing/upload_validation';
+import {validatePackResourceArtifacts} from '../testing/upload_validation';
 import {validatePackVersionMetadata} from '../testing/upload_validation';
 import {validateSyncTableSchema} from '../testing/upload_validation';
 import {validateVariousAuthenticationMetadata} from '../testing/upload_validation';
@@ -153,6 +156,250 @@ describe('Pack metadata Validation', async () => {
     const metadata = 'asdf';
     const err = await validateJsonAndAssertFails(metadata as unknown as Record<string, any>);
     assert.deepEqual(err.validationErrors, [{path: '', message: 'Invalid input: expected object, received string'}]);
+  });
+
+  it('preserves descriptors and shared top-level formula references', async () => {
+    const ui: PackFormulaUi = {resourceKey: 'greeting'};
+    const metadata = createFakePackVersionMetadata({
+      formulaNamespace: 'Resources',
+      resources: [{key: 'greeting', mimeType: 'text/html;profile=mcp-app'}],
+      formulas: [
+        {...createFakePackFormulaMetadata({name: 'First'}), ui},
+        {...createFakePackFormulaMetadata({name: 'Second'}), ui},
+      ],
+    });
+    const upload: PackUpload = {
+      metadata,
+      sdkVersion: '1.18.3',
+      bundle: '',
+      sourceMap: '',
+      resourceArtifacts: [{resourceKey: 'greeting', content: '<html></html>'}],
+    };
+    const result = await validateJson(upload.metadata);
+    assert.deepEqual(result.resources, metadata.resources);
+    assert.deepEqual(
+      result.formulas.map(formula => formula.ui),
+      [{resourceKey: 'greeting'}, {resourceKey: 'greeting'}],
+    );
+  });
+
+  it('requires supported wire MIME and rejects extra descriptor fields', async () => {
+    for (const descriptor of [
+      {key: 'app'},
+      {key: 'app', mimeType: 'text/html'},
+      {key: 'app', mimeType: 'application/javascript'},
+      {key: 'app', mimeType: 'text/html;profile=mcp-app', entryUrl: 'file:///entry.html'},
+      {key: 'app', mimeType: 'text/html;profile=mcp-app', content: '<html></html>'},
+    ]) {
+      const err = await validateJsonAndAssertFails({...createFakePackVersionMetadata(), resources: [descriptor]});
+      const expectedPath =
+        'mimeType' in descriptor && descriptor.mimeType === 'text/html;profile=mcp-app'
+          ? 'resources[0]'
+          : 'resources[0].mimeType';
+      assert.equal(ensureExists(err.validationErrors)[0].path, expectedPath);
+    }
+  });
+
+  it('rejects duplicate resource keys with indexed errors', async () => {
+    const duplicateError = await validateJsonAndAssertFails(
+      createFakePackVersionMetadata({
+        resources: [
+          {key: 'app', mimeType: 'text/html;profile=mcp-app'},
+          {key: 'app', mimeType: 'text/html;profile=mcp-app'},
+        ],
+      }),
+    );
+    assert.deepEqual(duplicateError.validationErrors, [
+      {
+        path: 'resources[1].key',
+        message: 'Resource keys must be unique. Found duplicate key "app".',
+      },
+    ]);
+  });
+
+  it('rejects undeclared formula resources with indexed errors', async () => {
+    const referenceError = await validateJsonAndAssertFails(
+      createFakePackVersionMetadata({
+        formulaNamespace: 'Resources',
+        formulas: [{...createFakePackFormulaMetadata(), ui: {resourceKey: 'missing'}}],
+      }),
+    );
+    assert.deepEqual(referenceError.validationErrors, [
+      {
+        path: 'formulas[0].ui.resourceKey',
+        message: 'Formula references undeclared resource "missing".',
+      },
+    ]);
+  });
+
+  it('rejects ASCII and Unicode case-only declaration collisions at their original indexes', async () => {
+    for (const [first, collision] of [
+      ['Greeting', 'greeting'],
+      ['føø', 'FØØ'],
+    ]) {
+      const resources = [first, 'Other', collision, first].map(key => ({
+        key,
+        mimeType: 'text/html;profile=mcp-app' as const,
+      }));
+      const metadata = createFakePackVersionMetadata({resources});
+      const originalMetadata = deepCopy(metadata);
+      const expectedErrors = [
+        {path: 'resources[2].key', message: `Resource keys must be unique. Found duplicate key "${collision}".`},
+        {path: 'resources[3].key', message: `Resource keys must be unique. Found duplicate key "${first}".`},
+      ];
+      const fullError = await validateJsonAndAssertFails(metadata);
+      assert.deepEqual(fullError.validationErrors, expectedErrors);
+      const resourceError = assertResourceValidationFails(() =>
+        validatePackResourceArtifacts(metadata, null, {maxResourceBytes: 1024, maxResourceCount: 20}),
+      );
+      assert.deepEqual(resourceError.validationErrors, expectedErrors);
+      assert.deepEqual(metadata, originalMetadata);
+    }
+  });
+
+  it('accepts formula-style resource names and preserves their bindings and bodies', async () => {
+    for (const key of ['Greeting', 'foo_bar', 'føø', '变量', 'é٢', 'a'.repeat(50)]) {
+      const resources = [{key, mimeType: 'text/html;profile=mcp-app' as const}];
+      const metadata = createFakePackVersionMetadata({
+        resources,
+        formulaNamespace: 'Resources',
+        formulas: [{...createFakePackFormulaMetadata(), ui: {resourceKey: key}}],
+      });
+      const originalMetadata = deepCopy(metadata);
+      const result = await validateJson(metadata);
+      assert.deepEqual(result.resources, resources);
+      assert.deepEqual(result.formulas[0].ui, {resourceKey: key});
+      const artifacts = [{resourceKey: key, content: '<!doctype html><script>window.app = "føø";</script>'}];
+      const originalArtifacts = deepCopy(artifacts);
+      assert.deepEqual(
+        validatePackResourceArtifacts(metadata, artifacts, {maxResourceBytes: 1024, maxResourceCount: 20}),
+        originalArtifacts,
+      );
+      assert.deepEqual(metadata, originalMetadata);
+      assert.deepEqual(artifacts, originalArtifacts);
+    }
+  });
+
+  it('preserves distinct declaration spelling and requires exact reference and artifact keys', async () => {
+    const resources = ['Greeting', 'foo_bar', 'føø'].map(key => ({
+      key,
+      mimeType: 'text/html;profile=mcp-app' as const,
+    }));
+    const metadata = createFakePackVersionMetadata({resources});
+    const artifacts = [...resources].reverse().map(({key}) => ({resourceKey: key, content: '<!doctype html><p>føø'}));
+    const options = {maxResourceBytes: 1024, maxResourceCount: 20};
+    const result = await validateJson(metadata);
+    assert.deepEqual(result.resources, resources);
+    assert.deepEqual(validatePackResourceArtifacts(metadata, artifacts, options), artifacts);
+    for (const resourceKey of ['greeting', 'FØØ']) {
+      const referencedMetadata = {
+        ...metadata,
+        formulaNamespace: 'Resources',
+        formulas: [{...createFakePackFormulaMetadata(), ui: {resourceKey}}],
+      };
+      const expected = [
+        {path: 'formulas[0].ui.resourceKey', message: `Formula references undeclared resource "${resourceKey}".`},
+      ];
+      const fullError = await validateJsonAndAssertFails(referencedMetadata);
+      assert.deepEqual(fullError.validationErrors, expected);
+      const referenceError = assertResourceValidationFails(() =>
+        validatePackResourceArtifacts(referencedMetadata, artifacts, options),
+      );
+      assert.deepEqual(referenceError.validationErrors, expected);
+      const artifactError = assertResourceValidationFails(() =>
+        validatePackResourceArtifacts(metadata, [{resourceKey, content: '<!doctype html>'}], options),
+      );
+      assert.deepEqual(artifactError.validationErrors, [
+        {
+          path: 'resourceArtifacts',
+          message: `Pack App artifact resource key "${resourceKey}" is not declared in metadata.resources.`,
+        },
+      ]);
+    }
+  });
+
+  it('enforces key grammar on declarations and references', async () => {
+    for (const key of ['', '../escape', 'with space', '_leading', '2foo', '_foo', 'foo-bar', '٢foo', 'a'.repeat(51)]) {
+      const metadata = {
+        ...createFakePackVersionMetadata(),
+        resources: [{key, mimeType: 'text/html;profile=mcp-app'}],
+      };
+      const descriptorError = await validateJsonAndAssertFails(metadata);
+      assert.equal(ensureExists(descriptorError.validationErrors)[0].path, 'resources[0].key');
+      const options = {maxResourceBytes: 1024, maxResourceCount: 20};
+      const descriptorOnlyError = assertResourceValidationFails(() =>
+        validatePackResourceArtifacts(metadata, [], options),
+      );
+      assert.equal(ensureExists(descriptorOnlyError.validationErrors)[0].path, 'resources[0].key');
+      const referenceMetadata = createFakePackVersionMetadata({
+        formulaNamespace: 'Resources',
+        formulas: [{...createFakePackFormulaMetadata(), ui: {resourceKey: key}}],
+      });
+      const referenceError = await validateJsonAndAssertFails(referenceMetadata);
+      assert.equal(ensureExists(referenceError.validationErrors)[0].path, 'formulas[0].ui.resourceKey');
+      const referenceOnlyError = assertResourceValidationFails(() =>
+        validatePackResourceArtifacts(referenceMetadata, [], options),
+      );
+      assert.equal(ensureExists(referenceOnlyError.validationErrors)[0].path, 'formulas[0].ui.resourceKey');
+    }
+  });
+
+  it('requires a resource key when formula UI metadata is present', async () => {
+    const err = await validateJsonAndAssertFails({
+      ...createFakePackVersionMetadata(),
+      formulaNamespace: 'Resources',
+      formulas: [{...createFakePackFormulaMetadata(), ui: {}}],
+    });
+    assert.deepEqual(err.validationErrors, [
+      {
+        path: 'formulas[0].ui.resourceKey',
+        message: 'Missing required field formulas[0].ui.resourceKey.',
+      },
+    ]);
+  });
+
+  it('accepts valid unreferenced descriptors above the former fixed ceiling', async () => {
+    const resources = Array.from({length: 257}, (_, i) => ({
+      key: `resource_${i}`,
+      mimeType: 'text/html;profile=mcp-app' as const,
+    }));
+    const result = await validateJson(createFakePackVersionMetadata({resources}));
+    assert.deepEqual(result.resources, resources);
+  });
+
+  it('preserves legacy metadata without requiring resources', async () => {
+    const metadata = compilePackMetadata(createFakePack());
+    const result = await validateJson(metadata);
+    assert.propertyVal(result, 'id', metadata.id);
+    assert.propertyVal(result, 'name', metadata.name);
+    assert.notProperty(result, 'resources');
+  });
+
+  it('strips resource references from nested metadata formulas', async () => {
+    const table = makeSyncTable({
+      name: 'Table',
+      identityName: 'Row',
+      schema: makeObjectSchema({
+        type: ValueType.Object,
+        id: 'id',
+        primary: 'id',
+        properties: {id: {type: ValueType.String}},
+      }),
+      formula: {name: 'Rows', description: '', parameters: [], execute: async () => ({result: []})},
+    });
+    const compiled = compileSyncTable(table);
+    const result = await validateJson({
+      ...createFakePackVersionMetadata(),
+      syncTables: [
+        {
+          ...compiled,
+          getter: {...compiled.getter, ui: {resourceKey: 'missing'}},
+          namedPropertyOptions: {color: {...createFakePackFormulaMetadata(), ui: {resourceKey: 'missing'}}},
+        },
+      ],
+    });
+    assert.notProperty(result.syncTables[0].getter, 'ui');
+    assert.notProperty(result.syncTables[0].namedPropertyOptions!.color, 'ui');
   });
 
   it('simple valid upload', async () => {
@@ -9288,6 +9535,137 @@ describe('Pack metadata Validation', async () => {
       assert.deepEqual(result.defaultTriggers, defaultTriggers);
     });
 
+    describe('default routines', () => {
+      const routineAgentMetadata = () => createFakeAgentMetadata({agent: {instructions: 'Base.', tools: []}});
+      const schedule: DefaultTriggerDefinition = {
+        kind: DefaultTriggerKind.Schedule,
+        rruleString: 'DTSTART;TZID=America/New_York:20261012T090000\nRRULE:FREQ=DAILY',
+      };
+      const writing: DefaultTriggerDefinition = {
+        kind: DefaultTriggerKind.WhileWriting,
+        condition: 'When writing statistics',
+      };
+      const slack: DefaultTriggerDefinition = {
+        kind: DefaultTriggerKind.Event,
+        type: EventTriggerType.Slack,
+        eventType: SlackEventType.MessageKeyword,
+        keywords: ['deploy'],
+      };
+      const mail: DefaultTriggerDefinition = {
+        kind: DefaultTriggerKind.Event,
+        type: EventTriggerType.Mail,
+        mailEventType: MailEventType.MessageReceived,
+        filters: {
+          conditions: [{field: MailFilterField.From, operator: FilterOperator.TextContains, value: '@example.com'}],
+        },
+      };
+      const notetaker: DefaultTriggerDefinition = {
+        kind: DefaultTriggerKind.Event,
+        type: EventTriggerType.Notetaker,
+        eventType: NotetakerEventType.MeetingSummaryCompleted,
+        filters: {keywords: ['renewal']},
+      };
+      for (const trigger of [schedule, writing, slack, mail, notetaker]) {
+        it(`preserves ${trigger.kind}${'type' in trigger ? `/${trigger.type}` : ''} routines through JSON validation`, async () => {
+          const routine = {name: 'Routine', instructions: 'Include links.', trigger};
+          const metadata = {...routineAgentMetadata(), defaultRoutines: [routine]};
+          const validated = await validateJson(JSON.parse(JSON.stringify(metadata)));
+          assert.deepEqual(validated.defaultRoutines, [routine]);
+        });
+      }
+
+      for (const fields of [{}, {name: ''}, {instructions: '  \n'}, {name: '  ', instructions: ''}]) {
+        it(`rejects a blank routine wrapper ${JSON.stringify(fields)}`, async () => {
+          await validateJsonAndAssertFails({
+            ...routineAgentMetadata(),
+            defaultRoutines: [{...fields, trigger: writing}],
+          });
+        });
+      }
+
+      it('allows name-only and instruction-only routines without trimming authored text', async () => {
+        const defaultRoutines = [
+          {name: ' Watch ', trigger: slack},
+          {instructions: ' Act. ', trigger: slack},
+        ];
+        const validated = await validateJson({...routineAgentMetadata(), defaultRoutines});
+        assert.deepEqual(validated.defaultRoutines, defaultRoutines);
+      });
+
+      it('enforces routine name and instruction bounds', async () => {
+        const routine = {name: 'n'.repeat(80), instructions: 'i'.repeat(20_000), trigger: writing};
+        const validated = await validateJson({...routineAgentMetadata(), defaultRoutines: [routine]});
+        assert.deepEqual(validated.defaultRoutines, [routine]);
+        for (const overLimit of [
+          {...routine, name: 'n'.repeat(81)},
+          {...routine, instructions: 'i'.repeat(20_001)},
+        ]) {
+          await validateJsonAndAssertFails({...routineAgentMetadata(), defaultRoutines: [overLimit]});
+        }
+      });
+
+      it('validates nested trigger configuration and rejects unknown routine keys', async () => {
+        for (const routine of [
+          {name: 'Brief', trigger: {...schedule, rruleString: 'RRULE:FREQ=DAILY'}},
+          {name: 'Watch', trigger: {...slack, keywords: []}},
+          {name: 'Brief', instruction: 'Wrong field.', trigger: schedule},
+          {name: 'Brief', trigger: {...writing, instruction: 'Wrong level.'}},
+          {name: 'Chat', trigger: {kind: 'chat'}},
+        ]) {
+          await validateJsonAndAssertFails({...routineAgentMetadata(), defaultRoutines: [routine]});
+        }
+      });
+
+      for (const trigger of [schedule, writing]) {
+        it(`enforces one ${trigger.kind} across plain triggers and routines`, async () => {
+          const err = await validateJsonAndAssertFails({
+            ...routineAgentMetadata(),
+            defaultTriggers: [trigger],
+            defaultRoutines: [{name: 'Routine', trigger}],
+          });
+          assert.deepInclude(err.validationErrors!, {
+            path: 'defaultRoutines[0].trigger',
+            message: `An agent can only declare one ${trigger.kind} default trigger.`,
+          });
+          await validateJsonAndAssertFails({
+            ...routineAgentMetadata(),
+            defaultRoutines: [
+              {name: 'First', trigger},
+              {name: 'Second', trigger},
+            ],
+          });
+        });
+      }
+
+      it('shares the event cap across plain triggers and routines', async () => {
+        const metadata = {
+          ...routineAgentMetadata(),
+          defaultTriggers: Array.from({length: Limits.MaxDefaultEventTriggers - 1}, () => slack),
+          defaultRoutines: [{name: 'Watch', trigger: mail}],
+        };
+        await validateJson(metadata);
+        const err = await validateJsonAndAssertFails({
+          ...metadata,
+          defaultRoutines: [...metadata.defaultRoutines, {name: 'Meeting', trigger: notetaker}],
+        });
+        assert.deepInclude(err.validationErrors!, {
+          path: 'defaultRoutines[1].trigger',
+          message: `An agent can only declare ${Limits.MaxDefaultEventTriggers} event default triggers.`,
+        });
+      });
+
+      it('rejects routines on a connector-only manifest', async () => {
+        const err = await validateJsonAndAssertFails({
+          ...createFakeAgentMetadata({agent: undefined}),
+          defaultRoutines: [{name: 'Brief', trigger: schedule}],
+        });
+        assert.deepInclude(err.validationErrors!, {
+          path: 'defaultRoutines',
+          message: 'Only an agent can define routines.',
+        });
+      });
+    });
+
     it('rejects default triggers on a pack that is not an agent', async () => {
       const err = await validateJsonAndAssertFails(
         createFakeAgentMetadata({
@@ -10628,5 +11006,377 @@ describe('zodErrorDetailToValidationError', () => {
         `Expected an error path starting with 'items[0]', got: ${allErrors.map(e => e.path).join(', ')}`,
       );
     }
+  });
+});
+
+function assertResourceValidationFails(validate: () => unknown): PackMetadataValidationError {
+  try {
+    validate();
+  } catch (error) {
+    if (error instanceof PackMetadataValidationError) {
+      return error;
+    }
+    throw error;
+  }
+  throw new Error('Expected resource validation to fail.');
+}
+
+describe('Pack resource artifact validation', () => {
+  const resources = [{key: 'app', mimeType: 'text/html;profile=mcp-app'}];
+  const content = '<!doctype html><title>App</title><p>Hello';
+  const options = {maxResourceBytes: 1024, maxResourceCount: 20};
+
+  it('preserves a document with omitted optional tags', () => {
+    const artifacts = [{resourceKey: 'app', content}];
+    assert.deepEqual(validatePackResourceArtifacts({resources}, artifacts, options), artifacts);
+  });
+  it('rejects the first parser diagnostic without exposing HTML source', () => {
+    const error = assertResourceValidationFails(() =>
+      validatePackResourceArtifacts({resources}, [{resourceKey: 'app', content: 'private source'}], options),
+    );
+    assert.deepEqual(error.validationErrors, [
+      {path: 'resourceArtifacts[0].content', message: 'Invalid HTML: missing-doctype at line 1, column 1.'},
+    ]);
+    assert.notInclude(error.message, 'private source');
+  });
+
+  it('accepts parser-repaired markup and preserves executable content exactly', () => {
+    for (const content of [
+      '<!doctype html>',
+      '<!doctype html>hello',
+      '<!doctype html><div>',
+      '<!doctype html><p>é🙂',
+      '<!doctype html><head><style>body{color:red}</style><script src="https://example.com/app.js"></script>' +
+        '<script>window.app = true;</script></head><body><svg><circle r="4"/></svg>' +
+        '<template><span>hello</span></template><iframe src="https://example.com/frame"></iframe>',
+      '<!doctype html><body><noscript><div a="1" a="2"></noscript>',
+    ]) {
+      const artifacts = [{resourceKey: 'app', content}];
+      assert.deepEqual(validatePackResourceArtifacts({resources}, artifacts, options), artifacts);
+    }
+  });
+
+  it('rejects missing and nonconforming doctypes and malformed attributes with locations', () => {
+    for (const [content, message] of [
+      ['', 'missing-doctype at line 1, column 1.'],
+      [' ', 'missing-doctype at line 1, column 2.'],
+      ['<div>fragment</div>', 'missing-doctype at line 1, column 1.'],
+      ['<!doctype foo>', 'non-conforming-doctype at line 1, column 1.'],
+      ['<!doctype html>\n<p a="1" a="2">', 'duplicate-attribute at line 2, column 11.'],
+      ['<!doctype html><p a="secret', 'eof-in-tag at line 1, column 28.'],
+    ]) {
+      const error = assertResourceValidationFails(() =>
+        validatePackResourceArtifacts({resources}, [{resourceKey: 'app', content}], options),
+      );
+      assert.deepEqual(error.validationErrors, [
+        {path: 'resourceArtifacts[0].content', message: `Invalid HTML: ${message}`},
+      ]);
+      assert.instanceOf(error.originalError, PackMetadataValidationError);
+    }
+  });
+
+  it('requires string HTML without coercion', () => {
+    for (const content of [undefined, null, 42, {}, Buffer.from('<!doctype html>')]) {
+      const error = assertResourceValidationFails(() =>
+        validatePackResourceArtifacts({resources}, [{resourceKey: 'app', content}], options),
+      );
+      assert.equal(ensureExists(error.validationErrors)[0].path, 'resourceArtifacts[0].content');
+    }
+  });
+
+  it('validates resources independently of unrelated metadata and preserves inputs', async () => {
+    const metadata = {version: false, resources, formulas: [{ui: {resourceKey: 'app'}, name: false}]};
+    const artifacts = [{resourceKey: 'app', content}];
+    const originalMetadata = deepCopy(metadata);
+    const originalArtifacts = deepCopy(artifacts);
+    const result = validatePackResourceArtifacts(metadata, artifacts, options);
+    assert.deepEqual(result, artifacts);
+    assert.deepEqual(metadata, originalMetadata);
+    assert.deepEqual(artifacts, originalArtifacts);
+    await testHelper.willBeRejectedWith(
+      validatePackVersionMetadata(metadata, undefined),
+      /Pack metadata failed validation/,
+    );
+  });
+  function assertArtifactError(metadata: unknown, artifacts: unknown, path: string, message: string, limits = options) {
+    const error = assertResourceValidationFails(() => validatePackResourceArtifacts(metadata, artifacts, limits));
+    assert.deepEqual(error.validationErrors, [{path, message}]);
+  }
+
+  it('rejects descriptors above the caller count cap even without formulas or bodies', () => {
+    assertArtifactError({version: false, resources}, [], 'resources', 'Pack Apps may declare at most 0 resources.', {
+      ...options,
+      maxResourceCount: 0,
+    });
+  });
+
+  for (const maxResourceCount of [0, 2, 20, 21, 257]) {
+    it(`accepts ${maxResourceCount} descriptors with valid bodies and rejects one extra`, () => {
+      const descriptors = Array.from({length: maxResourceCount}, (_, i) => ({...resources[0], key: `app${i}`}));
+      const artifacts = descriptors.map(({key}) => ({resourceKey: key, content}));
+      const limits = {...options, maxResourceCount};
+      assert.deepEqual(validatePackResourceArtifacts({resources: descriptors}, artifacts, limits), artifacts);
+      const metadata = {version: false, resources: [...descriptors, {key: 'extra', mimeType: resources[0].mimeType}]};
+      for (const invalidArtifacts of [null, [], [{resourceKey: 'extra', content: '<p>invalid HTML'}]]) {
+        assertArtifactError(
+          metadata,
+          invalidArtifacts,
+          'resources',
+          `Pack Apps may declare at most ${maxResourceCount} resources.`,
+          limits,
+        );
+      }
+    });
+  }
+
+  it('requires a finite nonnegative safe-integer caller count cap', () => {
+    for (const maxResourceCount of [
+      -1,
+      0.5,
+      NaN,
+      Infinity,
+      -Infinity,
+      Number.MAX_SAFE_INTEGER + 1,
+      undefined,
+      null,
+      '20',
+      true,
+      {},
+      [],
+    ]) {
+      const error = assertResourceValidationFails(() =>
+        validatePackResourceArtifacts({}, [], {...options, maxResourceCount} as typeof options),
+      );
+      assert.deepEqual(error.validationErrors, [
+        {path: 'maxResourceCount', message: 'maxResourceCount must be a nonnegative safe integer.'},
+      ]);
+    }
+    const maxLimits = {...options, maxResourceCount: Number.MAX_SAFE_INTEGER};
+    assert.deepEqual(validatePackResourceArtifacts({}, [], maxLimits), []);
+  });
+
+  it('validates resource metadata and both options before applying the count cap', () => {
+    const invalidLimits = {maxResourceBytes: -1, maxResourceCount: -1};
+    const metadataError = assertResourceValidationFails(() =>
+      validatePackResourceArtifacts({resources: [{key: 'app'}]}, null, invalidLimits),
+    );
+    assert.equal(ensureExists(metadataError.validationErrors)[0].path, 'resources[0].mimeType');
+    assertArtifactError(
+      {resources},
+      null,
+      'maxResourceBytes',
+      'maxResourceBytes must be a nonnegative safe integer.',
+      invalidLimits,
+    );
+    assertArtifactError({resources}, null, 'maxResourceCount', 'maxResourceCount must be a nonnegative safe integer.', {
+      ...options,
+      maxResourceCount: -1,
+    });
+  });
+
+  it('requires one declared body per descriptor before parsing it', () => {
+    assertArtifactError(
+      {resources},
+      [{resourceKey: 'unknown', content: ''}],
+      'resourceArtifacts',
+      'Pack App artifact resource key "unknown" is not declared in metadata.resources.',
+    );
+    assertArtifactError(
+      {resources},
+      [
+        {resourceKey: 'app', content},
+        {resourceKey: 'app', content: ''},
+      ],
+      'resourceArtifacts',
+      'Pack App artifact resource keys must be unique. Found duplicate key "app".',
+    );
+    assertArtifactError({resources}, [], 'resourceArtifacts', 'Missing Pack App artifact for resource key "app".');
+  });
+
+  it('enforces encoded byte limits before parsing, including zero', () => {
+    const multibyte = '<!doctype html>é';
+    assert.deepEqual(
+      validatePackResourceArtifacts({resources}, [{resourceKey: 'app', content: multibyte}], {
+        ...options,
+        maxResourceBytes: 17,
+      }),
+      [{resourceKey: 'app', content: multibyte}],
+    );
+    assertArtifactError(
+      {resources},
+      [{resourceKey: 'app', content: multibyte}],
+      'resourceArtifacts',
+      'Pack App artifact exceeds size limit',
+      {...options, maxResourceBytes: 16},
+    );
+    assertArtifactError(
+      {resources},
+      [{resourceKey: 'app', content: 'x'}],
+      'resourceArtifacts',
+      'Pack App artifact exceeds size limit',
+      {...options, maxResourceBytes: 0},
+    );
+    assert.deepEqual(validatePackResourceArtifacts({}, [], {...options, maxResourceBytes: 0}), []);
+  });
+
+  it('rejects lossy UTF-8 before parsing', () => {
+    for (const content of ['\ud800', '\udc00', '<!doctype html>\ud800']) {
+      assertArtifactError(
+        {resources},
+        [{resourceKey: 'app', content}],
+        'resourceArtifacts',
+        'Pack App artifact "app" must contain valid UTF-8 text.',
+      );
+    }
+  });
+
+  it('requires a finite nonnegative safe-integer caller byte cap', () => {
+    for (const maxResourceBytes of [
+      -1,
+      0.5,
+      NaN,
+      Infinity,
+      -Infinity,
+      Number.MAX_SAFE_INTEGER + 1,
+      undefined,
+      '1024',
+    ]) {
+      const error = assertResourceValidationFails(() =>
+        validatePackResourceArtifacts({}, [], {...options, maxResourceBytes} as typeof options),
+      );
+      assert.deepEqual(error.validationErrors, [
+        {path: 'maxResourceBytes', message: 'maxResourceBytes must be a nonnegative safe integer.'},
+      ]);
+    }
+    const maxLimits = {...options, maxResourceBytes: Number.MAX_SAFE_INTEGER};
+    assert.deepEqual(validatePackResourceArtifacts({}, [], maxLimits), []);
+  });
+
+  it('indexes HTML errors after earlier bodies and before missing-body checks', () => {
+    const metadata = {
+      resources: [
+        ...resources,
+        {key: 'second', mimeType: 'text/html;profile=mcp-app'},
+        {key: 'missing', mimeType: 'text/html;profile=mcp-app'},
+      ],
+    };
+    assertArtifactError(
+      metadata,
+      [
+        {resourceKey: 'app', content},
+        {resourceKey: 'second', content: 'private source'},
+      ],
+      'resourceArtifacts[1].content',
+      'Invalid HTML: missing-doctype at line 1, column 1.',
+    );
+    assertArtifactError(
+      {resources},
+      [{resourceKey: 'app', content: ''}],
+      'resourceArtifacts[0].content',
+      'Invalid HTML: missing-doctype at line 1, column 1.',
+      {...options, maxResourceBytes: 0},
+    );
+  });
+
+  it('accepts resource-free legacy formulas and absent formulas without mutating metadata', () => {
+    for (const metadata of [{}, {formulas: {Namespace: []}}, {resources: [], formulas: {Namespace: []}}]) {
+      const original = deepCopy(metadata);
+      assert.deepEqual(validatePackResourceArtifacts(metadata, [], options), []);
+      assert.deepEqual(metadata, original);
+      assertArtifactError(
+        metadata,
+        [{resourceKey: 'app', content}],
+        'resourceArtifacts',
+        'Pack App artifact resource key "app" is not declared in metadata.resources.',
+      );
+    }
+    assert.deepEqual(
+      validatePackResourceArtifacts({version: false, resources}, [{resourceKey: 'app', content}], options),
+      [{resourceKey: 'app', content}],
+    );
+    const error = assertResourceValidationFails(() =>
+      validatePackResourceArtifacts({resources, formulas: {Namespace: []}}, [{resourceKey: 'app', content}], options),
+    );
+    assert.deepEqual(error.validationErrors, [
+      {path: 'formulas', message: 'Invalid input: expected array, received object'},
+      {path: 'resources[0]', message: 'Invalid input: expected never, received object'},
+    ]);
+  });
+
+  it('shares duplicate descriptor and undeclared reference errors with full metadata validation', async () => {
+    for (const fragment of [
+      {resources: [...resources, ...resources]},
+      {formulas: [{...createFakePackFormulaMetadata(), ui: {resourceKey: 'missing'}}]},
+    ]) {
+      const metadata = {...createFakePackVersionMetadata(), formulaNamespace: 'Resources', ...fragment};
+      const fullError = (await testHelper.willBeRejectedWith(
+        validatePackVersionMetadata(metadata, undefined),
+        /Pack metadata failed validation/,
+      )) as PackMetadataValidationError;
+      const resourceError = assertResourceValidationFails(() => validatePackResourceArtifacts(metadata, [], options));
+      assert.deepEqual(resourceError.validationErrors, fullError.validationErrors);
+    }
+  });
+
+  it('rejects malformed resource metadata before artifact errors', () => {
+    for (const [metadata, path] of [
+      [{resources: [{key: 'app'}]}, 'resources[0].mimeType'],
+      [{resources: [{key: 'app', mimeType: 'text/html'}]}, 'resources[0].mimeType'],
+      [{resources: [{...resources[0], extra: true}]}, 'resources[0]'],
+      [{resources: [{...resources[0], key: '../escape'}]}, 'resources[0].key'],
+      [{formulas: [{ui: {}}]}, 'formulas[0].ui.resourceKey'],
+      [{formulas: [{ui: {resourceKey: 'with space'}}]}, 'formulas[0].ui.resourceKey'],
+      [{formulas: [null]}, 'formulas[0]'],
+      [null, ''],
+    ] as const) {
+      const error = assertResourceValidationFails(() => validatePackResourceArtifacts(metadata, null, options));
+      assert.equal(ensureExists(error.validationErrors)[0].path, path);
+    }
+  });
+
+  it('validates the entire strict artifact shape before checking bodies', () => {
+    for (const [artifacts, path] of [
+      [null, 'resourceArtifacts'],
+      [{}, 'resourceArtifacts'],
+      [[{resourceKey: 'app'}], 'resourceArtifacts[0].content'],
+      [[{resourceKey: 1, content}], 'resourceArtifacts[0].resourceKey'],
+      [[{resourceKey: 'app', content: 1}], 'resourceArtifacts[0].content'],
+      [[{resourceKey: 'app', content, mimeType: 'text/html'}], 'resourceArtifacts[0]'],
+      [
+        [
+          {resourceKey: 'unknown', content: ''},
+          {resourceKey: 'app', content: 1},
+        ],
+        'resourceArtifacts[1].content',
+      ],
+    ] as const) {
+      const error = assertResourceValidationFails(() => validatePackResourceArtifacts({resources}, artifacts, options));
+      assert.equal(ensureExists(error.validationErrors)[0].path, path);
+    }
+  });
+
+  it('returns plain bodies in artifact order and preserves executable multibyte HTML', () => {
+    const executable =
+      '<!doctype html><script>window.app = "é🙂";</script><style>body{color:red}</style>' +
+      '<iframe src="https://example.com/"></iframe>';
+    const metadata = {resources: [...resources, {key: 'second', mimeType: 'text/html;profile=mcp-app'}]};
+    const artifacts = [
+      {resourceKey: 'second', content: executable},
+      {resourceKey: 'app', content},
+    ];
+    assert.deepEqual(validatePackResourceArtifacts(metadata, artifacts, options), artifacts);
+    assertArtifactError(
+      {resources: [...resources, {key: 'second', mimeType: 'text/html;profile=mcp-app'}]},
+      [],
+      'resourceArtifacts',
+      'Missing Pack App artifact for resource key "app".',
+    );
+    assertArtifactError(
+      {resources},
+      [{resourceKey: 'app', content: '\ud800'}],
+      'resourceArtifacts',
+      'Pack App artifact exceeds size limit',
+      {...options, maxResourceBytes: 0},
+    );
   });
 });

@@ -88,9 +88,30 @@ export interface AuthenticationMetadataTypeMap {
     [AuthenticationType.GoogleServiceAccount]: AuthenticationToMetadata<GoogleServiceAccountAuthentication>;
     [AuthenticationType.EntraCertificate]: AuthenticationToMetadata<EntraCertificateAuthentication>;
 }
+/**
+ * Resource descriptor carried in versioned Pack metadata.
+ * @hidden
+ */
+export interface PackResource {
+    key: string;
+    mimeType: 'text/html;profile=mcp-app';
+}
+/**
+ * Resource body submitted separately from metadata.
+ * @hidden
+ */
+export interface PackResourceArtifact {
+    resourceKey: string;
+    content: string;
+}
 /** @hidden */
 export type PackVersionMetadata = Omit<PackVersionDefinition, 'formulas' | 'formats' | 'defaultAuthentication' | 'syncTables'> & {
     formulas: PackFormulaMetadata[];
+    /**
+     * Shared resources for top-level formula UIs.
+     * @hidden
+     */
+    resources?: PackResource[];
     formats: PackFormatMetadata[];
     syncTables: PackSyncTable[];
     defaultAuthentication?: AuthenticationMetadata;
@@ -115,7 +136,7 @@ export type ExternalPackFormatMetadata = PackFormatMetadata;
 export type ExternalSyncTable = PackSyncTable;
 /** @hidden */
 export type ExternalSkill = SkillMetadata;
-type BasePackVersionMetadata = Omit<PackVersionMetadata, 'defaultAuthentication' | 'systemConnectionAuthentication' | 'formulas' | 'formats' | 'syncTables' | 'skills' | 'agent' | 'defaultTriggers'>;
+type BasePackVersionMetadata = Omit<PackVersionMetadata, 'defaultAuthentication' | 'systemConnectionAuthentication' | 'formulas' | 'formats' | 'syncTables' | 'skills' | 'agent' | 'defaultTriggers' | 'defaultRoutines'>;
 /** @hidden */
 export interface ExternalPackVersionMetadata extends BasePackVersionMetadata {
     authentication: {
@@ -147,6 +168,11 @@ export type ExternalPackMetadata = ExternalPackVersionMetadata & Pick<PackMetada
 /** @hidden */
 export interface PackUpload {
     metadata: PackVersionMetadata | PackMetadata;
+    /**
+     * Resource bodies submitted separately from metadata.
+     * @hidden
+     */
+    resourceArtifacts?: PackResourceArtifact[];
     sdkVersion: string;
     bundle: string;
     sourceMap: string;

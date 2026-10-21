@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postAgentRoute = exports.isApiErrorBody = exports.buildAgentRouteUrl = exports.resolveAgentContext = exports.resolveAgentVersion = void 0;
+exports.installedAgentLookupError = exports.lookupInstalledAgent = exports.codaTypeOf = exports.buildInstalledAgentUrl = exports.postAgentRoute = exports.isApiErrorBody = exports.buildAgentRouteUrl = exports.resolveAgentContext = exports.resolveAgentVersion = void 0;
 const helpers_1 = require("./helpers");
 const helpers_2 = require("./helpers");
 const helpers_3 = require("./helpers");
@@ -108,3 +108,90 @@ async function postAgentRoute(route, args, body) {
     return response;
 }
 exports.postAgentRoute = postAgentRoute;
+function buildInstalledAgentUrl(apiEndpoint, packId) {
+    return `${(0, helpers_4.formatEndpoint)(apiEndpoint)}/apis/v1/packs/${packId}/agentInstance`;
+}
+exports.buildInstalledAgentUrl = buildInstalledAgentUrl;
+function codaTypeOf(bodyText) {
+    let parsed;
+    try {
+        parsed = JSON.parse(bodyText);
+    }
+    catch {
+        return undefined;
+    }
+    if (typeof parsed !== 'object' || parsed === null) {
+        return undefined;
+    }
+    const codaType = parsed.codaType;
+    return typeof codaType === 'string' ? codaType : undefined;
+}
+exports.codaTypeOf = codaTypeOf;
+function lookupError(message) {
+    return { status: 'error', message };
+}
+async function lookupInstalledAgent(args) {
+    const url = buildInstalledAgentUrl(args.apiEndpoint, args.packId);
+    let response;
+    try {
+        response = await fetch(url, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${args.apiToken}` },
+            signal: AbortSignal.timeout(30000),
+        });
+    }
+    catch (err) {
+        const errors = [`Error while looking up the installed agent: ${err}`, (0, errors_2.tryParseSystemError)(err)];
+        return lookupError(errors.join('\n'));
+    }
+    const bodyText = await response.text();
+    if (response.status === 404 && !isApiErrorBody(bodyText)) {
+        return { status: 'unavailable' };
+    }
+    if (response.status === 404 && codaTypeOf(bodyText) === 'AgentInstanceNotFound') {
+        return { status: 'missing' };
+    }
+    if (response.status === 404) {
+        return lookupError('Could not look up the installed agent.');
+    }
+    if (!response.ok) {
+        return lookupError(`Could not look up the installed agent: ${response.status} ${response.statusText}`);
+    }
+    let parsed;
+    try {
+        parsed = JSON.parse(bodyText);
+    }
+    catch (err) {
+        return lookupError(`Installed agent lookup failed: the server response was not JSON. ${err}`);
+    }
+    const record = parsed;
+    if (typeof record.agentInstanceId !== 'string' || record.agentInstanceId.trim() === '') {
+        return lookupError('Installed agent lookup failed: the server response did not include an agent instance id.');
+    }
+    if (typeof record.tenantId !== 'string' || record.tenantId.trim() === '') {
+        return lookupError('Installed agent lookup failed: the server response did not include a tenant id.');
+    }
+    return {
+        status: 'found',
+        agent: { agentInstanceId: record.agentInstanceId, tenantId: record.tenantId },
+    };
+}
+exports.lookupInstalledAgent = lookupInstalledAgent;
+function installedAgentLookupError(lookup, kind) {
+    if (lookup.status === 'error') {
+        return lookup.message;
+    }
+    if (lookup.status === 'unavailable') {
+        const override = kind === 'chat' ? '--agentInstanceId' : '--tenant and --instance';
+        return `The installed-agent lookup is not available on this server yet.\n  Pass ${override}.`;
+    }
+    if (kind === 'chat') {
+        return ('Error: agent chat needs an installed agent instance.\n' +
+            '  packs agent install pack.ts\n' +
+            '  Or pass --agentInstanceId.');
+    }
+    return ('Error: agent logs need a tenant and an agent instance.\n' +
+        '  packs agent install pack.ts\n' +
+        '  Or pass --tenant and --instance.');
+}
+exports.installedAgentLookupError = installedAgentLookupError;

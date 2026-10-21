@@ -1,5 +1,6 @@
 import type { ArraySchema } from '../schema';
 import type { ObjectSchema } from '../schema';
+import type { PackResourceArtifact } from '../compiled_types';
 import type { PackVersionMetadata } from '../compiled_types';
 import type { SyncTable } from '../api';
 import type { Tool } from '../types';
@@ -37,6 +38,7 @@ export declare const Limits: {
     PermissionsBatchSize: number;
     PromptLength: number;
     RRuleStringLength: number;
+    RoutineNameLength: number;
     SuggestedPromptText: number;
     UpdateBatchSize: number;
     FilterableProperties: number;
@@ -46,6 +48,11 @@ export declare class PackMetadataValidationError extends Error {
     readonly validationErrors: ValidationError[] | undefined;
     constructor(message: string, originalError?: Error, validationErrors?: ValidationError[]);
 }
+/** @hidden */
+export declare function validatePackResourceArtifacts(metadata: unknown, artifacts: unknown, options: {
+    maxResourceBytes: number;
+    maxResourceCount: number;
+}): PackResourceArtifact[];
 export declare function validatePackVersionMetadata(metadata: Record<string, any>, sdkVersion: string | undefined, { warningMode }?: {
     warningMode?: boolean;
 }): Promise<PackVersionMetadata>;
