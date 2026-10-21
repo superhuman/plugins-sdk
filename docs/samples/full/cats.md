@@ -16,7 +16,7 @@ This Pack allows you to fetch random cat photos using the [Cat-as-a-service API]
 
 === "pack.ts"
     ```ts
-    import * as sdk from "@codahq/packs-sdk";
+    import * as sdk from "@superhuman/plugins-sdk";
     export const pack = sdk.newPack();
 
     pack.addNetworkDomain("cataas.com");

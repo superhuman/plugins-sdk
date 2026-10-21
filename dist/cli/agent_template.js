@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.renderAgentPackTemplate = void 0;
 function renderAgentPackTemplate(agentName) {
     const instructions = JSON.stringify(`You are ${agentName}. Keep replies short.`);
-    return `import * as sdk from "@codahq/packs-sdk";
+    return `import * as sdk from "@superhuman/plugins-sdk";
 
 export const pack = sdk.newAgent();
 

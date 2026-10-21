@@ -1,4 +1,4 @@
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 
 // Regular expressions that match Todoist task URLs. Used by the column format
 // and also the formula that powers it.

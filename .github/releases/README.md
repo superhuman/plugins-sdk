@@ -1,5 +1,90 @@
 # SDK releases
 
+## First publish as @superhuman/plugins-sdk
+
+This is an interactive, direct npm publication of the current version under the
+new name. It creates the registry package on the first successful publish. It
+keeps the version sequence and changelog history and does not create Git commits,
+tags, pushes, or GitHub releases. Do not use `make release`, `make release-manual`,
+or `--ci` for this bootstrap.
+
+Before publishing, confirm internal deployment and source/export alignment so
+later SDK exports preserve the new package identity. The pending export PR #3702
+still uses the old identity; this public change alone does not establish internal
+readiness. Confirm every intended export has merged before proceeding.
+
+Use the supported Node version pinned in `.nvmrc` and the pinned pnpm installed
+by `make bootstrap`. From a clean checkout of `main`:
+
+```sh
+git switch main
+git pull --ff-only origin main
+source setup-env.sh
+make bootstrap
+node -p "require('./package.json').name" # must be @superhuman/plugins-sdk
+node -p "require('./package.json').version" # keep the current version
+make build
+```
+
+Inspect the actual artifact outside the checkout, including its name, version,
+entry points, declarations, binaries, and public access/registry metadata:
+
+```sh
+artifact_dir=$(mktemp -d)
+npm pack --ignore-scripts --pack-destination "$artifact_dir"
+tar -tzf "$artifact_dir"/*.tgz
+tar -xOf "$artifact_dir"/*.tgz package/package.json
+```
+
+Log in with an npm account authorized to publish in the `@superhuman` scope and
+complete interactive 2FA. No manually minted automation token or GitHub token is
+needed for this path. Access to `@codahq/packs-sdk` does not establish access to
+the new package.
+
+```sh
+npm login --registry=https://registry.npmjs.org
+```
+
+Immediately before **each** release-it invocation below, run these checks and
+stop if any command fails. `git status --porcelain` must produce no output,
+including untracked files; `HEAD` must equal the freshly fetched `origin/main`.
+Release-it's clean-tree check ignores untracked files, and its upstream check
+only establishes that a tracking branch exists.
+
+```sh
+git fetch origin main &&
+test -z "$(git status --porcelain)" &&
+  test "$(git branch --show-current)" = main &&
+  test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
+```
+
+Preview interactively (a dry-run checks authentication but does **not** prove
+publish permission):
+
+```sh
+.pnpm_install/bin/pnpm exec release-it --config .github/releases/first-publish.config.cjs --dry-run
+```
+
+Repeat the checks above, then publish interactively and complete npm 2FA:
+
+```sh
+.pnpm_install/bin/pnpm exec release-it --config .github/releases/first-publish.config.cjs
+```
+
+After publication, confirm npm `latest` and installation in a fresh directory:
+
+```sh
+npm view @superhuman/plugins-sdk name version dist-tags --registry=https://registry.npmjs.org
+consumer_dir=$(mktemp -d)
+(cd "$consumer_dir" && npm init -y && npm install @superhuman/plugins-sdk --registry=https://registry.npmjs.org && npx packs --version)
+```
+
+Before subsequent CI releases, an operator must supply a stage-only token
+authorized for `@superhuman/plugins-sdk` to the existing `sdk-release` environment's
+`NPM_TOKEN` secret and confirm release protection configuration. The current
+token's access to `@codahq/packs-sdk` is insufficient evidence of new-package
+access. Keep the staged approval policy and OIDC limitation described below.
+
 ## Prepare
 
 1. Complete the documentation import, SDK export and internal deployment. Confirm
@@ -31,7 +116,7 @@ our GitHub Enterprise issuer, matching the reported
 [enterprise-scoped OIDC issuer issue](https://github.com/npm/cli/issues/9203).
 
 Inspect the stage and check npm `latest`. Any maintainer with publish access to
-`@codahq/packs-sdk` can approve using their own npm account and 2FA on npmjs.com
+`@superhuman/plugins-sdk` can approve using their own npm account and 2FA on npmjs.com
 or with `npm stage approve <stage-id>`; approval does not require the token
 owner's account. After npm approval, publish the
 GitHub draft using the summary link. If a newer GitHub release exists, leave

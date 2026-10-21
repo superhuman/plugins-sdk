@@ -15,7 +15,7 @@ The Asana API uses OAuth2 to authenticate users, and requires the use of PKCE.
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Asana API, using OAuth2.
@@ -48,7 +48,7 @@ The Amazon Web Services (AWS) S3 service uses their custom signature method.
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the AWS S3 service, using AWS Signature Version 4.
@@ -80,7 +80,7 @@ Blizzard&#x27;s Battle.net APIs use the Client Credentials OAuth2 flow.
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // System-wide authentication to Blizzard's Battle.net APIs, using the OAuth2
@@ -101,7 +101,7 @@ The Board Game Atlas API requires the developer to provide their client ID as qu
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Authenticate using a client ID.
@@ -119,7 +119,7 @@ The ClickUp API uses OAuth2 to authenticate users.
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the ClickUp API, using OAuth2.
@@ -149,7 +149,7 @@ The Superhuman Docs API requires the user to provide an API token, passed in an 
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Superhuman Docs API, using a token in the
@@ -171,7 +171,7 @@ The Copper API requires the user to provide an API key and their email address, 
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Copper API, using multiple HTTP headers.
@@ -206,7 +206,7 @@ The Dropbox API uses OAuth2 to authenticate users, prompting them to approve a s
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Set per-user authentication using Dropbox's OAuth2.
@@ -232,7 +232,7 @@ The Facebook (Meta) APIs use OAuth2 to authenticate users, prompting them to app
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to Facebook (Meta) APIs, using OAuth2.
@@ -268,7 +268,7 @@ The Giphy API requires the developer to provide their API key as query parameter
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // System-wide authentication to the Giphy API, using an API key in the query
@@ -287,7 +287,7 @@ The GitHub API uses OAuth2 to authenticate users, prompting them to approve a sp
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Setup per-user authentication using GitHub's OAuth2.
@@ -319,7 +319,7 @@ The Google APIs use OAuth2 to authenticate users, prompting them to approve a sp
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to Google APIs, using OAuth2.
@@ -360,7 +360,7 @@ The Jira API uses OAuth2 to authenticate users. After authenticating users must 
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Jira Cloud API, using OAuth2 with a
@@ -443,7 +443,7 @@ The Microsoft APIs use OAuth2 to authenticate users, prompting them to approve a
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to Microsoft APIs, using OAuth2.
@@ -485,7 +485,7 @@ The Okta API requires the user to provide an API key, passed as an Authorization
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Okta API, using a custom token prefix and
@@ -522,7 +522,7 @@ Rapid APIs require that the developer provide an API key, passed in a custom hea
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // System-wide authentication to RapidAPI, using an API key in a custom header.
@@ -541,7 +541,7 @@ The Salesforce API uses OAuth2 to authenticate users, prompting them to approve 
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Salesforce API, using OAuth2 and an
@@ -584,7 +584,7 @@ The Slack API uses OAuth2 to authenticate users, prompting them to approve a spe
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Slack API, using OAuth2.
@@ -626,7 +626,7 @@ The Todoist API uses OAuth2 to authenticate users, prompting them to approve a s
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Todoist API, using an OAuth2 flow.
@@ -656,7 +656,7 @@ The Typeform API uses OAuth2 to authenticate users, prompting them to approve a 
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Configure per-user authentication for the Typeform API, using OAuth2.
@@ -690,7 +690,7 @@ The Twilio API requires the user to provide the SID and token for their account,
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Twilio API, using an Account SID and token in
@@ -726,7 +726,7 @@ The Typeform API uses OAuth2 to authenticate users, and requires the developer t
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // The version of the Webflow API to use.
@@ -762,7 +762,7 @@ The Yahoo APIs uses OAuth2 to authenticate users.
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Setup per-user authentication using Yahoo's OAuth2.

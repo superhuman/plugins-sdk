@@ -348,7 +348,7 @@ importers:
 
   documentation/samples:
     devDependencies:
-      '@codahq/packs-sdk':
+      '@superhuman/plugins-sdk':
         specifier: workspace:*
         version: link:../..
 

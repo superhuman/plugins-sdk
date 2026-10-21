@@ -59,7 +59,7 @@ A connector is a thin wrapper around the MCP server, so start by pinning down wh
         mkdir todoist-connector
         cd todoist-connector
         npm init --yes
-        npm install --save @codahq/packs-sdk
+        npm install --save @superhuman/plugins-sdk
         ```
 
         The SDK bundles the `packs` CLI along with the libraries used to build a Pack.
@@ -114,7 +114,7 @@ The code is the same either way. In the CLI replace the contents of `pack.ts`, a
     <div markdown>
 
     ```ts
-    import * as sdk from "@codahq/packs-sdk";
+    import * as sdk from "@superhuman/plugins-sdk";
     export const pack = sdk.newPack();
     ```
 
@@ -137,7 +137,7 @@ The code is the same either way. In the CLI replace the contents of `pack.ts`, a
     <div markdown>
 
     ```{.ts hl_lines="4-7"}
-    import * as sdk from "@codahq/packs-sdk";
+    import * as sdk from "@superhuman/plugins-sdk";
     export const pack = sdk.newPack();
 
     pack.addMCPServer({
@@ -165,7 +165,7 @@ The code is the same either way. In the CLI replace the contents of `pack.ts`, a
     <div markdown>
 
     ```{.ts hl_lines="9-13"}
-    import * as sdk from "@codahq/packs-sdk";
+    import * as sdk from "@superhuman/plugins-sdk";
     export const pack = sdk.newPack();
 
     pack.addMCPServer({
@@ -197,7 +197,7 @@ The code is the same either way. In the CLI replace the contents of `pack.ts`, a
     <div markdown>
 
     ```{.ts hl_lines="15"}
-    import * as sdk from "@codahq/packs-sdk";
+    import * as sdk from "@superhuman/plugins-sdk";
     export const pack = sdk.newPack();
 
     pack.addMCPServer({

@@ -23,6 +23,7 @@ import fs from 'fs-extra';
 import {getApiTokenCreationUrl} from '../cli/register';
 import {getConnectorPackIds} from '../cli/validate';
 import {handleAgentChat} from '../cli/agent_chat';
+import {handleInit} from '../cli/init';
 import {importManifest} from '../cli/helpers';
 import {joinAssistantTexts} from '../cli/agent_chat';
 import os from 'os';
@@ -34,6 +35,43 @@ import sinon from 'sinon';
 import * as testingHelpers from '../testing/helpers';
 
 describe('CLI', () => {
+  describe('init', () => {
+    it('installs the new SDK and migrates only the legacy starter import', async () => {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'packs-init-'));
+      const originalCwd = process.cwd();
+      const spawn = sinon.stub(cliHelpers, 'spawnProcess');
+      spawn.returns({status: 0, stdout: Buffer.from('10.0.0\n')} as any);
+      spawn.withArgs('npm list @superhuman/plugins-sdk --depth=0').returns({status: 1} as any);
+      const starter =
+        'import * as coda from "@codahq/packs-sdk";\n' +
+        "import type {PackDefinition} from '@codahq/packs-sdk';\n" +
+        '// See @codahq/packs-sdk for historical context.\n' +
+        'export const pack = coda.newPack();\n';
+      try {
+        process.chdir(dir);
+        fs.outputJsonSync('node_modules/@codahq/packs-examples/package.json', {devDependencies: {typescript: '5.1.6'}});
+        fs.outputFileSync('node_modules/@codahq/packs-examples/examples/template/pack.ts', starter);
+        fs.outputJsonSync('node_modules/mold-source-map/package.json', {name: 'mold-source-map', main: './index.js'});
+
+        await handleInit({yes: true});
+
+        assert.equal(
+          fs.readFileSync('pack.ts', 'utf8'),
+          'import * as coda from "@superhuman/plugins-sdk";\n' +
+            "import type {PackDefinition} from '@superhuman/plugins-sdk';\n" +
+            '// See @codahq/packs-sdk for historical context.\n' +
+            'export const pack = coda.newPack();\n',
+        );
+        sinon.assert.calledWithExactly(spawn, 'npm install --save @superhuman/plugins-sdk');
+        assert.include(fs.readFileSync('.gitignore', 'utf8'), '.coda-agent.json');
+      } finally {
+        process.chdir(originalCwd);
+        spawn.restore();
+        fs.removeSync(dir);
+      }
+    });
+  });
+
   describe('compile pack metadata', () => {
     it('compiles undefined formulas, formats, and synctables into empty arrays', () => {
       const packDef: PackVersionDefinition = {
@@ -135,7 +173,7 @@ describe('CLI', () => {
       const agentName = 'bot "the \\ builder"';
       // The template imports the published package name, which does not resolve inside this repo,
       // so point it at the local source for the compile check. Everything else stays verbatim.
-      const template = renderAgentPackTemplate(agentName).replace('@codahq/packs-sdk', '../../../index');
+      const template = renderAgentPackTemplate(agentName).replace('@superhuman/plugins-sdk', '../../../index');
       const dir = fs.mkdtempSync(path.join(__dirname, 'packs', '.tmp-agent-template-'));
       try {
         const manifestPath = path.join(dir, 'pack.ts');

@@ -129,7 +129,7 @@ When using a formula as a tool, ensure any image URLs returned are correctly ann
 === "Returning an image"
 
     ```{.ts hl_lines="9"}
-    import * as sdk from "@codahq/packs-sdk";
+    import * as sdk from "@superhuman/plugins-sdk";
     export const pack = sdk.newPack();
 
     pack.addFormula({
@@ -153,7 +153,7 @@ When using a formula as a tool, ensure any image URLs returned are correctly ann
 === "Returning a schema"
 
     ```{.ts hl_lines="9"}
-    import * as sdk from "@codahq/packs-sdk";
+    import * as sdk from "@superhuman/plugins-sdk";
     export const pack = sdk.newPack();
 
     const PokemonSchema = sdk.makeObjectSchema({
@@ -211,7 +211,7 @@ In these cases, you'll need to ensure that the domain of the image matches one o
 Some apps host images on a CDN at a separate domain; in that case, you'll need to declare multiple domains, which [requires approval][support_approvals]. If your connector uses authentication, you'll also need to specify which domains to send credentials to via the `networkDomain` field.
 
 ```{.ts hl_lines="12-14 19-20"}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 pack.addMCPServer({
