@@ -2313,6 +2313,22 @@ export type DefaultTriggerDefinition =
   | WhileWritingTriggerDefinition;
 
 /**
+ * A named action or instruction that runs when its trigger fires.
+ * At least one of `name` or `instructions` must contain non-whitespace text.
+ *
+ * @internal
+ * @hidden
+ */
+export interface AgentRoutineDefinition {
+  /** The routine's label in the agent builder. Max 80 characters. */
+  name?: string;
+  /** Instructions added to the agent's base instructions for this routine's run. Max 20,000 characters. */
+  instructions?: string;
+  /** The single trigger this routine runs on. Shares limits with plain default triggers. */
+  trigger: DefaultTriggerDefinition;
+}
+
+/**
  * The definition of the contents of a Pack at a specific version. This is the
  * heart of the implementation of a Pack.
  */
@@ -2430,6 +2446,13 @@ export interface PackVersionDefinition {
    * @hidden
    */
   defaultTriggers?: DefaultTriggerDefinition[];
+  /**
+   * The routines this agent ships with. Authored via `sdk.newAgent().addDefaultRoutine()`.
+   *
+   * @internal
+   * @hidden
+   */
+  defaultRoutines?: AgentRoutineDefinition[];
 }
 
 /**

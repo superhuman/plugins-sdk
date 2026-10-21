@@ -26,3 +26,28 @@ export interface PostAgentRouteArgs {
     signal?: AbortSignal;
 }
 export declare function postAgentRoute(route: string, args: PostAgentRouteArgs, body: unknown): Promise<Response>;
+export interface InstalledAgent {
+    agentInstanceId: string;
+    tenantId: string;
+}
+export type InstalledAgentLookup = {
+    status: 'found';
+    agent: InstalledAgent;
+} | {
+    status: 'missing';
+} | {
+    status: 'unavailable';
+} | {
+    status: 'error';
+    message: string;
+};
+export declare function buildInstalledAgentUrl(apiEndpoint: string, packId: number): string;
+export declare function codaTypeOf(bodyText: string): string | undefined;
+export declare function lookupInstalledAgent(args: {
+    apiToken: string;
+    apiEndpoint: string;
+    packId: number;
+}): Promise<InstalledAgentLookup>;
+export declare function installedAgentLookupError(lookup: Exclude<InstalledAgentLookup, {
+    status: 'found';
+}>, kind: 'chat' | 'logs'): string;

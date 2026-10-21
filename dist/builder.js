@@ -510,6 +510,37 @@ class AgentDefinitionBuilder extends BaseDefinitionBuilder {
         Object.defineProperty(this, 'agent', { enumerable: true, get: () => state.agent });
         Object.defineProperty(this, 'defaultTriggers', { enumerable: true, get: () => state.defaultTriggers });
         Object.defineProperty(this, 'suggestedPrompts', { enumerable: true, get: () => state.suggestedPrompts });
+        Object.defineProperty(this, 'defaultRoutines', { enumerable: true, get: () => state.defaultRoutines });
+    }
+    /**
+     * Adds a routine with its own name or instructions and one trigger.
+     *
+     * @example
+     * ```
+     * pack.addDefaultRoutine({
+     *   name: 'Daily brief',
+     *   instructions: 'Summarize overnight changes. Include source links.',
+     *   trigger: {
+     *     kind: sdk.DefaultTriggerKind.Schedule,
+     *     rruleString: 'DTSTART;TZID=America/New_York:20261012T090000\nRRULE:FREQ=DAILY',
+     *   },
+     * });
+     * ```
+     */
+    addDefaultRoutine(routine) {
+        var _a, _b, _c;
+        if (!((_a = routine.name) === null || _a === void 0 ? void 0 : _a.trim()) && !((_b = routine.instructions) === null || _b === void 0 ? void 0 : _b.trim())) {
+            throw new Error('A routine needs a name or instructions containing non-whitespace text.');
+        }
+        if (routine.trigger.kind === types_2.DefaultTriggerKind.Schedule) {
+            const message = (0, rrule_validation_1.validateRRuleString)(routine.trigger.rruleString);
+            if (message) {
+                throw new Error(message);
+            }
+        }
+        const state = stateOf(this);
+        state.defaultRoutines = frozenCopy([...((_c = state.defaultRoutines) !== null && _c !== void 0 ? _c : []), routine]);
+        return this;
     }
     /**
      * Sets this agent's instructions.

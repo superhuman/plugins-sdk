@@ -26,8 +26,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPackOptions = exports.storePackOptions = exports.getAgentInstall = exports.storeAgentInstall = exports.getPackId = exports.storePackId = exports.storeCodaApiKey = exports.getApiKey = exports.DeprecatedPackOptionKey = exports.PackOptionKey = exports.AGENT_INSTALL_FILE_NAME = exports.PACK_ID_FILE_NAME = exports.DEFAULT_GIT_TAG = exports.DEFAULT_TIMER_STRATEGY = exports.DEFAULT_API_ENDPOINT = void 0;
+exports.clearAgentChat = exports.storeAgentChat = exports.getAgentChat = exports.getPackOptions = exports.storePackOptions = exports.getPackId = exports.storePackId = exports.storeCodaApiKey = exports.getApiKey = exports.DeprecatedPackOptionKey = exports.PackOptionKey = exports.PACK_ID_FILE_NAME = exports.DEFAULT_GIT_TAG = exports.DEFAULT_TIMER_STRATEGY = exports.DEFAULT_API_ENDPOINT = void 0;
 const compile_1 = require("../testing/compile");
+const os = __importStar(require("os"));
 const path = __importStar(require("path"));
 const helpers_1 = require("../testing/helpers");
 const url_parse_1 = __importDefault(require("url-parse"));
@@ -37,7 +38,7 @@ exports.DEFAULT_TIMER_STRATEGY = compile_1.TimerShimStrategy.None;
 exports.DEFAULT_GIT_TAG = false;
 const API_KEY_FILE_NAME = '.coda.json';
 exports.PACK_ID_FILE_NAME = '.coda-pack.json';
-exports.AGENT_INSTALL_FILE_NAME = '.coda-agent.json';
+const AGENT_CHATS_FILE_NAME = '.coda-agent-chats.json';
 var PackOptionKey;
 (function (PackOptionKey) {
     PackOptionKey["timerStrategy"] = "timerStrategy";
@@ -122,39 +123,6 @@ function getPackId(manifestDir, codaApiEndpoint) {
     }
 }
 exports.getPackId = getPackId;
-function storeAgentInstall(manifestDir, codaApiEndpoint, install) {
-    const fileContents = readAgentInstallFile(manifestDir) || {};
-    if (isDefaultApiEndpoint(codaApiEndpoint)) {
-        fileContents.agentInstall = install;
-    }
-    else {
-        const { host } = (0, url_parse_1.default)(codaApiEndpoint);
-        fileContents.environmentAgentInstalls = fileContents.environmentAgentInstalls || {};
-        fileContents.environmentAgentInstalls[host] = install;
-    }
-    writeAgentInstallFile(manifestDir, fileContents);
-}
-exports.storeAgentInstall = storeAgentInstall;
-// Returns the install only when it belongs to the pack id stored for this directory
-// and endpoint. A later `create` in the same directory must not reuse a stale instance.
-function getAgentInstall(manifestDir, codaApiEndpoint) {
-    var _a;
-    const fileContents = readAgentInstallFile(manifestDir);
-    if (!fileContents) {
-        return;
-    }
-    const install = isDefaultApiEndpoint(codaApiEndpoint)
-        ? fileContents.agentInstall
-        : (_a = fileContents.environmentAgentInstalls) === null || _a === void 0 ? void 0 : _a[(0, url_parse_1.default)(codaApiEndpoint).host];
-    if (!(install === null || install === void 0 ? void 0 : install.agentInstanceId)) {
-        return;
-    }
-    if (getPackId(manifestDir, codaApiEndpoint) !== install.packId) {
-        return;
-    }
-    return install;
-}
-exports.getAgentInstall = getAgentInstall;
 // Merges new options with existing ones, if any.
 function storePackOptions(manifestDir, options) {
     const fileContents = readPackIdFile(manifestDir) || { packId: -1 };
@@ -167,6 +135,32 @@ function getPackOptions(manifestDir) {
     return fileContents === null || fileContents === void 0 ? void 0 : fileContents.options;
 }
 exports.getPackOptions = getPackOptions;
+// Chat ids are per-user state, so they live in the home directory. .coda-pack.json is committed with the pack.
+function agentChatsFile() {
+    return path.join(os.homedir(), AGENT_CHATS_FILE_NAME);
+}
+function agentChatKey(manifestDir, codaApiEndpoint) {
+    return `${(0, url_parse_1.default)(codaApiEndpoint).host}|${path.resolve(manifestDir)}`;
+}
+function readAgentChats() {
+    return (0, helpers_1.readJSONFile)(agentChatsFile()) || {};
+}
+function getAgentChat(manifestDir, codaApiEndpoint) {
+    return readAgentChats()[agentChatKey(manifestDir, codaApiEndpoint)];
+}
+exports.getAgentChat = getAgentChat;
+function storeAgentChat(manifestDir, codaApiEndpoint, chat) {
+    const entry = { ...chat, lastUsedAt: new Date().toISOString() };
+    (0, helpers_2.writeJSONFile)(agentChatsFile(), { ...readAgentChats(), [agentChatKey(manifestDir, codaApiEndpoint)]: entry }, 0o600);
+}
+exports.storeAgentChat = storeAgentChat;
+function clearAgentChat(manifestDir, codaApiEndpoint) {
+    const { [agentChatKey(manifestDir, codaApiEndpoint)]: removed, ...rest } = readAgentChats();
+    if (removed) {
+        (0, helpers_2.writeJSONFile)(agentChatsFile(), rest, 0o600);
+    }
+}
+exports.clearAgentChat = clearAgentChat;
 function readPackIdFile(manifestDir) {
     const filename = path.join(manifestDir, exports.PACK_ID_FILE_NAME);
     return (0, helpers_1.readJSONFile)(filename);
@@ -174,10 +168,4 @@ function readPackIdFile(manifestDir) {
 function writePacksFile(manifestDir, fileContents) {
     const filename = path.join(manifestDir, exports.PACK_ID_FILE_NAME);
     (0, helpers_2.writeJSONFile)(filename, fileContents);
-}
-function readAgentInstallFile(manifestDir) {
-    return (0, helpers_1.readJSONFile)(path.join(manifestDir, exports.AGENT_INSTALL_FILE_NAME));
-}
-function writeAgentInstallFile(manifestDir, fileContents) {
-    (0, helpers_2.writeJSONFile)(path.join(manifestDir, exports.AGENT_INSTALL_FILE_NAME), fileContents);
 }

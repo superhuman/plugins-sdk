@@ -117,3 +117,112 @@ export async function postAgentRoute(route: string, args: PostAgentRouteArgs, bo
   }
   return response;
 }
+
+export interface InstalledAgent {
+  agentInstanceId: string;
+  tenantId: string;
+}
+
+export type InstalledAgentLookup =
+  | {status: 'found'; agent: InstalledAgent}
+  | {status: 'missing'}
+  | {status: 'unavailable'}
+  | {status: 'error'; message: string};
+
+export function buildInstalledAgentUrl(apiEndpoint: string, packId: number): string {
+  return `${formatEndpoint(apiEndpoint)}/apis/v1/packs/${packId}/agentInstance`;
+}
+
+export function codaTypeOf(bodyText: string): string | undefined {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(bodyText);
+  } catch {
+    return undefined;
+  }
+  if (typeof parsed !== 'object' || parsed === null) {
+    return undefined;
+  }
+  const codaType = (parsed as {codaType?: unknown}).codaType;
+  return typeof codaType === 'string' ? codaType : undefined;
+}
+
+function lookupError(message: string): InstalledAgentLookup {
+  return {status: 'error', message};
+}
+
+export async function lookupInstalledAgent(args: {
+  apiToken: string;
+  apiEndpoint: string;
+  packId: number;
+}): Promise<InstalledAgentLookup> {
+  const url = buildInstalledAgentUrl(args.apiEndpoint, args.packId);
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: 'GET',
+      headers: {Authorization: `Bearer ${args.apiToken}`},
+      signal: AbortSignal.timeout(30000),
+    });
+  } catch (err: any) {
+    const errors = [`Error while looking up the installed agent: ${err}`, tryParseSystemError(err)];
+    return lookupError(errors.join('\n'));
+  }
+
+  const bodyText = await response.text();
+  if (response.status === 404 && !isApiErrorBody(bodyText)) {
+    return {status: 'unavailable'};
+  }
+  if (response.status === 404 && codaTypeOf(bodyText) === 'AgentInstanceNotFound') {
+    return {status: 'missing'};
+  }
+  if (response.status === 404) {
+    return lookupError('Could not look up the installed agent.');
+  }
+  if (!response.ok) {
+    return lookupError(`Could not look up the installed agent: ${response.status} ${response.statusText}`);
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(bodyText);
+  } catch (err: any) {
+    return lookupError(`Installed agent lookup failed: the server response was not JSON. ${err}`);
+  }
+  const record = parsed as {agentInstanceId?: unknown; tenantId?: unknown};
+  if (typeof record.agentInstanceId !== 'string' || record.agentInstanceId.trim() === '') {
+    return lookupError('Installed agent lookup failed: the server response did not include an agent instance id.');
+  }
+  if (typeof record.tenantId !== 'string' || record.tenantId.trim() === '') {
+    return lookupError('Installed agent lookup failed: the server response did not include a tenant id.');
+  }
+  return {
+    status: 'found',
+    agent: {agentInstanceId: record.agentInstanceId, tenantId: record.tenantId},
+  };
+}
+
+export function installedAgentLookupError(
+  lookup: Exclude<InstalledAgentLookup, {status: 'found'}>,
+  kind: 'chat' | 'logs',
+): string {
+  if (lookup.status === 'error') {
+    return lookup.message;
+  }
+  if (lookup.status === 'unavailable') {
+    const override = kind === 'chat' ? '--agentInstanceId' : '--tenant and --instance';
+    return `The installed-agent lookup is not available on this server yet.\n  Pass ${override}.`;
+  }
+  if (kind === 'chat') {
+    return (
+      'Error: agent chat needs an installed agent instance.\n' +
+      '  packs agent install pack.ts\n' +
+      '  Or pass --agentInstanceId.'
+    );
+  }
+  return (
+    'Error: agent logs need a tenant and an agent instance.\n' +
+    '  packs agent install pack.ts\n' +
+    '  Or pass --tenant and --instance.'
+  );
+}

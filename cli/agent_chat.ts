@@ -1,11 +1,16 @@
 import type {ArgumentsCamelCase} from 'yargs';
 import {assertApiToken} from './helpers';
 import {assertPackId} from './helpers';
+import {clearAgentChat} from './config_storage';
+import {codaTypeOf} from './agent_api';
 import {formatEndpoint} from './helpers';
-import {getAgentInstall} from './config_storage';
+import {getAgentChat} from './config_storage';
+import {installedAgentLookupError} from './agent_api';
+import {lookupInstalledAgent} from './agent_api';
 import * as path from 'path';
 import {print} from '../testing/helpers';
 import {printAndExit} from '../testing/helpers';
+import {storeAgentChat} from './config_storage';
 import {tryParseSystemError} from './errors';
 
 export interface AgentChatArgs {
@@ -13,6 +18,8 @@ export interface AgentChatArgs {
   prompt: string;
   agentInstanceId?: string;
   tenantId?: string;
+  chatId?: string;
+  new?: boolean;
   timeout?: number;
   apiToken?: string;
   apiEndpoint: string;
@@ -43,6 +50,8 @@ interface StatusResponse {
 }
 
 const DEFAULT_TIMEOUT_SECS = 120;
+// A saved chat idle longer than this is not continued unless asked for with --chatId.
+const STALE_CHAT_MS = 24 * 60 * 60 * 1000;
 const POLL_INTERVAL_MS = 2000;
 const MAX_BACKOFF_MS = 10000;
 
@@ -112,14 +121,33 @@ export function describeRunReason(status: 'failed' | 'needs_input', reason: stri
   }
 }
 
-// Every completed assistant text, oldest first. A run that writes, calls a
-// tool, then wraps up reads like the browser transcript, not just the tail.
+// Every completed assistant text of the latest turn, oldest first. A run that writes, calls a
+// tool, then wraps up reads like the browser transcript. Messages carry no execution id, so the
+// turn starts after the last user message. minimal: if that message fell outside the fetched tail, all of it is used.
 export function joinAssistantTexts(messages: AgentChatMessage[]): string | undefined {
-  const texts = messages
+  const ordered = [...messages].sort((left, right) =>
+    left.createdAt < right.createdAt ? -1 : left.createdAt > right.createdAt ? 1 : 0,
+  );
+  const lastUser = ordered.map(message => message.messageType).lastIndexOf('user');
+  const texts = ordered
+    .slice(lastUser + 1)
     .filter(message => message.messageType === 'assistant' && message.isComplete && message.text)
-    .sort((left, right) => (left.createdAt < right.createdAt ? -1 : left.createdAt > right.createdAt ? 1 : 0))
     .map(message => message.text);
   return texts.length > 0 ? texts.join('\n\n') : undefined;
+}
+
+export function describeAge(ms: number): string {
+  const minutes = Math.floor(ms / 60000);
+  if (minutes < 1) {
+    return 'just now';
+  }
+  const [value, unit] =
+    minutes < 60
+      ? [minutes, 'minute']
+      : minutes < 60 * 24
+        ? [Math.floor(minutes / 60), 'hour']
+        : [Math.floor(minutes / (60 * 24)), 'day'];
+  return `${value} ${unit}${value === 1 ? '' : 's'} ago`;
 }
 
 export function nextBackoffMs(failedAttempts: number): number {
@@ -181,6 +209,8 @@ export async function handleAgentChat({
   prompt,
   agentInstanceId: agentInstanceIdFlag,
   tenantId: tenantIdFlag,
+  chatId: chatIdFlag,
+  new: startNewChat,
   timeout,
   apiToken,
   apiEndpoint,
@@ -189,13 +219,40 @@ export async function handleAgentChat({
   const formattedEndpoint = formatEndpoint(apiEndpoint);
   apiToken = assertApiToken(apiEndpoint, apiToken);
   const packId = assertPackId(manifestDir, apiEndpoint);
-  const agentInstanceId = agentInstanceIdFlag || getAgentInstall(manifestDir, apiEndpoint)?.agentInstanceId;
-  if (!agentInstanceId) {
-    return printAndExit(
-      'Error: agent chat needs an installed agent instance.\n' +
-        '  packs agent install pack.ts\n' +
-        '  Or pass --agentInstanceId.',
-    );
+  if (startNewChat && chatIdFlag) {
+    return printAndExit('Pass --new or --chatId, not both.');
+  }
+  let agentInstanceId = agentInstanceIdFlag;
+  // An explicit chat id names its own agent on the server, so it needs no install lookup.
+  if (!agentInstanceId && !chatIdFlag) {
+    const lookup = await lookupInstalledAgent({apiToken, apiEndpoint, packId});
+    if (lookup.status !== 'found') {
+      return printAndExit(installedAgentLookupError(lookup, 'chat'));
+    }
+    agentInstanceId = lookup.agent.agentInstanceId;
+  }
+  // Continue the last thread for this install unless asked to start over or to use another chat.
+  let resumeChatId = chatIdFlag;
+  let resumingSavedChat = false;
+  let resumeNotice = resumeChatId ? `Continuing chat ${resumeChatId}.` : undefined;
+  if (!resumeChatId && !startNewChat) {
+    const saved = getAgentChat(manifestDir, apiEndpoint);
+    if (saved && saved.agentInstanceId === agentInstanceId) {
+      const idleMs = saved.lastUsedAt ? Date.now() - Date.parse(saved.lastUsedAt) : undefined;
+      if (idleMs !== undefined && idleMs > STALE_CHAT_MS) {
+        print(
+          `Your last chat was used ${describeAge(idleMs)}, so this starts a new one. ` +
+            `Pass --chatId ${saved.chatId} to continue the old chat.`,
+        );
+      } else {
+        resumeChatId = saved.chatId;
+        resumingSavedChat = true;
+        resumeNotice =
+          `Continuing chat ${saved.chatId}` +
+          (idleMs === undefined ? '' : `, last used ${describeAge(idleMs)}`) +
+          '. Pass --new to start a new chat.';
+      }
+    }
   }
   const headers = {Authorization: `Bearer ${apiToken}`, 'Content-Type': 'application/json'};
   const timeoutSecs = timeout ?? DEFAULT_TIMEOUT_SECS;
@@ -205,7 +262,11 @@ export async function handleAgentChat({
     const triggerResponse = await fetch(buildTriggerAgentUrl(apiEndpoint), {
       method: 'POST',
       headers,
-      body: JSON.stringify({input: prompt, agentInstanceId}),
+      body: JSON.stringify({
+        input: prompt,
+        ...(agentInstanceId ? {agentInstanceId} : {}),
+        ...(resumeChatId ? {chatId: resumeChatId} : {}),
+      }),
       signal: AbortSignal.timeout(30000),
     });
     if (!triggerResponse.ok) {
@@ -214,6 +275,16 @@ export async function handleAgentChat({
         return printAndExit(
           'The agent trigger endpoint is not available on this server.\n' +
             'It ships with the agent runtime API — upgrade the server or verify in the browser agent directory.',
+        );
+      }
+      if (triggerResponse.status === 404 && codaTypeOf(bodyText) === 'ChatNotFound') {
+        if (resumingSavedChat) {
+          clearAgentChat(manifestDir, apiEndpoint);
+        }
+        return printAndExit(
+          'That chat is gone, or it is not yours or not on this agent.\n' +
+            (resumingSavedChat ? '  The saved chat was cleared. ' : '  ') +
+            'Start a new one with --new.',
         );
       }
       if (triggerResponse.status === 404) {
@@ -233,6 +304,8 @@ export async function handleAgentChat({
     return printAndExit(errors.join('\n'));
   }
   const {executionId, chatId} = triggerBody;
+  // The server names the agent when only a chat id was sent.
+  agentInstanceId = triggerBody.agentInstanceId;
   if (triggerBody.packId !== packId) {
     return printAndExit(
       `Agent instance ${agentInstanceId} belongs to pack ${triggerBody.packId}, not pack ${packId}.\n` +
@@ -242,6 +315,14 @@ export async function handleAgentChat({
     );
   }
   const tenantId = tenantIdFlag ?? triggerBody.tenantId;
+  try {
+    storeAgentChat(manifestDir, apiEndpoint, {agentInstanceId, chatId});
+  } catch (err: unknown) {
+    print(`Note: could not save the chat id, so the next prompt starts a new chat. ${err}`);
+  }
+  if (resumeNotice) {
+    print(resumeNotice);
+  }
   print(`Run queued for pack ${packId} (execution ${executionId}). Waiting for a reply…`);
 
   const deadlineMs = Date.now() + timeoutSecs * 1000;

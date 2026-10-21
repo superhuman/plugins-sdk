@@ -6,8 +6,9 @@ import {assertPackId} from './helpers';
 import {createCodaClient} from './helpers';
 import {formatEndpoint} from './helpers';
 import {formatResponseError} from './errors';
-import {getAgentInstall} from './config_storage';
+import {installedAgentLookupError} from './agent_api';
 import {isResponseError} from '../helpers/external-api/coda';
+import {lookupInstalledAgent} from './agent_api';
 import * as path from 'path';
 import {print} from '../testing/helpers';
 import {printAndExit} from '../testing/helpers';
@@ -92,9 +93,19 @@ export async function handleAgentLogs({
   const formattedEndpoint = formatEndpoint(apiEndpoint);
   apiToken = assertApiToken(apiEndpoint, apiToken);
   const packId = assertPackId(manifestDir, apiEndpoint);
-  const saved = tenant && instance ? undefined : getAgentInstall(manifestDir, apiEndpoint);
-  const tenantId = tenant || saved?.tenantId;
-  const instanceId = instance || saved?.agentInstanceId;
+  if (Boolean(tenant) !== Boolean(instance)) {
+    return missingIdentityError();
+  }
+  let tenantId = tenant;
+  let instanceId = instance;
+  if (!tenantId && !instanceId) {
+    const lookup = await lookupInstalledAgent({apiToken, apiEndpoint, packId});
+    if (lookup.status !== 'found') {
+      return printAndExit(installedAgentLookupError(lookup, 'logs'));
+    }
+    tenantId = lookup.agent.tenantId;
+    instanceId = lookup.agent.agentInstanceId;
+  }
   if (!tenantId || !instanceId) {
     return missingIdentityError();
   }

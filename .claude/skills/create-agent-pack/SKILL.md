@@ -121,17 +121,22 @@ there is no separate "save" step. Proceed when upload succeeds and reports the n
 
 ```bash
 npx packs validate pack.ts   # single pre-upload check: schema, instructions, triggers, connector warnings
-npx packs agent install pack.ts   # binds the latest upload and saves the instance id
+npx packs agent install pack.ts   # binds the latest upload
 npx packs agent chat pack.ts "what can you do?"   # remote run
 ```
 
 Run `validate` after any edit, before uploading. For agent packs it also warns about
 connector pack IDs that don't resolve (when you're logged in; pass `--no-checkConnectors`
 to skip). Run `agent install` after uploading. It prints the agent instance id and tenant
-id and saves them in `.coda-agent.json` for this directory. Run `agent chat` after that.
-It uses the saved instance and polls until the reply lands (or `--timeout` expires).
-Pass `--agentInstanceId` or `--tenantId` only to override. The command checks the instance
-belongs to this pack. Multi-turn threads are not supported yet: every chat starts a new run.
+id. Run `agent chat` after that. Chat looks up the install for this pack and polls until
+the reply lands (or `--timeout` expires). Pass `--agentInstanceId` or `--tenantId` only to
+override. The command checks the instance belongs to this pack.
+
+Consecutive prompts share one thread. Chat saves the chat id in `~/.coda-agent-chats.json`
+(per user, per pack directory, never committed) and sends it on the next prompt, so a follow-up sees earlier turns. Chat prints which chat it continues and when it was last used. A chat idle for more than a day is not continued by default: chat starts a new one and prints the old id. Pass `--new` to
+start a fresh thread, or `--chatId <id>` to continue a specific chat (its agent runs unless you
+also pass `--agentInstanceId`). A chat id that is missing, not yours, or on another agent fails
+with "That chat is gone"; run again with `--new`.
 
 ### 6. Set the listing name/description (UI)
 

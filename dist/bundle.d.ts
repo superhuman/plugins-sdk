@@ -3621,9 +3621,22 @@ export type Formula<ParamDefsT extends ParamDefs = ParamDefs, ResultT extends Va
  */
 export type TypedPackFormula = Formula | GenericSyncFormula;
 export type TypedObjectPackFormula = ObjectPackFormula<ParamDefs, Schema>;
+/**
+ * UI configuration carried in top-level formula metadata.
+ * @hidden
+ */
+export interface PackFormulaUi {
+	/** References a resource descriptor's key. */
+	resourceKey: string;
+}
 /** @hidden */
 export type PackFormulaMetadata = Omit<TypedPackFormula, "execute" | "executeUpdate" | "executeGetPermissions" | "validateParameters"> & {
 	validateParameters?: MetadataFormulaMetadata<ExecutionContext, ParameterValidationResult>;
+	/**
+	 * UI configuration for this top-level formula.
+	 * @hidden
+	 */
+	ui?: PackFormulaUi;
 };
 /** @hidden */
 export type ObjectPackFormulaMetadata = Omit<TypedObjectPackFormula, "execute" | "validateParameters"> & {
@@ -6632,6 +6645,21 @@ export type EventTriggerDefinition = MailEventTriggerDefinition | NotetakerEvent
  */
 export type DefaultTriggerDefinition = EventTriggerDefinition | ScheduleTriggerDefinition | WhileWritingTriggerDefinition;
 /**
+ * A named action or instruction that runs when its trigger fires.
+ * At least one of `name` or `instructions` must contain non-whitespace text.
+ *
+ * @internal
+ * @hidden
+ */
+export interface AgentRoutineDefinition {
+	/** The routine's label in the agent builder. Max 80 characters. */
+	name?: string;
+	/** Instructions added to the agent's base instructions for this routine's run. Max 20,000 characters. */
+	instructions?: string;
+	/** The single trigger this routine runs on. Shares limits with plain default triggers. */
+	trigger: DefaultTriggerDefinition;
+}
+/**
  * The definition of the contents of a Pack at a specific version. This is the
  * heart of the implementation of a Pack.
  */
@@ -6744,6 +6772,13 @@ export interface PackVersionDefinition {
 	 * @hidden
 	 */
 	defaultTriggers?: DefaultTriggerDefinition[];
+	/**
+	 * The routines this agent ships with. Authored via `sdk.newAgent().addDefaultRoutine()`.
+	 *
+	 * @internal
+	 * @hidden
+	 */
+	defaultRoutines?: AgentRoutineDefinition[];
 }
 /**
  * @deprecated use `#PackVersionDefinition`
@@ -6811,7 +6846,7 @@ export declare enum HttpStatusCode {
  * pack.setUserAuthentication({type: AuthenticationType.HeaderBearerToken});
  * ```
  */
-export declare function newPack(definition?: Partial<Omit<PackVersionDefinition, "agent" | "defaultTriggers">>): PackDefinitionBuilder;
+export declare function newPack(definition?: Partial<Omit<PackVersionDefinition, "agent" | "defaultTriggers" | "defaultRoutines">>): PackDefinitionBuilder;
 /**
  * Creates a new skeleton agent definition that can be added to.
  *
@@ -6917,7 +6952,7 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	 * Constructs a {@link PackDefinitionBuilder}. However, `sdk.newPack()` should be used instead
 	 * rather than constructing a builder directly.
 	 */
-	constructor(definition?: Partial<Omit<PackVersionDefinition, "agent" | "defaultTriggers">>);
+	constructor(definition?: Partial<Omit<PackVersionDefinition, "agent" | "defaultTriggers" | "defaultRoutines">>);
 	/**
 	 * Adds a formula definition to this pack.
 	 *
@@ -7195,7 +7230,25 @@ declare class AgentDefinitionBuilder extends BaseDefinitionBuilder {
 	 * See {@link PackVersionDefinition.suggestedPrompts}. Set via {@link addSuggestedPrompt}.
 	 */
 	readonly suggestedPrompts?: DeepReadonly<SuggestedPrompt[]>;
+	/** See {@link PackVersionDefinition.defaultRoutines}. Set via {@link addDefaultRoutine}. */
+	readonly defaultRoutines?: DeepReadonly<AgentRoutineDefinition[]>;
 	constructor();
+	/**
+	 * Adds a routine with its own name or instructions and one trigger.
+	 *
+	 * @example
+	 * ```
+	 * pack.addDefaultRoutine({
+	 *   name: 'Daily brief',
+	 *   instructions: 'Summarize overnight changes. Include source links.',
+	 *   trigger: {
+	 *     kind: sdk.DefaultTriggerKind.Schedule,
+	 *     rruleString: 'DTSTART;TZID=America/New_York:20261012T090000\nRRULE:FREQ=DAILY',
+	 *   },
+	 * });
+	 * ```
+	 */
+	addDefaultRoutine(routine: AgentRoutineDefinition): this;
 	/**
 	 * Sets this agent's instructions.
 	 *
@@ -7340,9 +7393,30 @@ export type AuthenticationMetadata = DistributiveOmit<Authentication, "getConnec
 	getConnectionUserId?: MetadataFormulaMetadata;
 	postSetup?: PostSetupMetadata[];
 };
+/**
+ * Resource descriptor carried in versioned Pack metadata.
+ * @hidden
+ */
+export interface PackResource {
+	key: string;
+	mimeType: "text/html;profile=mcp-app";
+}
+/**
+ * Resource body submitted separately from metadata.
+ * @hidden
+ */
+export interface PackResourceArtifact {
+	resourceKey: string;
+	content: string;
+}
 /** @hidden */
 export type PackVersionMetadata = Omit<PackVersionDefinition, "formulas" | "formats" | "defaultAuthentication" | "syncTables"> & {
 	formulas: PackFormulaMetadata[];
+	/**
+	 * Shared resources for top-level formula UIs.
+	 * @hidden
+	 */
+	resources?: PackResource[];
 	formats: PackFormatMetadata[];
 	syncTables: PackSyncTable[];
 	defaultAuthentication?: AuthenticationMetadata;
@@ -7367,7 +7441,7 @@ export type ExternalPackFormatMetadata = PackFormatMetadata;
 export type ExternalSyncTable = PackSyncTable;
 /** @hidden */
 export type ExternalSkill = SkillMetadata;
-export type BasePackVersionMetadata = Omit<PackVersionMetadata, "defaultAuthentication" | "systemConnectionAuthentication" | "formulas" | "formats" | "syncTables" | "skills" | "agent" | "defaultTriggers">;
+export type BasePackVersionMetadata = Omit<PackVersionMetadata, "defaultAuthentication" | "systemConnectionAuthentication" | "formulas" | "formats" | "syncTables" | "skills" | "agent" | "defaultTriggers" | "defaultRoutines">;
 /** @hidden */
 export interface ExternalPackVersionMetadata extends BasePackVersionMetadata {
 	authentication: {
@@ -7396,6 +7470,18 @@ export interface ExternalPackVersionMetadata extends BasePackVersionMetadata {
 }
 /** @hidden */
 export type ExternalPackMetadata = ExternalPackVersionMetadata & Pick<PackMetadata, "id" | "name" | "shortDescription" | "description" | "permissionsDescription" | "category" | "logoPath" | "exampleImages" | "exampleVideoIds" | "minimumFeatureSet" | "quotas" | "rateLimits" | "isSystem">;
+/** @hidden */
+export interface PackUpload {
+	metadata: PackVersionMetadata | PackMetadata;
+	/**
+	 * Resource bodies submitted separately from metadata.
+	 * @hidden
+	 */
+	resourceArtifacts?: PackResourceArtifact[];
+	sdkVersion: string;
+	bundle: string;
+	sourceMap: string;
+}
 /**
  * Helper to create a new URL by appending parameters to a base URL.
  *
