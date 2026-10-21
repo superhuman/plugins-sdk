@@ -12,6 +12,7 @@ module.exports = {
   github: false,
   npm: {
     publish: true,
+    stage: true,
     skipChecks: false,
     tag: 'latest',
     publishArgs: ['--access', 'public', '--ignore-scripts', '--registry', 'https://registry.npmjs.org'],
