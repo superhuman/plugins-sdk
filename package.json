@@ -1,5 +1,5 @@
 {
-  "name": "@codahq/packs-sdk",
+  "name": "@superhuman/plugins-sdk",
   "version": "1.18.4",
   "license": "MIT",
   "engines": {
@@ -19,7 +19,8 @@
     "url": "https://github.com/superhuman/plugins-sdk"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "dependencies": {
     "@aws-crypto/sha256-js": "5.2.0",
