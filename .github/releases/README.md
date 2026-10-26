@@ -22,9 +22,10 @@ The job stages the npm package, tags the merge commit and creates a draft GitHub
 release. The run summary includes the npm approval command and draft URL. The
 package is not public yet.
 
-The job uses the **Publish SDK release token**, created on the
-`parkerlandon-codaio` npm account and stored as `NPM_TOKEN` in the `sdk-release`
-environment. The token expires on **January 12, 2027**.
+The job uses the **Publish Plugins SDK Release Token** from the
+`superhumanengineering` npm account, stored as `NPM_TOKEN` in the `sdk-release`
+environment. The token was created on **October 26, 2026** and expires on
+**January 24, 2027**.
 
 We use an access token because npm's OIDC token exchange returns HTTP 401 with
 our GitHub Enterprise issuer, matching the reported
