@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 
 import type {Argv} from 'yargs';
+import {ConnectorAccessOptions} from './connector_access';
 import {DEFAULT_API_ENDPOINT} from './config_storage';
 import {DEFAULT_GIT_TAG} from './config_storage';
 import {DEFAULT_MAX_ROWS} from '../testing/execution';
 import {DEFAULT_OAUTH_SERVER_PORT} from '../testing/auth';
 import {DEFAULT_TIMER_STRATEGY} from './config_storage';
+import {PackSettingsUpdateOptions} from './pack_settings';
 import {Tools} from './extensions';
 import {backfillFromPackConfig} from './helpers';
 import {handleAgentChat} from './agent_chat';
@@ -17,11 +19,13 @@ import {handleClone} from './clone';
 import {handleCreate} from './create';
 import {handleExecute} from './execute';
 import {handleExtensions} from './extensions';
+import {handleGetPackSettings} from './pack_settings';
 import {handleInit} from './init';
 import {handleLink} from './link';
 import {handleRegister} from './register';
 import {handleRelease} from './release';
 import {handleSetOption} from './set_option';
+import {handleUpdatePackSettings} from './pack_settings';
 import {handleUpload} from './upload';
 import {handleValidate} from './validate';
 import {handleWhoami} from './whoami';
@@ -89,7 +93,22 @@ const CommandExamples: Record<string, Array<[string, string]>> = {
   ],
   create: [
     ['$0 create pack.ts --name "My Pack"', 'Create a Pack and write its id to .coda-pack.json.'],
+    ['$0 create pack.ts --allowedAgents', 'Create a connector that no agents can use.'],
+    [
+      '$0 create pack.ts --allowedAgents 1234 5678',
+      'Create a connector that only the specified agent Pack IDs can use.',
+    ],
     ['$0 create pack.ts --workspace ws-abc123', 'Create the Pack in a specific workspace.'],
+  ],
+  settings: [
+    ['$0 settings get pack.ts', 'Read Pack settings from the server.'],
+    ['$0 settings update pack.ts --name "My Pack"', 'Update Pack settings after confirmation.'],
+    ['$0 settings get --packIdOrUrl 1234', 'Read settings for a specific Pack.'],
+    [
+      '$0 settings update pack.ts --allowedAgents 1234',
+      'Replace the whole agent list. Agents not in the list lose access.',
+    ],
+    ['$0 settings update pack.ts --allowAllAgents', 'Let every agent use the connector.'],
   ],
   link: [
     ['$0 link . 1234', 'Associate this directory with an existing Pack.'],
@@ -396,10 +415,53 @@ export const commands: yargs.CommandModule[] = [
         alias: 'w',
         describe: 'The workspace ID, or workspace URL that you want your Pack to be created under.',
       },
+      ...ConnectorAccessOptions,
       apiToken: ApiTokenArg,
       apiEndpoint: ApiEndpointArg,
     },
     handler: handleCreate as any,
+  },
+  {
+    command: 'settings',
+    describe:
+      'Read and update the Pack listing fields used in the Superhuman Store and Go. To change the Docs and Coda Gallery listing, use Pack Studio.',
+    builder: (yargs: Argv) =>
+      yargs
+        .command({
+          command: 'get [manifestFile]',
+          describe: 'Read Pack settings',
+          builder: {
+            manifestFile: {string: true, default: 'pack.ts', describe: 'Pack definition file.'},
+            packIdOrUrl: {
+              string: true,
+              requiresArg: true,
+              describe: 'Pack ID or URL. Overrides the ID in .coda-pack.json.',
+            },
+            apiToken: ApiTokenArg,
+            apiEndpoint: ApiEndpointArg,
+          },
+          handler: handleGetPackSettings as any,
+        })
+        .command({
+          command: 'update [manifestFile]',
+          describe:
+            'Update the Pack listing fields used in the Superhuman Store and Go. To change the Docs and Coda Gallery listing, use Pack Studio.',
+          builder: {
+            manifestFile: {string: true, default: 'pack.ts', describe: 'Pack definition file.'},
+            packIdOrUrl: {
+              string: true,
+              requiresArg: true,
+              describe: 'Pack ID or URL. Overrides the ID in .coda-pack.json.',
+            },
+            ...PackSettingsUpdateOptions,
+            yes: YesArg,
+            apiToken: ApiTokenArg,
+            apiEndpoint: ApiEndpointArg,
+          },
+          handler: handleUpdatePackSettings as any,
+        })
+        .demandCommand(1),
+    handler: () => {},
   },
   {
     command: 'link <manifestDir> <packIdOrUrl>',

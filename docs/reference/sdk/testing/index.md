@@ -16,7 +16,7 @@ They are only available when developing locally using the CLI.
 This module is imported using the following code:
 
 ```ts
-import * as testing from "@codahq/packs-sdk/dist/development";
+import * as testing from "@superhuman/plugins-sdk/dist/development";
 ```
 
 ## Interfaces

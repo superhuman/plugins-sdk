@@ -107,7 +107,7 @@ Do not include internal, unreleased, or hidden features, even if their implement
 
 Add every new `CHANGELOG.md` entry only under `## [Unreleased]`, within an appropriate [Keep a Changelog][keepachangelog] category such as `### Added`, `### Changed`, or `### Fixed`. Category headings belong inside Unreleased; standalone bullets directly beneath the release heading fail `make lint-changelog`. Never add new entries to a versioned release section.
 
-Only the release process moves Unreleased entries into a dated version section, updates `package.json`, and publishes to NPM using `make release`. Run `make lint-changelog` before committing a changelog edit.
+Only the release process moves Unreleased entries into a dated version section, updates `package.json`, and publishes to NPM. Run `make lint-changelog` before committing a changelog edit.
 
 
 [docs]: https://docs.superhuman.com/packs/build

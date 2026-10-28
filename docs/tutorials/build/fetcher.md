@@ -80,7 +80,7 @@ Now that we've got our API selected and formula designed we're ready to dive int
     <div markdown>
 
     ```ts
-    import * as sdk from "@codahq/packs-sdk";
+    import * as sdk from "@superhuman/plugins-sdk";
     export const pack = sdk.newPack();
 
     pack.addFormula({
@@ -211,7 +211,7 @@ Now that we've got our API selected and formula designed we're ready to dive int
     <div markdown>
 
     ```{.ts hl_lines="4"}
-    import * as sdk from "@codahq/packs-sdk";
+    import * as sdk from "@superhuman/plugins-sdk";
     export const pack = sdk.newPack();
 
     pack.addNetworkDomain("er-api.com");
@@ -250,7 +250,7 @@ If everything is working correctly you should get back the currency value conver
 
 ??? example "View the full code"
     ```ts
-    import * as sdk from "@codahq/packs-sdk";
+    import * as sdk from "@superhuman/plugins-sdk";
     export const pack = sdk.newPack();
 
     pack.addNetworkDomain("er-api.com");

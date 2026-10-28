@@ -1,16 +1,13 @@
+import {createRequire} from 'node:module';
 import remarkLintNoSmartQuotes from './documentation/scripts/remark_lint_no_smart_quotes.mjs';
+
+const require = createRequire(import.meta.url);
+const {lintTypeScriptFences} = require('./documentation/remark_lint_code_plugin.js');
 
 export default {
   "plugins": [
     "remark-frontmatter",
-    [
-      "remark-lint-code",
-      {
-        "ts": {
-          "module": "./documentation/remark_lint_code_plugin.js"
-        }
-      }
-    ],
+    lintTypeScriptFences,
     [
       "remark-lint-no-undefined-references",
       {

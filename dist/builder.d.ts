@@ -26,6 +26,7 @@ import type { Skill } from './types';
 import type { SkillEntrypoints } from './types';
 import type { SlackEventTriggerDefinition } from './types';
 import type { SuggestedPrompt } from './types';
+import type { SuggestionProvider } from './types';
 import type { SyncExecutionContext } from './api_types';
 import type { SyncPassthroughData } from './api';
 import type { SyncTable } from './api';
@@ -138,6 +139,11 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
      * @hidden
      */
     mcpServers: MCPServer[];
+    /**
+     * Direct while-writing checkers.
+     * @hidden Experimental early access for internal users and approved external developers; the shape may change.
+     */
+    suggestionProviders?: SuggestionProvider[];
     /**
      * See {@link PackVersionDefinition.defaultAuthentication}.
      */
@@ -263,6 +269,11 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
      * ```
      */
     addSkill(skill: Skill): this;
+    /**
+     * Declares a provider of suggestions while the user writes.
+     * @hidden Experimental early access for internal users and approved external developers; the shape may change.
+     */
+    addSuggestionProvider(provider: SuggestionProvider): this;
     /**
      * Adds an MCP server to this pack.
      *
@@ -477,6 +488,7 @@ export declare class AgentDefinitionBuilder extends BaseDefinitionBuilder {
      * ```
      * pack.setTools({docs: true, mail: true, webSearch: {allowedDomains: ['docs.example.com']}});
      * pack.setTools({connectors: [{packId: 1234, formulas: [{formulaName: 'CreateTask'}]}]});
+     * pack.setTools({connectors: [{packId: 5678, mcpTools: [{toolName: 'search_issues'}]}]});
      * ```
      */
     setTools({ docs, mail, webSearch, connectors }: AgentToolsDef): this;
@@ -539,6 +551,8 @@ export declare class AgentDefinitionBuilder extends BaseDefinitionBuilder {
     addDefaultSlackEventTrigger(trigger: DistributiveOmit<SlackEventTriggerDefinition, 'kind' | 'type'>): this;
     /**
      * Adds a notetaker event trigger this agent runs on.
+     *
+     * @hidden In early access, live in production for Codans only, but the shape may change.
      *
      * @example
      * ```

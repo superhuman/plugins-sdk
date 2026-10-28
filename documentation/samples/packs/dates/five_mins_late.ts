@@ -1,4 +1,4 @@
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Formula that adds five minutes to an input date and time.

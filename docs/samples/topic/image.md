@@ -16,7 +16,7 @@ A formula that takes an image as a parameter. This sample returns the file size 
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Regular expression that matches Superhuman-hosted images.
@@ -62,7 +62,7 @@ A formula that return an external image. This sample returns a random photo of a
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Formula that fetches a random cat photo, with various options.
@@ -114,7 +114,7 @@ A formula that returns an image uploaded to &#x60;temporaryBlobStorage&#x60;. Th
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 pack.addNetworkDomain("boringavatars.com");
@@ -153,7 +153,7 @@ An action that downloads images from Superhuman Docs and uploads them to another
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Regular expression that matches Superhuman-hosted images.
@@ -325,7 +325,7 @@ A sync table that includes images sourced from raw data. This sample syncs files
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Schema defining the fields to sync for each file.
@@ -528,7 +528,7 @@ A sync table that includes images sourced from private URLs. This sample syncs f
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Schema defining the fields to sync for each file.
@@ -648,7 +648,7 @@ A formula that generated an SVG, and returns it as a data URI. This sample gener
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // A formula that generates an image using some input text.
@@ -696,7 +696,7 @@ A formula that generates an SVG that adapts if dark mode is enabled. This sample
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // A formula that demonstrates how to generate an SVG that adapts to the user's
@@ -741,7 +741,7 @@ A formula that takes an file as a parameter. This sample uploads the file to an 
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Action that uploads a file to Amazon S3.

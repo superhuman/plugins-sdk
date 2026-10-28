@@ -1,4 +1,4 @@
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Per-user authentication to the Salesforce API, using OAuth2 and an

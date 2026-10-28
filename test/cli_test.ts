@@ -139,7 +139,7 @@ describe('CLI', () => {
       const agentName = 'bot "the \\ builder"';
       // The template imports the published package name, which does not resolve inside this repo,
       // so point it at the local source for the compile check. Everything else stays verbatim.
-      const template = renderAgentPackTemplate(agentName).replace('@codahq/packs-sdk', '../../../index');
+      const template = renderAgentPackTemplate(agentName).replace('@superhuman/plugins-sdk', '../../../index');
       const dir = fs.mkdtempSync(path.join(__dirname, 'packs', '.tmp-agent-template-'));
       try {
         const manifestPath = path.join(dir, 'pack.ts');

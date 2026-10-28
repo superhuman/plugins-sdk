@@ -4639,6 +4639,61 @@ export declare function makeEmptyFormula<ParamDefsT extends ParamDefs>(definitio
 	resultType: Type.string;
 	validateParameters: MetadataFormula<ExecutionContext, ParameterValidationResult> | undefined;
 };
+/** @hidden In early access, live in production but the shape may change. */
+export interface SuggestionRequest {
+	/**
+	 * The exact, complete text to check, without trimming or Unicode normalization.
+	 */
+	text: string;
+}
+/** @hidden In early access, live in production but the shape may change. */
+export interface SuggestionEndpointSuccessResponse {
+	/** At most 500 suggestions from a completed check. */
+	suggestions: Suggestion[];
+}
+/** @hidden In early access, live in production but the shape may change. */
+export interface Suggestion {
+	/**
+	 * Inclusive start position in UTF-16 code units; zero-based.
+	 */
+	startOffset: number;
+	/**
+	 * Exclusive end position in UTF-16 code units; greater than startOffset.
+	 */
+	endOffset: number;
+	/**
+	 * The exact portion of the request text between the two offsets.
+	 */
+	original: string;
+	/**
+	 * Short heading displayed on the suggestion card.
+	 */
+	title: string;
+	/**
+	 * Explanation displayed on the suggestion card.
+	 */
+	explanation: string;
+	/**
+	 * Plain-text replacement. Omit for advice only; an empty string deletes the selected text.
+	 */
+	replacement?: string;
+}
+/** @hidden In early access, live in production but the shape may change. */
+export interface SuggestionEndpointUnavailableResponse {
+	/** An unavailable check returns no suggestions. */
+	suggestions: [
+	];
+	/**
+	 * Provider could not assess text. Existing suggestions are preserved without an LLM fallback.
+	 * Use a brief, non-sensitive reason without request text; never display, forward, or retain it.
+	 * Use non-2xx HTTP responses for service failures.
+	 */
+	unavailable: string;
+}
+/** @hidden In early access, live in production but the shape may change. */
+export type SuggestionResponse = (SuggestionEndpointSuccessResponse & {
+	unavailable?: never;
+}) | SuggestionEndpointUnavailableResponse;
 /**
  * @deprecated Use `number` in new code.
  */
@@ -5778,6 +5833,12 @@ export interface PackTool extends BaseTool<ToolType.Pack> {
 		 */
 		enabled?: boolean;
 	}>;
+	/**
+	 * Use this connector's endpoints for while-writing suggestions. Defaults to false.
+	 * Does not change which formulas are available as model tools.
+	 * @hidden Experimental early access for internal users and approved external developers; the shape may change.
+	 */
+	useSuggestions?: boolean;
 }
 /**
  * The type of knowledge source to use.
@@ -6196,7 +6257,24 @@ export interface AgentDefinition {
  */
 export type AgentTool = CodaDocsAndTablesTool | MailAndCalendarTool | WebSearchTool | (Omit<PackTool, "packId"> & {
 	packId: number;
+	mcpTools?: AgentConnectorMcpTool[];
 });
+/**
+ * An MCP tool an agent can call on a connector pack, named as the MCP server lists it.
+ *
+ * @internal
+ * @hidden
+ */
+export interface AgentConnectorMcpTool {
+	/**
+	 * The tool's name on the MCP server.
+	 */
+	toolName: string;
+	/**
+	 * The MCP server the tool belongs to. Omit it to match the name on every MCP server the pack declares.
+	 */
+	serverName?: string;
+}
 /**
  * The tools an agent can use, as written on the builder.
  *
@@ -6232,16 +6310,28 @@ export interface AgentToolsDef {
 		formulas?: Array<{
 			formulaName: string;
 		}>;
+		/**
+		 * The MCP tools to offer, if not all of them. At runtime the agent gets only these tools from the
+		 * connector's MCP servers; every other MCP tool is dropped. Leave this out to offer all of them.
+		 */
+		mcpTools?: AgentConnectorMcpTool[];
+		/**
+		 * Use this connector's endpoints for while-writing suggestions. Defaults to false.
+		 * Formula selection is unchanged.
+		 * @hidden Experimental early access for internal users and approved external developers; the shape may change.
+		 */
+		useSuggestions?: boolean;
 	}>;
 }
 /**
- * When a while-writing trigger offers proactive help, vs. only on request.
+ * How proactively a while-writing trigger offers help.
  * Absent defaults to `Proactive`.
  *
  * @internal
  * @hidden
  */
 export declare enum ContextualTriggerAssistMode {
+	Balanced = "balanced",
 	OnDemand = "on_demand",
 	Proactive = "proactive"
 }
@@ -6759,6 +6849,11 @@ export interface PackVersionDefinition {
 	 */
 	mcpServers?: MCPServer[];
 	/**
+	 * Direct while-writing checkers on this connector.
+	 * @hidden Experimental early access for internal users and approved external developers; the shape may change.
+	 */
+	suggestionProviders?: SuggestionProvider[];
+	/**
 	 * The agent defined by this pack, if it defines one. Authored via `sdk.newAgent()`.
 	 *
 	 * @internal
@@ -6835,6 +6930,30 @@ export declare enum HttpStatusCode {
 	BadGateway = 502,
 	ServiceUnavailable = 503
 }
+/**
+ * The implementation used to produce suggestions.
+ * @hidden Experimental early access; the shape may change.
+ */
+export declare enum SuggestionProviderType {
+	Endpoint = "endpoint"
+}
+/**
+ * An authenticated HTTP checker invoked directly while the user writes.
+ * @hidden Experimental early access; the shape may change.
+ */
+export interface EndpointSuggestionProvider {
+	/** The provider implementation. */
+	type: SuggestionProviderType.Endpoint;
+	/** Unique name of this provider within the connector. */
+	name: string;
+	/** Absolute HTTPS URL on a declared network domain. Uses this connector's authentication. */
+	endpointUrl: string;
+}
+/**
+ * A checker declared by this connector.
+ * @hidden Experimental early access; the shape may change.
+ */
+export type SuggestionProvider = EndpointSuggestionProvider;
 /**
  * Creates a new skeleton pack definition that can be added to.
  *
@@ -6932,6 +7051,11 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	 * @hidden
 	 */
 	mcpServers: MCPServer[];
+	/**
+	 * Direct while-writing checkers.
+	 * @hidden Experimental early access for internal users and approved external developers; the shape may change.
+	 */
+	suggestionProviders?: SuggestionProvider[];
 	/**
 	 * See {@link PackVersionDefinition.defaultAuthentication}.
 	 */
@@ -7057,6 +7181,11 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	 * ```
 	 */
 	addSkill(skill: Skill): this;
+	/**
+	 * Declares a provider of suggestions while the user writes.
+	 * @hidden Experimental early access for internal users and approved external developers; the shape may change.
+	 */
+	addSuggestionProvider(provider: SuggestionProvider): this;
 	/**
 	 * Adds an MCP server to this pack.
 	 *
@@ -7265,6 +7394,7 @@ declare class AgentDefinitionBuilder extends BaseDefinitionBuilder {
 	 * ```
 	 * pack.setTools({docs: true, mail: true, webSearch: {allowedDomains: ['docs.example.com']}});
 	 * pack.setTools({connectors: [{packId: 1234, formulas: [{formulaName: 'CreateTask'}]}]});
+	 * pack.setTools({connectors: [{packId: 5678, mcpTools: [{toolName: 'search_issues'}]}]});
 	 * ```
 	 */
 	setTools({ docs, mail, webSearch, connectors }: AgentToolsDef): this;
@@ -7327,6 +7457,8 @@ declare class AgentDefinitionBuilder extends BaseDefinitionBuilder {
 	addDefaultSlackEventTrigger(trigger: DistributiveOmit<SlackEventTriggerDefinition, "kind" | "type">): this;
 	/**
 	 * Adds a notetaker event trigger this agent runs on.
+	 *
+	 * @hidden In early access, live in production for Codans only, but the shape may change.
 	 *
 	 * @example
 	 * ```
@@ -7458,6 +7590,7 @@ export interface ExternalPackVersionMetadata extends BasePackVersionMetadata {
 		oauthScopes?: string[];
 		oauthAuthorizationUrl?: string;
 		oauthTokenUrl?: string;
+		useDynamicClientRegistration?: boolean;
 		networkDomain?: string | string[];
 		endpointKey?: string;
 	};
@@ -7586,6 +7719,16 @@ export declare function ensureExists<T>(value: T | null | undefined, message?: s
  * ```
  */
 export declare function assertCondition(condition: any, message?: string): asserts condition;
+/**
+ * JSON Schema for requests to HTTP suggestion providers.
+ * @hidden Experimental early access; the shape may change.
+ */
+export declare const SuggestionEndpointRequestJsonSchema: Record<string, unknown>;
+/**
+ * JSON Schema for responses from HTTP suggestion providers. Validate offsets against the request text as well.
+ * @hidden Experimental early access; the shape may change.
+ */
+export declare const SuggestionEndpointResponseJsonSchema: Record<string, unknown>;
 
 export {
 	join as joinUrl,

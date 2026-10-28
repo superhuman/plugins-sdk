@@ -5,11 +5,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.commands = exports.buildAgentInstallCommand = void 0;
+const connector_access_1 = require("./connector_access");
 const config_storage_1 = require("./config_storage");
 const config_storage_2 = require("./config_storage");
 const execution_1 = require("../testing/execution");
 const auth_1 = require("../testing/auth");
 const config_storage_3 = require("./config_storage");
+const pack_settings_1 = require("./pack_settings");
 const extensions_1 = require("./extensions");
 const helpers_1 = require("./helpers");
 const agent_chat_1 = require("./agent_chat");
@@ -21,11 +23,13 @@ const clone_1 = require("./clone");
 const create_1 = require("./create");
 const execute_1 = require("./execute");
 const extensions_2 = require("./extensions");
+const pack_settings_2 = require("./pack_settings");
 const init_1 = require("./init");
 const link_1 = require("./link");
 const register_1 = require("./register");
 const release_1 = require("./release");
 const set_option_1 = require("./set_option");
+const pack_settings_3 = require("./pack_settings");
 const upload_1 = require("./upload");
 const validate_1 = require("./validate");
 const whoami_1 = require("./whoami");
@@ -88,7 +92,22 @@ const CommandExamples = {
     ],
     create: [
         ['$0 create pack.ts --name "My Pack"', 'Create a Pack and write its id to .coda-pack.json.'],
+        ['$0 create pack.ts --allowedAgents', 'Create a connector that no agents can use.'],
+        [
+            '$0 create pack.ts --allowedAgents 1234 5678',
+            'Create a connector that only the specified agent Pack IDs can use.',
+        ],
         ['$0 create pack.ts --workspace ws-abc123', 'Create the Pack in a specific workspace.'],
+    ],
+    settings: [
+        ['$0 settings get pack.ts', 'Read Pack settings from the server.'],
+        ['$0 settings update pack.ts --name "My Pack"', 'Update Pack settings after confirmation.'],
+        ['$0 settings get --packIdOrUrl 1234', 'Read settings for a specific Pack.'],
+        [
+            '$0 settings update pack.ts --allowedAgents 1234',
+            'Replace the whole agent list. Agents not in the list lose access.',
+        ],
+        ['$0 settings update pack.ts --allowAllAgents', 'Let every agent use the connector.'],
     ],
     link: [
         ['$0 link . 1234', 'Associate this directory with an existing Pack.'],
@@ -389,10 +408,50 @@ exports.commands = [
                 alias: 'w',
                 describe: 'The workspace ID, or workspace URL that you want your Pack to be created under.',
             },
+            ...connector_access_1.ConnectorAccessOptions,
             apiToken: ApiTokenArg,
             apiEndpoint: ApiEndpointArg,
         },
         handler: create_1.handleCreate,
+    },
+    {
+        command: 'settings',
+        describe: 'Read and update the Pack listing fields used in the Superhuman Store and Go. To change the Docs and Coda Gallery listing, use Pack Studio.',
+        builder: (yargs) => yargs
+            .command({
+            command: 'get [manifestFile]',
+            describe: 'Read Pack settings',
+            builder: {
+                manifestFile: { string: true, default: 'pack.ts', describe: 'Pack definition file.' },
+                packIdOrUrl: {
+                    string: true,
+                    requiresArg: true,
+                    describe: 'Pack ID or URL. Overrides the ID in .coda-pack.json.',
+                },
+                apiToken: ApiTokenArg,
+                apiEndpoint: ApiEndpointArg,
+            },
+            handler: pack_settings_2.handleGetPackSettings,
+        })
+            .command({
+            command: 'update [manifestFile]',
+            describe: 'Update the Pack listing fields used in the Superhuman Store and Go. To change the Docs and Coda Gallery listing, use Pack Studio.',
+            builder: {
+                manifestFile: { string: true, default: 'pack.ts', describe: 'Pack definition file.' },
+                packIdOrUrl: {
+                    string: true,
+                    requiresArg: true,
+                    describe: 'Pack ID or URL. Overrides the ID in .coda-pack.json.',
+                },
+                ...pack_settings_1.PackSettingsUpdateOptions,
+                yes: YesArg,
+                apiToken: ApiTokenArg,
+                apiEndpoint: ApiEndpointArg,
+            },
+            handler: pack_settings_3.handleUpdatePackSettings,
+        })
+            .demandCommand(1),
+        handler: () => { },
     },
     {
         command: 'link <manifestDir> <packIdOrUrl>',

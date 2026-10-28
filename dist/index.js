@@ -6,14 +6,14 @@
  * This module is imported using the following code:
  *
  * ```ts
- * import * as sdk from "@codahq/packs-sdk";
+ * import * as sdk from "@superhuman/plugins-sdk";
  * ```
  *
  * @module core
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ValueHintType = exports.ScaleIconSet = exports.PropertyLabelValueTemplate = exports.LinkDisplayType = exports.IndexingStrategy = exports.ImageOutline = exports.ImageShapeStyle = exports.ImageCornerStyle = exports.EmailDisplayType = exports.DurationUnit = exports.CurrencyFormat = exports.AttributionNodeType = exports.ensureUnreachable = exports.ensureNonEmptyString = exports.ensureExists = exports.assertCondition = exports.SvgConstants = exports.getEffectivePropertyKeysFromSchema = exports.withQueryParams = exports.joinUrl = exports.getQueryParams = exports.simpleAutocomplete = exports.makeSimpleAutocompleteMetadataFormula = exports.autocompleteSearchObjects = exports.makeParameter = exports.makeTranslateObjectFormula = exports.makeSyncTable = exports.makeFormula = exports.makeEmptyFormula = exports.makeDynamicSyncTable = exports.makePropertyOptionsFormula = exports.makeMetadataFormula = exports.ResponseSizeTooLargeError = exports.UserVisibleError = exports.Type = exports.MissingScopesError = exports.StatusCodeError = exports.PrecannedDateRange = exports.ParameterType = exports.NetworkConnection = exports.InvocationSource = exports.UpdateOutcome = exports.DataIndexing = exports.ConnectionRequirement = exports.OptionsType = exports.PackDefinitionBuilder = exports.newAgent = exports.newPack = exports.PostSetupType = exports.AuthenticationType = void 0;
-exports.EmbeddedContentType = exports.ToolType = exports.ScreenAnnotationType = exports.KnowledgeToolSourceType = exports.SkillModel = exports.ContextualTriggerSurface = exports.ContextualTriggerDecorationStyle = exports.ContextualTriggerSuggestionColor = exports.ContextualTriggerAssistMode = exports.NotetakerFilterField = exports.NotetakerEventType = exports.SlackEventType = exports.MailFilterField = exports.MailEventType = exports.FilterCombinator = exports.FilterOperator = exports.EventTriggerType = exports.DefaultTriggerKind = exports.PermissionSyncMode = exports.TokenExchangeCredentialsLocation = exports.ValidFetchMethods = exports.withIdentity = exports.makeSchema = exports.makeReferenceSchemaFromObjectSchema = exports.makeObjectSchema = exports.makeAttributionNode = exports.generateSchema = exports.ValueType = void 0;
+exports.SuggestionEndpointResponseJsonSchema = exports.SuggestionEndpointRequestJsonSchema = exports.SuggestionProviderType = exports.EmbeddedContentType = exports.ToolType = exports.ScreenAnnotationType = exports.KnowledgeToolSourceType = exports.SkillModel = exports.ContextualTriggerSurface = exports.ContextualTriggerDecorationStyle = exports.ContextualTriggerSuggestionColor = exports.ContextualTriggerAssistMode = exports.NotetakerFilterField = exports.NotetakerEventType = exports.SlackEventType = exports.MailFilterField = exports.MailEventType = exports.FilterCombinator = exports.FilterOperator = exports.EventTriggerType = exports.DefaultTriggerKind = exports.PermissionSyncMode = exports.TokenExchangeCredentialsLocation = exports.ValidFetchMethods = exports.withIdentity = exports.makeSchema = exports.makeReferenceSchemaFromObjectSchema = exports.makeObjectSchema = exports.makeAttributionNode = exports.generateSchema = exports.ValueType = void 0;
 var types_1 = require("./types");
 Object.defineProperty(exports, "AuthenticationType", { enumerable: true, get: function () { return types_1.AuthenticationType; } });
 var types_2 = require("./types");
@@ -177,3 +177,8 @@ var types_20 = require("./types");
 Object.defineProperty(exports, "ToolType", { enumerable: true, get: function () { return types_20.ToolType; } });
 var types_21 = require("./types");
 Object.defineProperty(exports, "EmbeddedContentType", { enumerable: true, get: function () { return types_21.EmbeddedContentType; } });
+var types_22 = require("./types");
+Object.defineProperty(exports, "SuggestionProviderType", { enumerable: true, get: function () { return types_22.SuggestionProviderType; } });
+var suggestion_schemas_1 = require("./suggestion_schemas");
+Object.defineProperty(exports, "SuggestionEndpointRequestJsonSchema", { enumerable: true, get: function () { return suggestion_schemas_1.SuggestionEndpointRequestJsonSchema; } });
+Object.defineProperty(exports, "SuggestionEndpointResponseJsonSchema", { enumerable: true, get: function () { return suggestion_schemas_1.SuggestionEndpointResponseJsonSchema; } });

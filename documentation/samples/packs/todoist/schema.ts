@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // BEGIN
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // A reference to a synced Task. Usually you can use

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.HttpStatusCode = exports.NotetakerFilterField = exports.NotetakerEventType = exports.SlackEventType = exports.MailFilterField = exports.MailEventType = exports.FilterCombinator = exports.FilterOperator = exports.EventTriggerType = exports.DefaultTriggerKind = exports.ContextualTriggerSurface = exports.ContextualTriggerDecorationStyle = exports.ContextualTriggerSuggestionColor = exports.ContextualTriggerAssistMode = exports.SkillModel = exports.EmbeddedContentType = exports.ScreenAnnotationType = exports.KnowledgeToolSourceType = exports.ToolType = exports.SyncInterval = exports.QuotaLimitType = exports.FeatureSet = exports.ReservedAuthenticationNames = exports.TokenExchangeCredentialsLocation = exports.PostSetupType = exports.AuthenticationType = exports.PackCategory = void 0;
+exports.SuggestionProviderType = exports.HttpStatusCode = exports.NotetakerFilterField = exports.NotetakerEventType = exports.SlackEventType = exports.MailFilterField = exports.MailEventType = exports.FilterCombinator = exports.FilterOperator = exports.EventTriggerType = exports.DefaultTriggerKind = exports.ContextualTriggerSurface = exports.ContextualTriggerDecorationStyle = exports.ContextualTriggerSuggestionColor = exports.ContextualTriggerAssistMode = exports.SkillModel = exports.EmbeddedContentType = exports.ScreenAnnotationType = exports.KnowledgeToolSourceType = exports.ToolType = exports.SyncInterval = exports.QuotaLimitType = exports.FeatureSet = exports.ReservedAuthenticationNames = exports.TokenExchangeCredentialsLocation = exports.PostSetupType = exports.AuthenticationType = exports.PackCategory = void 0;
 /**
  * @deprecated
  */
@@ -342,7 +342,7 @@ var SkillModel;
     SkillModel["OpenAIGPT5"] = "OpenAIGPT5";
 })(SkillModel || (exports.SkillModel = SkillModel = {}));
 /**
- * When a while-writing trigger offers proactive help, vs. only on request.
+ * How proactively a while-writing trigger offers help.
  * Absent defaults to `Proactive`.
  *
  * @internal
@@ -350,6 +350,7 @@ var SkillModel;
  */
 var ContextualTriggerAssistMode;
 (function (ContextualTriggerAssistMode) {
+    ContextualTriggerAssistMode["Balanced"] = "balanced";
     ContextualTriggerAssistMode["OnDemand"] = "on_demand";
     ContextualTriggerAssistMode["Proactive"] = "proactive";
 })(ContextualTriggerAssistMode || (exports.ContextualTriggerAssistMode = ContextualTriggerAssistMode = {}));
@@ -540,3 +541,11 @@ var HttpStatusCode;
     HttpStatusCode[HttpStatusCode["BadGateway"] = 502] = "BadGateway";
     HttpStatusCode[HttpStatusCode["ServiceUnavailable"] = 503] = "ServiceUnavailable";
 })(HttpStatusCode || (exports.HttpStatusCode = HttpStatusCode = {}));
+/**
+ * The implementation used to produce suggestions.
+ * @hidden Experimental early access; the shape may change.
+ */
+var SuggestionProviderType;
+(function (SuggestionProviderType) {
+    SuggestionProviderType["Endpoint"] = "endpoint";
+})(SuggestionProviderType || (exports.SuggestionProviderType = SuggestionProviderType = {}));

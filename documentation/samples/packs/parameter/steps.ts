@@ -1,4 +1,4 @@
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Takes an unknown number of steps and labels and outputs a simple diagram.

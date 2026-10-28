@@ -3,7 +3,7 @@
  * available at https://docs.superhuman.com/developers/apis/v1
  *
  * Version: v1
- * Hash: 4f64de8de03e3a7e64fa67827a25c62de87d1a332fbb5c6414943849dff961f6
+ * Hash: 039810dbaad3d22856d7e1308dfc9129814698e347f97c8ae05a44be67da64b2
  */
 import 'es6-promise/auto';
 import 'cross-fetch/polyfill';
@@ -48,6 +48,7 @@ export declare class Client {
         inGallery?: boolean;
         workspaceId?: string;
         folderId?: string;
+        minimumAccess?: types.PublicApiAccessTypeNotNone;
         limit?: number;
         pageToken?: string;
     }, headers?: Record<string, string>): Promise<types.PublicApiDocList>;
@@ -148,12 +149,19 @@ export declare class Client {
         pageToken?: string;
     }, headers?: Record<string, string>): Promise<types.PublicApiFolderList>;
     createFolder(params: {} | undefined, payload: types.PublicApiCreateFolderRequest, headers?: Record<string, string>): Promise<types.PublicApiFolder>;
+    listFolderChildren(folderId: string, params?: {
+        limit?: number;
+        pageToken?: string;
+    }, headers?: Record<string, string>): Promise<types.PublicApiFolderChildList>;
     getFolder(folderId: string, params?: {}, headers?: Record<string, string>): Promise<types.PublicApiFolder>;
     updateFolder(folderId: string, params: {} | undefined, payload: types.PublicApiUpdateFolderRequest, headers?: Record<string, string>): Promise<types.PublicApiFolder>;
     deleteFolder(folderId: string, params?: {}, headers?: Record<string, string>): Promise<types.PublicApiDeleteFolderResult>;
     whoami(params?: {
         includeUserOrg?: boolean;
     }, headers?: Record<string, string>): Promise<types.PublicApiUser>;
+    getApiToken(params?: {}, headers?: Record<string, string>): Promise<types.PublicApiToken>;
+    revokeApiToken(params?: {}, headers?: Record<string, string>): Promise<types.PublicApiTokenRevoke>;
+    refreshApiToken(params?: {}, headers?: Record<string, string>): Promise<types.PublicApiTokenRotation>;
     resolveBrowserLink(url: string, params?: {
         degradeGracefully?: boolean;
     }, headers?: Record<string, string>): Promise<types.PublicApiApiLink>;
@@ -243,6 +251,7 @@ export declare class Client {
         excludeNomosOrganizationAcls?: boolean;
         excludeGrammarlyInstitutionAcls?: boolean;
         excludeGroupAcls?: boolean;
+        excludeAgentBuilderPacks?: boolean;
         packEntrypoint?: types.PublicApiPackEntrypoint;
         excludePackCategories?: string;
         limit?: number;
@@ -260,6 +269,8 @@ export declare class Client {
     getNextPackVersion(packId: number, params: {} | undefined, payload: types.PublicApiGetNextPackVersionRequest, headers?: Record<string, string>): Promise<types.PublicApiNextPackVersionInfo>;
     getPackVersionDiffs(packId: number, basePackVersion: string, targetPackVersion: string, params?: {}, headers?: Record<string, string>): Promise<types.PublicApiPackVersionDiffs>;
     registerPackVersion(packId: number, packVersion: string, params: {} | undefined, payload: types.PublicApiRegisterPackVersionRequest, headers?: Record<string, string>): Promise<types.PublicApiPackVersionUploadInfo>;
+    getInstalledAgent(packId: number, params?: {}, headers?: Record<string, string>): Promise<types.PublicApiAgentInstanceLookup>;
+    installAgent(packId: number, packVersion: string, params: {} | undefined, payload: types.PublicApiAgentInstallRequest, headers?: Record<string, string>): Promise<types.PublicApiAgentInstallResult>;
     packVersionUploadComplete(packId: number, packVersion: string, params: {} | undefined, payload: types.PublicApiCreatePackVersionRequest, headers?: Record<string, string>): Promise<types.PublicApiCreatePackVersionResponse>;
     createPackRelease(packId: number, params: {} | undefined, payload: types.PublicApiCreatePackReleaseRequest, headers?: Record<string, string>): Promise<types.PublicApiPackRelease>;
     listPackReleases(packId: number, params?: {
@@ -316,6 +327,7 @@ export declare class Client {
     packSourceCodeUploadComplete(packId: number, packVersion: string, params: {} | undefined, payload: types.PublicApiPackSourceCodeUploadCompleteRequest, headers?: Record<string, string>): Promise<types.PublicApiPackSourceCodeUploadCompleteResponse>;
     getPackSourceCode(packId: number, packVersion: string, params?: {}, headers?: Record<string, string>): Promise<types.PublicApiPackSourceCodeInfo>;
     listPackListings(params?: {
+        consumingAgentPackId?: number;
         packAccessTypes?: types.PublicApiPackAccessTypes;
         packIds?: string;
         onlyWorkspaceId?: string;
@@ -337,6 +349,7 @@ export declare class Client {
         pageToken?: string;
     }, headers?: Record<string, string>): Promise<types.PublicApiPackListingList>;
     getPackListing(packId: number, params?: {
+        consumingAgentPackId?: number;
         workspaceId?: string;
         docId?: string;
         ingestionId?: string;
@@ -405,6 +418,7 @@ export declare class Client {
     }, headers?: Record<string, string>): Promise<types.PublicApiPackFeaturedDocsResponse>;
     updatePackFeaturedDocs(packId: number, params: {} | undefined, payload: types.PublicApiUpdatePackFeaturedDocsRequest, headers?: Record<string, string>): Promise<types.PublicApiUpdatePackFeaturedDocsResponse>;
     addGoLink(organizationId: string, params: {} | undefined, payload: types.PublicApiAddGoLinkRequest, headers?: Record<string, string>): Promise<types.PublicApiAddGoLinkResult>;
+    triggerAgent(params: {} | undefined, payload: types.PublicApiAgentTriggerRequest, headers?: Record<string, string>): Promise<types.PublicApiAgentTriggerResult>;
     listAgentSessionIds(tenantId: string, agentInstanceId: string, params?: {
         agentSessionId?: string;
         logTypes?: string;
@@ -428,4 +442,11 @@ export declare class Client {
         pageToken?: string;
     }, headers?: Record<string, string>): Promise<types.PublicApiPackLogsList>;
     getAgentPackLogDetails(tenantId: string, agentInstanceId: string, logId: string, detailsKey: string, params?: {}, headers?: Record<string, string>): Promise<types.PublicApiPackLogDetails>;
+    getAgentRunStatus(tenantId: string, agentInstanceId: string, chatId: string, executionId: string, params?: {
+        afterTimestamp?: string;
+    }, headers?: Record<string, string>): Promise<types.PublicApiAgentRunStatus>;
+    listAgentChatMessages(tenantId: string, agentInstanceId: string, chatId: string, params?: {
+        limit?: number;
+        pageToken?: string;
+    }, headers?: Record<string, string>): Promise<types.PublicApiAgentChatMessages>;
 }

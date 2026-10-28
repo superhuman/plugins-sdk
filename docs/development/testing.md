@@ -40,7 +40,7 @@ Here's a very simple example test, using Mocha, for a formula that doesn't make 
 ```ts
 import {assert} from 'chai';
 import {describe} from 'mocha';
-import {executeFormulaFromPackDef} from '@codahq/packs-sdk/dist/development';
+import {executeFormulaFromPackDef} from '@superhuman/plugins-sdk/dist/development';
 import {it} from 'mocha';
 import {pack} from '../pack';
 
@@ -57,13 +57,13 @@ describe('Simple Formula', () => {
 A more interesting example is for a Pack that does make some kind of HTTP request using the fetcher. Here we set up a mock execution context, register a fake response on it, and pass our pre-configured mock fetcher when executing our formula.
 
 ```ts
-import type {MockExecutionContext} from '@codahq/packs-sdk/dist/development';
+import type {MockExecutionContext} from '@superhuman/plugins-sdk/dist/development';
 import {assert} from 'chai';
 import {describe} from 'mocha';
-import {executeFormulaFromPackDef} from '@codahq/packs-sdk/dist/development';
+import {executeFormulaFromPackDef} from '@superhuman/plugins-sdk/dist/development';
 import {it} from 'mocha';
-import {newJsonFetchResponse} from '@codahq/packs-sdk/dist/development';
-import {newMockExecutionContext} from '@codahq/packs-sdk/dist/development';
+import {newJsonFetchResponse} from '@superhuman/plugins-sdk/dist/development';
+import {newMockExecutionContext} from '@superhuman/plugins-sdk/dist/development';
 import {pack} from '../pack';
 import sinon from 'sinon';
 
@@ -94,13 +94,13 @@ describe('Formula with Fetcher', () => {
 Testing a sync is very similar to testing a regular formula. However, you want to create a `MockSyncExecutionContext` instead of a vanilla execution context, and you can test that your sync handles pagination properly by setting up mock fetcher responses that will result in your sync formula return a `Continuation` at least once.
 
 ```ts
-import type {MockSyncExecutionContext} from '@codahq/packs-sdk/dist/development';
+import type {MockSyncExecutionContext} from '@superhuman/plugins-sdk/dist/development';
 import {assert} from 'chai';
 import {describe} from 'mocha';
-import {executeSyncFormula} from '@codahq/packs-sdk/dist/development';
+import {executeSyncFormula} from '@superhuman/plugins-sdk/dist/development';
 import {it} from 'mocha';
-import {newJsonFetchResponse} from '@codahq/packs-sdk/dist/development';
-import {newMockSyncExecutionContext} from '@codahq/packs-sdk/dist/development';
+import {newJsonFetchResponse} from '@superhuman/plugins-sdk/dist/development';
+import {newMockSyncExecutionContext} from '@superhuman/plugins-sdk/dist/development';
 import {pack} from '../pack';
 import sinon from 'sinon';
 
@@ -143,7 +143,7 @@ If you wish to write an end-to-end integration test that actually hits the third
 ```ts
 import {assert} from 'chai';
 import {describe} from 'mocha';
-import {executeFormulaFromPackDef} from '@codahq/packs-sdk/dist/development';
+import {executeFormulaFromPackDef} from '@superhuman/plugins-sdk/dist/development';
 import {it} from 'mocha';
 import {pack} from '../pack';
 

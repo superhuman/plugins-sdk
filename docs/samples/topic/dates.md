@@ -16,7 +16,7 @@ A formula that requires getting a date in the document&#x27;s timezone. This sam
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 pack.addFormula({
@@ -49,7 +49,7 @@ A formula that requires getting a time in the document&#x27;s timezone. This sam
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Displays a time using military conventions. The result is a string (text)
@@ -85,7 +85,7 @@ A formula that requires getting a date and time in the document&#x27;s timezone.
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 pack.addFormula({
@@ -125,7 +125,7 @@ A formula that requires sending a date to an API. This sample use the Calendarif
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // A schema to represent a holiday.
@@ -222,7 +222,7 @@ A formula that computes a relative time. This sample adds five minutes onto an i
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Formula that adds five minutes to an input date and time.

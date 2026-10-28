@@ -158,6 +158,8 @@ compile-thunk:
 compile-ts:
 	echo "Compiling Typescript... if this fails to build isolated-vm, you may need to install plain python (python 2 was removed in MacOS Monterey 12.3)";
 	rm -rf dist/
+	# Generate static JSON Schemas without Zod in consumer bundles.
+	TS_NODE_COMPILER_OPTIONS='{"module":"commonjs"}' ${ROOTDIR}/node_modules/.bin/ts-node scripts/generate_suggestion_contract.ts
 	${ROOTDIR}/node_modules/.bin/tsc --project tsconfig.build.json
 
 	$(MAKE) compile-thunk
@@ -197,7 +199,7 @@ compile:
 	$(MAKE) compile-ts
 
 	# Generate a typescript file for use in /experimental so the web editor
-	# can resolve packs-sdk imports
+	# can resolve plugins-sdk imports
 	${ROOTDIR}/node_modules/.bin/dts-bundle-generator ${ROOTDIR}/index.ts \
   	-o ${ROOTDIR}/dist/bundle.d.ts \
 		--no-banner
@@ -320,17 +322,6 @@ publish-docs-staging:
 publish-docs-prod:
 	(cd ${ROOTDIR}; ./node_modules/.bin/ts-node documentation/scripts/documentation_publisher.ts push prod ${FLAGS})
 
-.PHONY: publish-docs-gh-pages
-publish-docs-gh-pages:
-	if [ -z ${shell git status -uno | grep "Your branch is up to date with 'origin/main'"} ]; then \
-		echo "The documentation can only be published from main at head."; \
-		exit 1; \
-	fi
-	# Build the docs and push them to the gh-pages branch.
-	# See: https://www.mkdocs.org/user-guide/deploying-your-docs/#github-pages
-	# Including the tag "[ci skip]" in the commit message to prevent CircleCI from building the branch.
-	MK_DOCS_SITE_URL=https://coda.github.io/packs-sdk/ ${PIPENV} run mkdocs gh-deploy --message "Deployed {sha} with MkDocs version: {version} [ci skip]"
-
 ###############################################################################
 
 .PHONY: test
@@ -357,7 +348,7 @@ build: clean lint compile docs
 # allow debugging packs sdk with local packs repo.
 .PHONY: publish-local
 publish-local: build
-	cp -r dist/* ../packs/node_modules/@codahq/packs-sdk/dist/
+	cp -r dist/* ../packs/node_modules/@superhuman/plugins-sdk/dist/
 
 .PHONY: autoformat-ts
 autoformat-ts:
@@ -388,36 +379,3 @@ validate-no-changes: clean compile docs
 		echo "More detailed information is available as build artifacts in Circle CI."; \
 		exit 1; \
 	fi
-
-.PHONY: release
-release:
-	# this set is taken from esbuild's process https://github.com/evanw/esbuild/blob/master/Makefile#L330
-	@npm --version > /dev/null || (echo "The 'npm' command must be in your path to publish" && false)
-	@echo "Checking for uncommitted/untracked changes..." && test -z "`git status --porcelain | grep -vE ''`" || \
-		(echo "Refusing to publish with these uncommitted/untracked changes:" && \
-		git status --porcelain | grep -vE '' && false)
-	@echo "Checking for main branch..." && test main = "`git rev-parse --abbrev-ref HEAD`" || \
-		(echo "Refusing to publish from non-main branch `git rev-parse --abbrev-ref HEAD`" && false)
-	@echo "Checking for unpushed commits..." && git fetch
-	@ test "" = "`git cherry`" || (echo "Refusing to publish with unpushed commits" && false)
-
-	npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
-	@npm owner ls @codahq/packs-sdk && echo
-	@echo "Check the list of owners above. If changes are needed, do that at https://www.npmjs.com/settings/codahq/teams/team/developers/users"
-	@read -r -p "Press enter to continue" -n 1
-	npx release-it --npm.tag=latest --ci ${FLAGS}
-
-.PHONY: release-manual
-release-manual:
-	node -r ts-node/register scripts/check_live_sdk_version.ts
-	# this set is taken from esbuild's process https://github.com/evanw/esbuild/blob/master/Makefile#L330
-	@npm --version > /dev/null || (echo "The 'npm' command must be in your path to publish" && false)
-	@echo "Checking for uncommitted/untracked changes..." && test -z "`git status --porcelain | grep -vE ''`" || \
-		(echo "Refusing to publish with these uncommitted/untracked changes:" && \
-		git status --porcelain | grep -vE '' && false)
-	@echo "Checking that we're not on main branch..." && test main != "`git rev-parse --abbrev-ref HEAD`" || \
-		(echo "Refusing to publish from main branch. Please create a new branch and push it up first." && false)
-	@echo "Checking for unpushed commits..." && git fetch
-	@ test "" = "`git cherry`" || (echo "Refusing to publish with unpushed commits" && false)
-
-	npx release-it --npm.tag=latest

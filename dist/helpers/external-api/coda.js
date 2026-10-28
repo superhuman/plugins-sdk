@@ -5,7 +5,7 @@
  * available at https://docs.superhuman.com/developers/apis/v1
  *
  * Version: v1
- * Hash: 4f64de8de03e3a7e64fa67827a25c62de87d1a332fbb5c6414943849dff961f6
+ * Hash: 039810dbaad3d22856d7e1308dfc9129814698e347f97c8ae05a44be67da64b2
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Client = exports.FetchTransport = exports.isResponseError = exports.ResponseError = void 0;
@@ -669,6 +669,20 @@ class Client {
             operationId: `createFolder`,
         });
     }
+    async listFolderChildren(folderId, params = {}, headers) {
+        const allParams = {
+            ...params,
+        };
+        const { pageToken, ...rest } = allParams;
+        const codaUrl = (0, url_1.withQueryParams)(`/apis/v1/folders/${folderId}/children`, pageToken ? { pageToken } : rest);
+        return this._transport.makeRequest({
+            method: 'GET',
+            url: codaUrl,
+            body: undefined,
+            headers,
+            operationId: `listFolderChildren`,
+        });
+    }
     async getFolder(folderId, params = {}, headers) {
         const allParams = {
             ...params,
@@ -719,6 +733,45 @@ class Client {
             body: undefined,
             headers,
             operationId: `whoami`,
+        });
+    }
+    async getApiToken(params = {}, headers) {
+        const allParams = {
+            ...params,
+        };
+        const codaUrl = (0, url_1.withQueryParams)(`/apis/v1/token`, allParams);
+        return this._transport.makeRequest({
+            method: 'GET',
+            url: codaUrl,
+            body: undefined,
+            headers,
+            operationId: `getApiToken`,
+        });
+    }
+    async revokeApiToken(params = {}, headers) {
+        const allParams = {
+            ...params,
+        };
+        const codaUrl = (0, url_1.withQueryParams)(`/apis/v1/token`, allParams);
+        return this._transport.makeRequest({
+            method: 'DELETE',
+            url: codaUrl,
+            body: undefined,
+            headers,
+            operationId: `revokeApiToken`,
+        });
+    }
+    async refreshApiToken(params = {}, headers) {
+        const allParams = {
+            ...params,
+        };
+        const codaUrl = (0, url_1.withQueryParams)(`/apis/v1/token/refresh`, allParams);
+        return this._transport.makeRequest({
+            method: 'POST',
+            url: codaUrl,
+            body: undefined,
+            headers,
+            operationId: `refreshApiToken`,
         });
     }
     async resolveBrowserLink(url, params = {}, headers) {
@@ -1029,6 +1082,32 @@ class Client {
             body: payload,
             headers,
             operationId: `registerPackVersion`,
+        });
+    }
+    async getInstalledAgent(packId, params = {}, headers) {
+        const allParams = {
+            ...params,
+        };
+        const codaUrl = (0, url_1.withQueryParams)(`/apis/v1/packs/${packId}/agentInstance`, allParams);
+        return this._transport.makeRequest({
+            method: 'GET',
+            url: codaUrl,
+            body: undefined,
+            headers,
+            operationId: `getInstalledAgent`,
+        });
+    }
+    async installAgent(packId, packVersion, params = {}, payload, headers) {
+        const allParams = {
+            ...params,
+        };
+        const codaUrl = (0, url_1.withQueryParams)(`/apis/v1/packs/${packId}/versions/${packVersion}/agentInstall`, allParams);
+        return this._transport.makeRequest({
+            method: 'POST',
+            url: codaUrl,
+            body: payload,
+            headers,
+            operationId: `installAgent`,
         });
     }
     async packVersionUploadComplete(packId, packVersion, params = {}, payload, headers) {
@@ -1671,6 +1750,19 @@ class Client {
             operationId: `addGoLink`,
         });
     }
+    async triggerAgent(params = {}, payload, headers) {
+        const allParams = {
+            ...params,
+        };
+        const codaUrl = (0, url_1.withQueryParams)(`/apis/v1/agents/trigger`, allParams);
+        return this._transport.makeRequest({
+            method: 'POST',
+            url: codaUrl,
+            body: payload,
+            headers,
+            operationId: `triggerAgent`,
+        });
+    }
     async listAgentSessionIds(tenantId, agentInstanceId, params = {}, headers) {
         const allParams = {
             ...params,
@@ -1711,6 +1803,34 @@ class Client {
             body: undefined,
             headers,
             operationId: `getAgentPackLogDetails`,
+        });
+    }
+    async getAgentRunStatus(tenantId, agentInstanceId, chatId, executionId, params = {}, headers) {
+        const allParams = {
+            ...params,
+            executionId,
+        };
+        const codaUrl = (0, url_1.withQueryParams)(`/apis/v1/go/tenants/${tenantId}/agentInstances/${agentInstanceId}/chats/${chatId}/runStatus`, allParams);
+        return this._transport.makeRequest({
+            method: 'GET',
+            url: codaUrl,
+            body: undefined,
+            headers,
+            operationId: `getAgentRunStatus`,
+        });
+    }
+    async listAgentChatMessages(tenantId, agentInstanceId, chatId, params = {}, headers) {
+        const allParams = {
+            ...params,
+        };
+        const { pageToken, ...rest } = allParams;
+        const codaUrl = (0, url_1.withQueryParams)(`/apis/v1/go/tenants/${tenantId}/agentInstances/${agentInstanceId}/chats/${chatId}/messages`, pageToken ? { pageToken } : rest);
+        return this._transport.makeRequest({
+            method: 'GET',
+            url: codaUrl,
+            body: undefined,
+            headers,
+            operationId: `listAgentChatMessages`,
         });
     }
 }

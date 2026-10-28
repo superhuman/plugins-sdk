@@ -15,7 +15,7 @@ This Pack contains a few mathematical formulas, including the [greatest common d
 
 === "pack.ts"
     ```ts
-    import * as sdk from "@codahq/packs-sdk";
+    import * as sdk from "@superhuman/plugins-sdk";
     export const pack = sdk.newPack();
 
     // A "numbers" parameter shared by both formulas.

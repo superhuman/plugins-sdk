@@ -1,4 +1,4 @@
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Returns HTML with every other word of the input text bolded.

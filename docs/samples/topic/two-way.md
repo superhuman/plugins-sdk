@@ -18,7 +18,7 @@ A sync table that supports user edits via two-way sync. It uses the default beha
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // A schema defining the data in the sync table, indicating which fields are
@@ -135,7 +135,7 @@ A sync table that supports user edits via two-way sync, batch processing multipl
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // A schema defining the data in the sync table, indicating which fields are
@@ -270,7 +270,7 @@ A sync table that supports user edits via two-way sync, batch processing multipl
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // A schema defining the data in the sync table, indicating which fields are
@@ -421,7 +421,7 @@ A sync table that supports user edits via two-way sync, with a defined set of op
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 const CategorySchema = sdk.makeObjectSchema({

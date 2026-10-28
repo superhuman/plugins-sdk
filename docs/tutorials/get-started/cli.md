@@ -44,7 +44,7 @@ cd my-pack
 1. Install the Pack SDK.
 
     ```sh
-    npm install --save @codahq/packs-sdk
+    npm install --save @superhuman/plugins-sdk
     ```
 
     The Pack SDK includes both the `packs` CLI as well as the libraries and type definitions needed to build Packs.
