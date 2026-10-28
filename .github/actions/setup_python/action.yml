@@ -4,6 +4,11 @@ description: Sets up pipenv and dependencies
 runs:
   using: composite
   steps:
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version-file: Pipfile
+
     - name: Cache pipenv
       uses: actions/cache@v4
       with:
