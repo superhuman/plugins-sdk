@@ -55,6 +55,7 @@ import type {Skill} from '../types';
 import {SkillModel} from '../types';
 import {SlackEventType} from '../types';
 import type {StringFormulaDefLegacy} from '../api';
+import {SuggestionProviderType} from '../types';
 import type {SyncTable} from '../api';
 import {TableRole} from '../api_types';
 import type {Tool} from '../types';
@@ -5926,6 +5927,125 @@ describe('Pack metadata Validation', async () => {
       ]);
     });
 
+    describe('suggestion endpoints', () => {
+      it('rejects unknown suggestion endpoint fields', async () => {
+        const metadata = createFakePackVersionMetadata({
+          networkDomains: ['example.com'],
+          defaultAuthentication: {type: AuthenticationType.None},
+          suggestionProviders: [
+            {
+              type: SuggestionProviderType.Endpoint,
+              name: 'Check',
+              endpointUrl: 'https://example.com/check',
+              unknown: true,
+            } as any,
+          ],
+        });
+        await validateJsonAndAssertFails(metadata);
+      });
+
+      it('rejects unsupported provider types', async () => {
+        const metadata = createFakePackVersionMetadata({
+          networkDomains: ['example.com'],
+          defaultAuthentication: {type: AuthenticationType.None},
+          suggestionProviders: [{type: 'local', name: 'Check', endpointUrl: 'https://example.com/check'} as any],
+        });
+        await validateJsonAndAssertFails(metadata);
+      });
+
+      for (const endpointUrl of ['https://example.com/check', 'https://api.example.com/check']) {
+        it(`accepts a declared domain or subdomain: ${endpointUrl}`, async () => {
+          const metadata = createFakePackVersionMetadata({
+            networkDomains: ['example.com'],
+            defaultAuthentication: {type: AuthenticationType.None},
+            suggestionProviders: [{type: SuggestionProviderType.Endpoint, name: 'Check', endpointUrl}],
+          });
+          await validateJson(metadata);
+        });
+      }
+
+      for (const endpointUrl of [
+        'http://example.com/check',
+        'https://example.com.attacker.com/check',
+        'nonsense',
+        'https://',
+        '/check',
+        '//example.com/check',
+        '',
+      ]) {
+        it(`rejects an unsafe endpoint with a field validation error: ${endpointUrl}`, async () => {
+          const metadata = createFakePackVersionMetadata({
+            networkDomains: ['example.com'],
+            defaultAuthentication: {type: AuthenticationType.None},
+            suggestionProviders: [{type: SuggestionProviderType.Endpoint, name: 'Check', endpointUrl}],
+          });
+          const err = await validateJsonAndAssertFails(metadata);
+          assert.instanceOf(err, PackMetadataValidationError);
+          assert.isTrue(
+            err.validationErrors?.some(
+              validationError => validationError.path === 'suggestionProviders[0].endpointUrl',
+            ),
+          );
+        });
+      }
+
+      it('rejects duplicate names', async () => {
+        const metadata = createFakePackVersionMetadata({
+          networkDomains: ['example.com'],
+          defaultAuthentication: {type: AuthenticationType.None},
+          suggestionProviders: [
+            {type: SuggestionProviderType.Endpoint, name: 'Check', endpointUrl: 'https://example.com/check'},
+            {type: SuggestionProviderType.Endpoint, name: 'Check', endpointUrl: 'https://example.com/check-again'},
+          ],
+        });
+        const err = await validateJsonAndAssertFails(metadata);
+        assert.deepEqual(err.validationErrors, [
+          {path: 'suggestionProviders', message: 'Duplicate suggestion endpoint name: Check'},
+        ]);
+      });
+
+      it('reports undeclared domains for both suggestion and MCP endpoints', async () => {
+        const metadata = createFakePackVersionMetadata({
+          networkDomains: ['example.com'],
+          defaultAuthentication: {type: AuthenticationType.None},
+          suggestionProviders: [
+            {type: SuggestionProviderType.Endpoint, name: 'Check', endpointUrl: 'https://other.example/check'},
+          ],
+          mcpServers: [{name: 'Search', endpointUrl: 'https://other.example/mcp'}],
+        });
+        const err = await validateJsonAndAssertFails(metadata);
+        assert.deepEqual(err.validationErrors, [
+          {
+            path: 'suggestionProviders[0].endpointUrl',
+            message: 'Suggestion endpoint must be on a declared network domain.',
+          },
+          {
+            path: 'mcpServers[0].endpointUrl',
+            message: `Domain other.example is used in MCP server Search but not declared in the pack's "networkDomains".`,
+          },
+        ]);
+      });
+
+      for (const networkDomains of [undefined, []]) {
+        it(`requires a declared domain when networkDomains is ${JSON.stringify(networkDomains)}`, async () => {
+          const metadata = createFakePackVersionMetadata({
+            networkDomains,
+            defaultAuthentication: {type: AuthenticationType.None},
+            suggestionProviders: [
+              {type: SuggestionProviderType.Endpoint, name: 'Check', endpointUrl: 'https://example.com/check'},
+            ],
+          });
+          const err = await validateJsonAndAssertFails(metadata);
+          assert.deepEqual(err.validationErrors, [
+            {
+              path: 'suggestionProviders[0].endpointUrl',
+              message: 'Suggestion endpoint must be on a declared network domain.',
+            },
+          ]);
+        });
+      }
+    });
+
     it('missing networkDomains when specifying mcpServers', async () => {
       const metadata = createFakePackVersionMetadata({
         networkDomains: undefined,
@@ -8627,6 +8747,85 @@ describe('Pack metadata Validation', async () => {
       assert.deepEqual(result.agent?.tools, tools);
     });
 
+    it('takes a connector limited to specific MCP tools', async () => {
+      const tools: AgentTool[] = [
+        {
+          type: ToolType.Pack,
+          packId: 1234,
+          mcpTools: [{toolName: 'search_issues'}, {toolName: 'get_issue', serverName: 'jira'}],
+        },
+      ];
+      const result = await validateJson(createFakeAgentMetadata({agent: {instructions: 'Do a thing.', tools}}));
+      assert.deepEqual(result.agent?.tools, tools);
+    });
+
+    it('rejects an empty MCP tool list', async () => {
+      const err = await validateJsonAndAssertFails(
+        createFakeAgentMetadata({
+          agent: {instructions: 'Do a thing.', tools: [{type: ToolType.Pack, packId: 1234, mcpTools: []}]},
+        }),
+      );
+      assert.deepEqual(err.validationErrors, [
+        {
+          path: 'agent.tools[0].mcpTools',
+          message: 'List at least one MCP tool, or leave mcpTools out to offer all of them.',
+        },
+      ]);
+    });
+
+    it('rejects listing the same MCP tool twice on one server', async () => {
+      const err = await validateJsonAndAssertFails(
+        createFakeAgentMetadata({
+          agent: {
+            instructions: 'Do a thing.',
+            tools: [
+              {
+                type: ToolType.Pack,
+                packId: 1234,
+                mcpTools: [{toolName: 'search_issues'}, {toolName: 'search_issues'}],
+              },
+            ],
+          },
+        }),
+      );
+      assert.deepEqual(err.validationErrors, [
+        {
+          path: 'agent.tools[0].mcpTools[1]',
+          message: 'MCP tool "search_issues" is listed more than once.',
+        },
+      ]);
+    });
+
+    it('takes the same MCP tool name on different servers', async () => {
+      const tools: AgentTool[] = [
+        {
+          type: ToolType.Pack,
+          packId: 1234,
+          mcpTools: [
+            {toolName: 'search', serverName: 'jira'},
+            {toolName: 'search', serverName: 'confluence'},
+          ],
+        },
+      ];
+      const result = await validateJson(createFakeAgentMetadata({agent: {instructions: 'Do a thing.', tools}}));
+      assert.deepEqual(result.agent?.tools, tools);
+    });
+
+    it('rejects a blank MCP tool name', async () => {
+      const err = await validateJsonAndAssertFails(
+        createFakeAgentMetadata({
+          agent: {
+            instructions: 'Do a thing.',
+            tools: [{type: ToolType.Pack, packId: 1234, mcpTools: [{toolName: ''}]}],
+          },
+        }),
+      );
+      assert.deepEqual(
+        err.validationErrors?.map(error => error.path),
+        ['agent.tools[0].mcpTools[0].toolName'],
+      );
+    });
+
     it('rejects tool types an agent cannot use', async () => {
       const err = await validateJsonAndAssertFails(
         createFakeAgentMetadata({
@@ -8764,6 +8963,24 @@ describe('Pack metadata Validation', async () => {
       const result = await validateJson(metadata);
       assert.deepEqual(result.defaultTriggers, [contextualTrigger]);
     });
+
+    for (const assistMode of Object.values(ContextualTriggerAssistMode)) {
+      it(`preserves ${assistMode} through JSON upload validation`, async () => {
+        const trigger: DefaultTriggerDefinition = {
+          kind: DefaultTriggerKind.WhileWriting,
+          condition: 'Offer a citation when the user asserts a statistic',
+          assistMode,
+        };
+        const metadata = createFakeAgentMetadata({
+          agent: {instructions: 'Do a thing.', tools: []},
+          defaultTriggers: [trigger],
+        });
+
+        const validated = await validateJson(JSON.parse(JSON.stringify(metadata)));
+
+        assert.deepEqual(validated.defaultTriggers, [trigger]);
+      });
+    }
 
     it('rejects more than 50 blocked domains', async () => {
       const err = await validateJsonAndAssertFails(

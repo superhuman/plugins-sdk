@@ -2,6 +2,7 @@ import type {AWSAccessKeyAuthentication} from '../types';
 import type {AWSAssumeRoleAuthentication} from '../types';
 import type {AdminAuthentication} from '../types';
 import type {AdminAuthenticationTypes} from '../types';
+import type {AgentConnectorMcpTool} from '../types';
 import type {AgentDefinition} from '../types';
 import type {AgentRoutineDefinition} from '../types';
 import type {AgentTool} from '../types';
@@ -43,6 +44,7 @@ import {EmailDisplayType} from '../schema';
 import type {EmailSchema} from '../schema';
 import type {EmbeddedContentTool} from '../types';
 import {EmbeddedContentType} from '../types';
+import type {EndpointSuggestionProvider} from '../types';
 import type {EntraCertificateAuthentication} from '../types';
 import {EventTriggerType} from '../types';
 import {FeatureSet} from '../types';
@@ -148,6 +150,7 @@ import type {StringPackFormula} from '../api';
 import type {StringTimeSchema} from '../schema';
 import type {StringWithOptionsSchema} from '../schema';
 import type {SuggestedPrompt} from '../types';
+import {SuggestionProviderType} from '../types';
 import type {SyncExecutionContext} from '..';
 import type {SyncFormula} from '../api';
 import type {SyncPassthroughData} from '../api';
@@ -2467,6 +2470,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
   const packToolSchema = zodCompleteStrictObject<PackTool>({
     type: z.literal(ToolType.Pack),
     packId: z.number().optional(),
+    useSuggestions: z.boolean().optional(),
     formulas: z
       .array(
         zodCompleteStrictObject<{
@@ -2604,9 +2608,36 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
   // Missing and empty are separate Zod failures, so both carry the same message.
   const MissingInstructions = 'An agent must have instructions. Call setInstructions() on the agent.';
 
+  const agentConnectorMcpToolSchema = zodCompleteStrictObject<AgentConnectorMcpTool>({
+    toolName: z.string().min(1),
+    serverName: z.string().min(1).optional(),
+  });
+
+  const agentPackToolSchema = packToolSchema.extend({
+    packId: z.number(),
+    mcpTools: z
+      .array(agentConnectorMcpToolSchema)
+      .min(1, 'List at least one MCP tool, or leave mcpTools out to offer all of them.')
+      .superRefine((mcpTools, context) => {
+        const seen = new Set<string>();
+        mcpTools.forEach((mcpTool, index) => {
+          const key = JSON.stringify([mcpTool.serverName ?? null, mcpTool.toolName]);
+          if (seen.has(key)) {
+            context.addIssue({
+              code: 'custom',
+              path: [index],
+              message: `MCP tool "${mcpTool.toolName}" is listed more than once.`,
+            });
+          }
+          seen.add(key);
+        });
+      })
+      .optional(),
+  });
+
   const agentToolSchema = z.discriminatedUnion(
     'type',
-    [packToolSchema.extend({packId: z.number()}), codaDocsToolSchema, mailAndCalendarToolSchema, webSearchToolSchema],
+    [agentPackToolSchema, codaDocsToolSchema, mailAndCalendarToolSchema, webSearchToolSchema],
     {error: 'An agent can only use the Docs, Mail, web search, and Pack tools.'},
   );
 
@@ -2979,6 +3010,24 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
     agent: agentSchema.optional(),
     defaultTriggers: defaultTriggersSchema.optional(),
     defaultRoutines: z.array(routineSchema).optional(),
+    suggestionProviders: z
+      .array(
+        zodCompleteStrictObject<EndpointSuggestionProvider>({
+          type: z.literal(SuggestionProviderType.Endpoint),
+          name: z.string().min(1).max(100),
+          endpointUrl: z
+            .string()
+            .url()
+            .refine(value => Boolean(parseDomainName(value)), 'A valid HTTPS URL is required.'),
+        }),
+      )
+      .max(10)
+      .optional()
+      .superRefine((endpoints, context) => {
+        for (const name of getNonUniqueElements((endpoints ?? []).map(endpoint => endpoint.name))) {
+          context.addIssue({code: 'custom', message: `Duplicate suggestion endpoint name: ${name}`});
+        }
+      }),
     mcpServers: z
       .array(mcpServerSchema)
       .max(1)
@@ -3395,6 +3444,19 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
     )
     .superRefine((untypedData, context) => {
       const data = untypedData as PackVersionMetadata;
+      for (const [i, endpoint] of (data.suggestionProviders ?? []).entries()) {
+        const hostname = URLParse(endpoint.endpointUrl).hostname;
+        if (!isEndpointDomainAllowed(hostname, data.networkDomains ?? [])) {
+          context.addIssue({
+            code: 'custom',
+            path: ['suggestionProviders', i, 'endpointUrl'],
+            message: 'Suggestion endpoint must be on a declared network domain.',
+          });
+        }
+      }
+    })
+    .superRefine((untypedData, context) => {
+      const data = untypedData as PackVersionMetadata;
 
       for (const authInfo of getAuthentications(data)) {
         const {name, authentication} = authInfo;
@@ -3470,21 +3532,14 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
       if (!data.networkDomains || !data.mcpServers) {
         return;
       }
-
       for (const [i, server] of data.mcpServers.entries()) {
-        // A relative endpointUrl yields an empty hostname here and is skipped; its host comes from
-        // the user's connection endpoint and is validated against networkDomains at request time.
-        const usedNetworkDomain = URLParse(server.endpointUrl).hostname;
-        if (!usedNetworkDomain) {
-          continue;
-        }
-        if (
-          !data.networkDomains.some(domain => domain === usedNetworkDomain || usedNetworkDomain.endsWith('.' + domain))
-        ) {
+        // Relative endpoints use the connection's hostname, checked at request time.
+        const hostname = URLParse(server.endpointUrl).hostname;
+        if (!isEndpointDomainAllowed(hostname, data.networkDomains)) {
           context.addIssue({
             code: 'custom',
             path: [`mcpServers[${i}].endpointUrl`],
-            message: `Domain ${usedNetworkDomain} is used in MCP server ${server.name} but not declared in the pack's "networkDomains".`,
+            message: `Domain ${hostname} is used in MCP server ${server.name} but not declared in the pack's "networkDomains".`,
           });
           return;
         }
@@ -3684,6 +3739,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         ['formats', 'column formats'],
         ['skills', 'skills'],
         ['mcpServers', 'MCP servers'],
+        ['suggestionProviders', 'suggestion endpoints'],
         ['networkDomains', 'network domains'],
         ['adminAuthentications', 'admin authentication'],
       ];
@@ -3987,6 +4043,10 @@ function validateDeprecatedParameterFields<T extends UnionType>(
     pathPrefix,
     context,
   });
+}
+
+function isEndpointDomainAllowed(hostname: string, networkDomains: string[]): boolean {
+  return !hostname || networkDomains.some(domain => hostname === domain || hostname.endsWith(`.${domain}`));
 }
 
 function isAbsoluteUrl(url: string): boolean {

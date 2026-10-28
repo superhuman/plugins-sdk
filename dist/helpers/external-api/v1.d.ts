@@ -1,7 +1,7 @@
 /**
  * This file is auto-generated from OpenAPI definitions by `make build-openapi`. Do not edit manually.
  */
-export declare const OpenApiSpecHash = "4f64de8de03e3a7e64fa67827a25c62de87d1a332fbb5c6414943849dff961f6";
+export declare const OpenApiSpecHash = "039810dbaad3d22856d7e1308dfc9129814698e347f97c8ae05a44be67da64b2";
 export declare const OpenApiSpecVersion = "1.6.0";
 /**
  * A constant identifying the type of the resource.
@@ -11,6 +11,7 @@ export declare enum PublicApiType {
     AclPermissions = "aclPermissions",
     AclSettings = "aclSettings",
     AgentPackLog = "agentPackLog",
+    AgentRun = "agentRun",
     AnalyticsLastUpdated = "analyticsLastUpdated",
     ApiLink = "apiLink",
     Automation = "automation",
@@ -745,6 +746,66 @@ export interface PublicApiFolderList {
     href?: string;
     nextPageToken?: PublicApiNextPageToken;
     nextPageLink?: PublicApiNextPageLink & string;
+}
+/**
+ * List of a folder's direct children.
+ */
+export interface PublicApiFolderChildList {
+    /**
+     * Direct children of the folder, both accessible and restricted, ordered and paged together. Pagination is driven by `nextPageToken`, so a page may contain fewer than `limit` accessible folders when restricted children take slots.
+     *
+     */
+    items: PublicApiFolderChild[];
+    /**
+     * API link to these results.
+     */
+    href?: string;
+    nextPageToken?: PublicApiNextPageToken;
+    nextPageLink?: PublicApiNextPageLink & string;
+}
+/**
+ * A folder in a children listing. `visible` children carry the full folder metadata; `restricted` children — subfolders the caller cannot access but manages the parent of — expose only `id`, `type`, and `visibility`.
+ *
+ */
+export interface PublicApiFolderChild {
+    /**
+     * ID of the Superhuman Docs folder.
+     */
+    id: string;
+    /**
+     * The type of this resource.
+     */
+    type: PublicApiType.Folder;
+    visibility: PublicApiFolderVisibility;
+    /**
+     * The name of the folder. Absent for `restricted` children.
+     */
+    name?: string;
+    /**
+     * Browser-friendly link to the folder. Absent for `restricted` children.
+     */
+    browserLink?: string;
+    /**
+     * The description of the folder.
+     */
+    description?: string;
+    iconColor?: PublicApiFolderIconColor;
+    /**
+     * Timestamp for when the folder was created.
+     */
+    createdAt?: string;
+    /**
+     * Whether the folder settings can be edited.
+     */
+    canEdit?: boolean;
+    workspace?: PublicApiWorkspaceReference;
+}
+/**
+ * Whether the caller can access a folder returned in a children listing.
+ */
+export declare enum PublicApiFolderVisibility {
+    Visible = "visible",
+    Restricted = "restricted"
 }
 /**
  * Request for creating a folder.
@@ -2340,6 +2401,61 @@ export interface PublicApiUser {
     organizationId?: string;
 }
 /**
+ * Metadata for the API token used to authenticate the request.
+ */
+export interface PublicApiToken {
+    /**
+     * The token identifier.
+     */
+    id: string;
+    /**
+     * The token description.
+     */
+    description: string | null;
+    /**
+     * Unix timestamp in seconds, possibly fractional, when the token was created.
+     */
+    creationTimestamp: number;
+    /**
+     * Unix timestamp in seconds, possibly fractional, when the token was last used.
+     */
+    lastUsedTimestamp: number;
+    /**
+     * Unix timestamp in seconds, possibly fractional, when the token expires, or null for a token that does not expire.
+     */
+    expirationTimestamp: number | null;
+}
+/**
+ * The rotated API token and its new secret.
+ */
+export interface PublicApiTokenRotation {
+    token: {
+        id: string;
+        description: string | null;
+        /**
+         * Unix timestamp in seconds, possibly fractional, when the token was created.
+         */
+        creationTimestamp: number;
+        /**
+         * Unix timestamp in seconds, possibly fractional, when the token was last used.
+         */
+        lastUsedTimestamp: number;
+        /**
+         * Unix timestamp in seconds, possibly fractional, when the token expires, or null for a token that does not expire.
+         */
+        expirationTimestamp: number | null;
+        /**
+         * The new token secret. It is only returned by this operation.
+         */
+        secret: string;
+    };
+}
+/**
+ * The empty response returned after revoking an API token.
+ */
+export interface PublicApiTokenRevoke {
+}
+/**
  * Summary about the user.
  */
 export interface PublicApiUserSummary {
@@ -2586,6 +2702,139 @@ export interface PublicApiWebhookTriggerPayload {
  * The result of triggering a webhook
  */
 export type PublicApiWebhookTriggerResult = PublicApiDocumentMutateResponse & {};
+/**
+ * Payload for triggering a Go agent run
+ */
+export interface PublicApiAgentTriggerRequest {
+    /**
+     * The prompt to send to the agent.
+     */
+    input: string;
+    /**
+     * ID of the agent to run. Leave blank to run your default Superhuman Go chat.
+     */
+    agentInstanceId?: string;
+    /**
+     * ID of an existing chat to continue. The chat must belong to you. Without agentInstanceId, the chat's own agent runs. Omit to start a new chat.
+     */
+    chatId?: string;
+}
+/**
+ * Confirmation that the agent run was queued, with the ids a client needs to track it.
+ */
+export interface PublicApiAgentTriggerResult {
+    /**
+     * Deterministic id of the queued execution. Calls carrying the same Idempotency-Key land on the same id and are safe to poll; without a key each call mints a fresh event and queues a separate run. Keys are scoped to the caller, so sharees of one agent never collide on the same key.
+     *
+     */
+    executionId: string;
+    /**
+     * Id of the chat the run opens. The request chatId when it continues a chat, else derived from the execution id. Poll run status against it.
+     */
+    chatId: string;
+    /**
+     * Id of the agent instance the run targets. Echoes the request, or the resolved default Go instance when blank.
+     */
+    agentInstanceId: string;
+    /**
+     * Brain tenant id the instance belongs to, for tenant-scoped follow-up reads.
+     */
+    tenantId: string;
+    /**
+     * Pack id of the resolved agent instance.
+     */
+    packId: number;
+}
+/**
+ * Execution state of the chat a trigger run opened.
+ */
+export interface PublicApiAgentRunStatus {
+    /**
+     * queued (execution still in the trigger table), running (a loop holds the chat), idle (no run active), done (a completed execution or fresh completion row), failed (a dropped execution or fresh failure row), or needs_input (the head of the chat is waiting on the user).
+     *
+     */
+    status: 'queued' | 'running' | 'idle' | 'done' | 'failed' | 'needs_input';
+    /**
+     * Id of the agent chat this status was read for.
+     */
+    chatId: string;
+    /**
+     * Why the run stopped. Present with failed or needs_input; the value set depends on the status. Treat unknown values as unclassified rather than rejecting them.
+     *
+     */
+    reason?: 'max_attempts_exceeded' | 'quota_exceeded' | 'non_retriable_error' | 'tool_approval' | 'question' | 'step_limit' | 'dropped' | 'succeeded' | 'completedResponseReplay' | 'maxAttemptsExceeded' | 'terminalFailure' | 'executionFailed' | 'abandonedClaim';
+}
+/**
+ * One agent chat message with server-rendered text.
+ */
+export interface PublicApiAgentChatMessage {
+    id: string;
+    messageType: 'user' | 'assistant' | 'action_result';
+    /**
+     * Concatenated text parts. Empty for tool-only messages.
+     */
+    text: string;
+    isComplete: boolean;
+    createdAt: string;
+}
+/**
+ * Tail of an agent chat's messages, oldest first.
+ */
+export interface PublicApiAgentChatMessages {
+    messages: PublicApiAgentChatMessage[];
+}
+/**
+ * Install the caller's agent instance for a pack version.
+ */
+export interface PublicApiAgentInstallRequest {
+    /**
+     * Delete the caller's existing instance for the pack, if any, and install fresh. Without it an existing instance is returned unchanged.
+     *
+     */
+    reinstall: boolean;
+}
+/**
+ * The caller's agent instance for the pack, with the ids chat follow-ups need.
+ */
+export interface PublicApiAgentInstallResult {
+    /**
+     * Id of the caller's agent instance. Pass it to trigger and chat reads.
+     */
+    agentInstanceId: string;
+    /**
+     * Brain tenant id the instance belongs to, for tenant-scoped follow-up reads.
+     */
+    tenantId: string;
+    /**
+     * Pack id of the installed agent.
+     */
+    packId: number;
+    /**
+     * Requested pack version. The install binds the pack's live agent definition.
+     */
+    version: string;
+    /**
+     * True when an existing instance was returned unchanged.
+     */
+    alreadyInstalled: boolean;
+}
+/**
+ * The caller's installed agent instance for a pack.
+ */
+export interface PublicApiAgentInstanceLookup {
+    /**
+     * Id of the caller's agent instance. Pass it to trigger and chat reads.
+     */
+    agentInstanceId: string;
+    /**
+     * Brain tenant id the instance belongs to, for tenant-scoped follow-up reads.
+     */
+    tenantId: string;
+    /**
+     * Pack id of the installed agent.
+     */
+    packId: number;
+}
 /**
  * Reference to a Superhuman Docs folder.
  */
@@ -3404,6 +3653,10 @@ export interface PublicApiPack {
      * A Privacy Policy URL for the Pack.
      */
     privacyPolicyUrl?: string;
+    /**
+     * This list has the Pack IDs of agents that can use the connector. A null value means that the connector is public.
+     */
+    allowedAgentIds?: number[] | null;
     overallRateLimit?: PublicApiPackRateLimit;
     perConnectionRateLimit?: PublicApiPackRateLimit;
     featuredDocStatus?: PublicApiFeaturedDocStatus;
@@ -3752,6 +4005,10 @@ export interface PublicApiPackConfigurationEntry {
     policy?: {
         [k: string]: unknown;
     };
+    /**
+     * Whether an org-wide shared connection (client-credentials auth configured once per org) already exists for this configuration. Only meaningful for Packs that support a shared connection; absent/false otherwise. Lets clients determine whether a member can skip the personal-connection step for this configuration.
+     */
+    hasSharedConnection?: boolean;
 }
 /**
  * Describes restrictions that a user's organization has placed on a Pack
@@ -4221,10 +4478,15 @@ export interface PublicApiPackListing {
      */
     sdkVersion: string;
     packCategoryType: PublicApiPackCategoryType;
+    distributionMode?: PublicApiPackDistributionMode;
     /**
      * Whether the Pack is disabled.
      */
     disabled?: boolean;
+    /**
+     * Whether the Pack is authored by Superhuman/Coda.
+     */
+    isFirstPartyPack?: boolean;
 }
 /**
  * A detailed Pack listing.
@@ -4327,10 +4589,15 @@ export interface PublicApiPackListingDetail {
      */
     sdkVersion: string;
     packCategoryType: PublicApiPackCategoryType;
+    distributionMode?: PublicApiPackDistributionMode;
     /**
      * Whether the Pack is disabled.
      */
     disabled?: boolean;
+    /**
+     * Whether the Pack is authored by Superhuman/Coda.
+     */
+    isFirstPartyPack?: boolean;
     discoverability: PublicApiPackDiscoverability;
     userAccess: PublicApiPackUserAccess;
     /**
@@ -4367,6 +4634,14 @@ export declare enum PublicApiPackCategoryType {
     CustomAgent = "customAgent"
 }
 /**
+ * How a Pack can be consumed. templateOnly marks a custom agent published as a template, which the user completes with their own data sources rather than installing as-is.
+ */
+export declare enum PublicApiPackDistributionMode {
+    InstallOnly = "installOnly",
+    AppOnly = "appOnly",
+    TemplateOnly = "templateOnly"
+}
+/**
  * The access capabilities the current user has for this Pack.
  */
 export interface PublicApiPackUserAccess {
@@ -4377,6 +4652,10 @@ export interface PublicApiPackUserAccess {
     canPurchase: boolean;
     requiresTrial: boolean;
     canConnectAccount: boolean;
+    /**
+     * True when the Pack authenticates via a pack-declared system connection (a single admin-managed credential) and has no per-user default authentication, so members do not need to configure a personal connection to use it.
+     */
+    usesSystemConnection?: boolean;
     organization?: PublicApiPackOrganizationAccessForDocs | PublicApiPackOrganizationAccessForCodaBrain;
     ingestionLimitSettings?: PublicApiIngestionLimitSettings;
 }
@@ -4446,6 +4725,12 @@ export interface PublicApiPackOrganizationAccessForCodaBrain {
  * Payload for creating a Pack.
  */
 export interface PublicApiCreatePackRequest {
+    /**
+     * The agent Pack IDs in this list can use the connector. A null value makes the connector public. An empty list allows no agents.
+     *
+     * @maxItems 100
+     */
+    allowedAgentIds?: number[] | null;
     /**
      * The parent workspace for the Pack. If unspecified, the user's default workspace will be used.
      */
@@ -5293,6 +5578,12 @@ export interface PublicApiRegisterPackVersionRequest {
  * Payload for updating a Pack.
  */
 export interface PublicApiUpdatePackRequest {
+    /**
+     * Use this list to replace the agent Pack IDs that can use the connector. Omit this field to keep the current value.
+     *
+     * @maxItems 100
+     */
+    allowedAgentIds?: number[] | null;
     /**
      * Rate limit in Pack settings.
      */

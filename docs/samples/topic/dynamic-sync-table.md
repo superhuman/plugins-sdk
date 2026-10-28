@@ -77,7 +77,7 @@ A sync table that presents a list of URLs to select from. This sample shows resp
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // When listing forms, the maximum to return.
@@ -367,7 +367,7 @@ A sync table that presents a list of URLs to select from, grouped into folders. 
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // The domain to connect to. Can be swapped for other domains hosting Socrata.

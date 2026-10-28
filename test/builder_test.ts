@@ -33,6 +33,7 @@ import {PostSetupType} from '..';
 import type {Skill} from '../types';
 import {SlackEventType} from '../types';
 import type {StringPackFormula} from '../api';
+import {SuggestionProviderType} from '../types';
 import type {SyncTableOptions} from '../api';
 import {ToolType} from '../types';
 import {ValueHintType} from '..';
@@ -61,6 +62,22 @@ describe('Builder', () => {
 
   beforeEach(() => {
     pack = newPack();
+  });
+
+  describe('suggestion provider metadata', () => {
+    it('round-trips canonical metadata without formula normalization', async () => {
+      pack.setVersion('1.0.0');
+      pack.addNetworkDomain('example.com');
+      pack.addSuggestionProvider({
+        type: SuggestionProviderType.Endpoint,
+        name: 'CheckFeedback',
+        endpointUrl: 'https://api.example.com/check',
+      });
+      const metadata = await validatePackVersionMetadata(compilePackMetadata({...pack, version: '1.0.0'}), undefined);
+      assert.deepEqual(metadata.suggestionProviders, pack.suggestionProviders);
+      assert.deepEqual(newPack(pack).suggestionProviders, pack.suggestionProviders);
+      assert.deepEqual(metadata.formulas, []);
+    });
   });
 
   function addDummyFormula(
@@ -763,6 +780,28 @@ describe('Agent builder', () => {
       assert.deepEqual(agent.agent.tools, [{type: ToolType.WebSearch, allowedDomains: []}]);
     });
 
+    describe('suggestion provider opt-in', () => {
+      for (const useSuggestions of [undefined, false, true]) {
+        for (const formulas of [undefined, [{formulaName: 'ExplainPrinciple'}]]) {
+          it(`preserves formula selection with useSuggestions=${useSuggestions} and formulas=${Boolean(formulas)}`, async () => {
+            const selection = {
+              packId: 1234,
+              ...(formulas ? {formulas} : {}),
+              ...(useSuggestions !== undefined ? {useSuggestions} : {}),
+            };
+            agent.setVersion('1.0.0');
+            agent.setInstructions('Check feedback.');
+            agent.setTools({connectors: [selection]});
+            const metadata = await validatePackVersionMetadata(
+              compilePackMetadata(agent as unknown as PackVersionDefinition),
+              undefined,
+            );
+            assert.deepEqual(metadata.agent?.tools, [{type: ToolType.Pack, ...selection}]);
+          });
+        }
+      }
+    });
+
     it('adds a connector pack', () => {
       agent.setTools({connectors: [{packId: 1234}]});
       assert.deepEqual(agent.agent.tools, [{type: ToolType.Pack, packId: 1234}]);
@@ -772,6 +811,35 @@ describe('Agent builder', () => {
       agent.setTools({connectors: [{packId: 1234, formulas: [{formulaName: 'CreateTask'}]}]});
       assert.deepEqual(agent.agent.tools, [
         {type: ToolType.Pack, packId: 1234, formulas: [{formulaName: 'CreateTask'}]},
+      ]);
+    });
+
+    it('limits a connector to specific MCP tools', () => {
+      agent.setTools({
+        connectors: [
+          {packId: 1234, mcpTools: [{toolName: 'search_issues'}, {toolName: 'get_issue', serverName: 'jira'}]},
+        ],
+      });
+      assert.deepEqual(agent.agent.tools, [
+        {
+          type: ToolType.Pack,
+          packId: 1234,
+          mcpTools: [{toolName: 'search_issues'}, {toolName: 'get_issue', serverName: 'jira'}],
+        },
+      ]);
+    });
+
+    it('limits formulas and MCP tools on the same connector independently', () => {
+      agent.setTools({
+        connectors: [{packId: 1234, formulas: [{formulaName: 'CreateTask'}], mcpTools: [{toolName: 'search_issues'}]}],
+      });
+      assert.deepEqual(agent.agent.tools, [
+        {
+          type: ToolType.Pack,
+          packId: 1234,
+          formulas: [{formulaName: 'CreateTask'}],
+          mcpTools: [{toolName: 'search_issues'}],
+        },
       ]);
     });
 
@@ -1137,13 +1205,18 @@ describe('Agent builder', () => {
 
     it('is read-only at runtime, not just in the types', () => {
       agent
-        .setTools({connectors: [{packId: 1234, formulas: [{formulaName: 'CreateTask'}]}]})
+        .setTools({
+          connectors: [
+            {packId: 1234, formulas: [{formulaName: 'CreateTask'}], mcpTools: [{toolName: 'search_issues'}]},
+          ],
+        })
         .setDefaultScheduleTrigger({rruleString: 'DTSTART:20260101T090000Z\nRRULE:FREQ=DAILY'});
       const loose = agent as any;
       assert.throws(() => (loose.agent = {tools: []}), TypeError);
       assert.throws(() => (loose.agent.instructions = 'x'), TypeError);
       assert.throws(() => loose.agent.tools.push({type: ToolType.CodaDocsAndTables}), TypeError);
       assert.throws(() => loose.agent.tools[0].formulas.push({formulaName: 'Other'}), TypeError);
+      assert.throws(() => loose.agent.tools[0].mcpTools.push({toolName: 'other'}), TypeError);
       assert.throws(() => (loose.defaultTriggers = []), TypeError);
       assert.throws(() => loose.defaultTriggers.push({kind: DefaultTriggerKind.Schedule}), TypeError);
       assert.throws(() => (loose.defaultTriggers[0].rruleString = 'x'), TypeError);
@@ -1151,11 +1224,13 @@ describe('Agent builder', () => {
 
     it("copies the caller's input rather than freezing it", () => {
       const formulas = [{formulaName: 'CreateTask'}];
+      const mcpTools = [{toolName: 'search_issues'}];
       const keywords = ['renewal'];
       agent
-        .setTools({connectors: [{packId: 1234, formulas}]})
+        .setTools({connectors: [{packId: 1234, formulas, mcpTools}]})
         .addDefaultNotetakerEventTrigger({eventType: NotetakerEventType.MeetingSummaryCompleted, filters: {keywords}});
       assert.isFalse(Object.isFrozen(formulas));
+      assert.isFalse(Object.isFrozen(mcpTools));
       assert.isFalse(Object.isFrozen(keywords));
     });
 

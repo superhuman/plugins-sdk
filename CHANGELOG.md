@@ -4,6 +4,18 @@ This changelog keeps track of all changes to the Packs SDK. We follow convention
 
 ## [Unreleased]
 
+### Added
+
+- The `packs settings get` and `packs settings update` commands read and change Pack settings on the server.
+
+### Changed
+
+- New projects created with `packs init` use the Superhuman plugins templates and `@superhuman/plugins-sdk`.
+
+### Fixed
+
+- `packs clone` preserves legacy `@codahq/packs-sdk` imports by installing that name as an alias of `@superhuman/plugins-sdk`, with both dependencies pinned to the same version. Migrate imports to `@superhuman/plugins-sdk` when convenient.
+
 ## [1.18.4] - 2026-10-21
 
 ### Added
@@ -11,11 +23,15 @@ This changelog keeps track of all changes to the Packs SDK. We follow convention
 - `packs agent chat` now continues the previous thread, so consecutive prompts share one chat. It saves the chat id per user in `~/.coda-agent-chats.json`, so nothing is added to your repo. Pass `--new` to start a fresh thread, or `--chatId` to continue a specific chat. A chat that no longer exists fails with a message telling you to rerun with `--new`. Requires a server that accepts `chatId`; an older server starts a new chat each time.
 - `packs agent chat` now says which chat it is continuing and when it was last used. A saved chat idle for more than 24 hours is no longer continued by default. Chat starts a new one and prints `--chatId <id>` to go back to the old one.
 
+### Changed
+
+- `packs agent chat` and `packs agent logs` look up the caller's install for this pack, including the tenant id. Pass `--agentInstanceId`, `--tenantId`, `--tenant`, or `--instance` only to override. `packs agent install` still prints those ids and no longer writes them to a file. `packs agent install --version` selects the uploaded pack version.
+
 ## [1.18.3] - 2026-10-15
 
 ### Added
 
-- `packs agent chat` and `packs agent logs` look up the caller's install for this pack, including the tenant id. Pass `--agentInstanceId`, `--tenantId`, `--tenant`, or `--instance` only to override. `packs agent install` still prints those ids and no longer writes them to a file. `packs agent install --version` selects the uploaded pack version.
+- `packs agent install` prints the agent instance id and tenant id, and saves them in `.coda-agent.json` for that directory. The next `packs agent chat` and `packs agent logs` in the directory use the saved ids, so you no longer copy them out of the builder URL. Pass `--agentInstanceId`, `--tenantId`, `--tenant`, or `--instance` to override. New `packs init` scaffolds ignore `.coda-agent.json`. Add that filename to `.gitignore` in directories created before this change.
 - `addSuggestedPrompt()` on agents, so an agent can declare up to 3 starter prompts that show as buttons on its chat landing. Agents no longer fail validation when they define `suggestedPrompts`.
 
 ## [1.18.2] - 2026-10-14

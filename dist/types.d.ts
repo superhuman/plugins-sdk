@@ -1208,6 +1208,12 @@ export interface PackTool extends BaseTool<ToolType.Pack> {
          */
         enabled?: boolean;
     }>;
+    /**
+     * Use this connector's endpoints for while-writing suggestions. Defaults to false.
+     * Does not change which formulas are available as model tools.
+     * @hidden Experimental early access for internal users and approved external developers; the shape may change.
+     */
+    useSuggestions?: boolean;
 }
 /**
  * The type of knowledge source to use.
@@ -1626,7 +1632,24 @@ export interface AgentDefinition {
  */
 export type AgentTool = CodaDocsAndTablesTool | MailAndCalendarTool | WebSearchTool | (Omit<PackTool, 'packId'> & {
     packId: number;
+    mcpTools?: AgentConnectorMcpTool[];
 });
+/**
+ * An MCP tool an agent can call on a connector pack, named as the MCP server lists it.
+ *
+ * @internal
+ * @hidden
+ */
+export interface AgentConnectorMcpTool {
+    /**
+     * The tool's name on the MCP server.
+     */
+    toolName: string;
+    /**
+     * The MCP server the tool belongs to. Omit it to match the name on every MCP server the pack declares.
+     */
+    serverName?: string;
+}
 /**
  * The tools an agent can use, as written on the builder.
  *
@@ -1662,16 +1685,28 @@ export interface AgentToolsDef {
         formulas?: Array<{
             formulaName: string;
         }>;
+        /**
+         * The MCP tools to offer, if not all of them. At runtime the agent gets only these tools from the
+         * connector's MCP servers; every other MCP tool is dropped. Leave this out to offer all of them.
+         */
+        mcpTools?: AgentConnectorMcpTool[];
+        /**
+         * Use this connector's endpoints for while-writing suggestions. Defaults to false.
+         * Formula selection is unchanged.
+         * @hidden Experimental early access for internal users and approved external developers; the shape may change.
+         */
+        useSuggestions?: boolean;
     }>;
 }
 /**
- * When a while-writing trigger offers proactive help, vs. only on request.
+ * How proactively a while-writing trigger offers help.
  * Absent defaults to `Proactive`.
  *
  * @internal
  * @hidden
  */
 export declare enum ContextualTriggerAssistMode {
+    Balanced = "balanced",
     OnDemand = "on_demand",
     Proactive = "proactive"
 }
@@ -2186,6 +2221,11 @@ export interface PackVersionDefinition {
      */
     mcpServers?: MCPServer[];
     /**
+     * Direct while-writing checkers on this connector.
+     * @hidden Experimental early access for internal users and approved external developers; the shape may change.
+     */
+    suggestionProviders?: SuggestionProvider[];
+    /**
      * The agent defined by this pack, if it defines one. Authored via `sdk.newAgent()`.
      *
      * @internal
@@ -2262,4 +2302,28 @@ export declare enum HttpStatusCode {
     BadGateway = 502,
     ServiceUnavailable = 503
 }
-export {};
+/**
+ * The implementation used to produce suggestions.
+ * @hidden Experimental early access; the shape may change.
+ */
+export declare enum SuggestionProviderType {
+    Endpoint = "endpoint"
+}
+/**
+ * An authenticated HTTP checker invoked directly while the user writes.
+ * @hidden Experimental early access; the shape may change.
+ */
+export interface EndpointSuggestionProvider {
+    /** The provider implementation. */
+    type: SuggestionProviderType.Endpoint;
+    /** Unique name of this provider within the connector. */
+    name: string;
+    /** Absolute HTTPS URL on a declared network domain. Uses this connector's authentication. */
+    endpointUrl: string;
+}
+/**
+ * A checker declared by this connector.
+ * @hidden Experimental early access; the shape may change.
+ */
+export type SuggestionProvider = EndpointSuggestionProvider;
+export type { Suggestion, SuggestionRequest, SuggestionResponse } from './suggestion_types';

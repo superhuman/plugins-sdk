@@ -1,4 +1,5 @@
 import type {ArgumentsCamelCase} from 'yargs';
+import type {ConnectorAccessArgs} from './connector_access';
 import {PACK_ID_FILE_NAME} from './config_storage';
 import {assertApiToken} from './helpers';
 import {createCodaClient} from './helpers';
@@ -8,12 +9,13 @@ import {formatResponseError} from './errors';
 import fs from 'fs';
 import {getPackId} from './config_storage';
 import {isResponseError} from '../helpers/external-api/coda';
+import {parseConnectorAccess} from './connector_access';
 import * as path from 'path';
 import {printAndExit} from '../testing/helpers';
 import {storePackId} from './config_storage';
 import {tryParseSystemError} from './errors';
 
-interface CreateArgs {
+interface CreateArgs extends ConnectorAccessArgs {
   manifestFile: string;
   apiEndpoint: string;
   name?: string;
@@ -28,15 +30,28 @@ export async function handleCreate({
   name,
   description,
   workspace,
+  allowedAgents,
+  allowAllAgents,
   apiToken,
 }: ArgumentsCamelCase<CreateArgs>) {
-  await createPack(manifestFile, apiEndpoint, {name, description, workspace}, apiToken);
+  const allowedAgentIds = parseConnectorAccess({allowedAgents, allowAllAgents});
+  await createPack(manifestFile, apiEndpoint, {name, description, workspace, allowedAgentIds}, apiToken);
 }
 
 export async function createPack(
   manifestFile: string,
   apiEndpoint: string,
-  {name, description, workspace}: {name?: string; description?: string; workspace?: string},
+  {
+    name,
+    description,
+    workspace,
+    allowedAgentIds,
+  }: {
+    name?: string;
+    description?: string;
+    workspace?: string;
+    allowedAgentIds?: number[] | null;
+  },
   apiToken?: string,
 ) {
   const manifestDir = path.dirname(manifestFile);
@@ -58,7 +73,15 @@ export async function createPack(
 
   const codaClient = createCodaClient(apiToken, formattedEndpoint);
   try {
-    const response = await codaClient.createPack({}, {name, description, workspaceId: parseWorkspace(workspace)});
+    const response = await codaClient.createPack(
+      {},
+      {
+        name,
+        description,
+        workspaceId: parseWorkspace(workspace),
+        ...(allowedAgentIds === undefined ? {} : {allowedAgentIds}),
+      },
+    );
     const packId = response.packId;
     storePackId(manifestDir, packId, apiEndpoint);
     return printAndExit(`created pack_id: ${packId}\nurl: ${apiEndpoint}/p/${packId}`, 0);

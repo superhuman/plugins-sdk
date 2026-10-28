@@ -15,7 +15,7 @@ The Pack Studio web editor always uses the latest release of the SDK when buildi
 If you use the Pack CLI you'll need to manually update the SDK when a new version is released. To do so, run the command:
 
 ```shell
-npm install @codahq/packs-sdk@<version> --save
+npm install @superhuman/plugins-sdk@<version> --save
 ```
 
 Where `<version>` is the version you want to upgrade to.

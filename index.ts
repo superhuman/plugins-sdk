@@ -5,7 +5,7 @@
  * This module is imported using the following code:
  *
  * ```ts
- * import * as sdk from "@codahq/packs-sdk";
+ * import * as sdk from "@superhuman/plugins-sdk";
  * ```
  *
  * @module core
@@ -386,3 +386,9 @@ export type {InvocationErrorType} from './api_types';
 export type {SyncCompletionMetadataResult} from './api_types';
 export type {SyncCompletionMetadata} from './api_types';
 export type {SyncCompletionMetadataIncomplete} from './api_types';
+
+export type {SuggestionProvider, SuggestionRequest, SuggestionResponse, Suggestion} from './types';
+
+export {SuggestionProviderType} from './types';
+export type {EndpointSuggestionProvider} from './types';
+export {SuggestionEndpointRequestJsonSchema, SuggestionEndpointResponseJsonSchema} from './suggestion_schemas';

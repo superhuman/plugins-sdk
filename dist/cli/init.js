@@ -34,7 +34,11 @@ const path_1 = __importDefault(require("path"));
 const helpers_2 = require("../testing/helpers");
 const agent_template_1 = require("./agent_template");
 const helpers_3 = require("./helpers");
-const PacksExamplesDirectory = 'node_modules/@codahq/packs-examples';
+const PluginsSdkPackageName = '@superhuman/plugins-sdk';
+const LegacySdkPackageName = '@codahq/packs-sdk';
+const PluginsExamplesPackageName = '@superhuman/plugins-examples';
+const PluginsExamplesRepositoryUrl = 'https://github.com/superhuman/plugins-examples.git';
+const PluginsExamplesDirectory = `node_modules/${PluginsExamplesPackageName}`;
 const GitIgnore = `.coda.json
 .coda-credentials.json
 `;
@@ -74,15 +78,30 @@ async function getCliSdkVersion() {
 }
 // Installs the SDK when missing. A pinned version keeps a stale pre-agent SDK
 // from shadowing the scaffold with `sdk.newAgent is not a function`.
-async function ensurePackSdkInstalled(version) {
-    if ((0, helpers_3.spawnProcess)('npm list @codahq/packs-sdk --depth=0').status !== 0) {
-        (0, helpers_3.spawnProcess)(`npm install --save @codahq/packs-sdk${version ? `@${version}` : ''}`);
+async function ensurePluginsSdkInstalled(version) {
+    if ((0, helpers_3.spawnProcess)(`npm list ${PluginsSdkPackageName} --depth=0`).status !== 0) {
+        (0, helpers_3.spawnProcess)(`npm install --save ${PluginsSdkPackageName}${version ? `@${version}` : ''}`);
+    }
+}
+async function ensureLegacySdkAliasInstalled() {
+    const version = await getCliSdkVersion();
+    const packageNames = [PluginsSdkPackageName, LegacySdkPackageName];
+    const installed = (0, helpers_3.spawnProcess)(`npm list ${packageNames.join(' ')} --depth=0 --json --long`, { stdio: 'pipe' });
+    const dependencies = installed.status === 0 ? JSON.parse(installed.stdout.toString()).dependencies : undefined;
+    const pluginsSdk = dependencies === null || dependencies === void 0 ? void 0 : dependencies[PluginsSdkPackageName];
+    const legacyAlias = dependencies === null || dependencies === void 0 ? void 0 : dependencies[LegacySdkPackageName];
+    const hasPluginsSdk = (pluginsSdk === null || pluginsSdk === void 0 ? void 0 : pluginsSdk.name) === PluginsSdkPackageName && pluginsSdk.version === version;
+    const hasLegacyAlias = (legacyAlias === null || legacyAlias === void 0 ? void 0 : legacyAlias.name) === PluginsSdkPackageName && legacyAlias.version === version;
+    if (!hasPluginsSdk || !hasLegacyAlias) {
+        // Skip audit here to avoid npm's crash on aliases in unnamed projects (npm/cli#6864).
+        (0, helpers_3.spawnProcess)(`npm install --save-exact ${PluginsSdkPackageName}@${version} ` +
+            `${LegacySdkPackageName}@npm:${PluginsSdkPackageName}@${version} --no-audit`);
     }
 }
 function appendGitIgnore() {
     fs_extra_1.default.appendFileSync(path_1.default.join(process.cwd(), '.gitignore'), GitIgnore);
 }
-async function handleInit({ yes, agent, name } = {}) {
+async function handleInit({ yes, agent, name, legacySdkAlias, } = {}) {
     if (agent) {
         return handleAgentInit({ yes, name });
     }
@@ -93,38 +112,43 @@ async function handleInit({ yes, agent, name } = {}) {
         // need npm 7 to support "npm set-script"
         throw new Error(`Your npm version is older than 7. Please upgrade npm to at least 7 with "npm install -g npm@7"`);
     }
-    let isPacksExamplesInstalled;
+    let isPluginsExamplesInstalled;
     try {
-        const listNpmPackages = (0, helpers_3.spawnProcess)('npm list @codahq/packs-examples');
-        isPacksExamplesInstalled = listNpmPackages.status === 0;
+        const listNpmPackages = (0, helpers_3.spawnProcess)(`npm list ${PluginsExamplesPackageName}`);
+        isPluginsExamplesInstalled = listNpmPackages.status === 0;
     }
     catch (error) {
-        isPacksExamplesInstalled = false;
+        isPluginsExamplesInstalled = false;
     }
-    if (!isPacksExamplesInstalled) {
+    if (!isPluginsExamplesInstalled) {
         if (!isGitAvailable()) {
             return (0, helpers_2.printAndExit)('The packs init command requires git to be installed and available in your path. ' +
                 'See https://git-scm.com/downloads for suggested ways to install.');
         }
-        const installCommand = `npm install https://github.com/coda/packs-examples.git`;
+        const installCommand = `npm install ${PluginsExamplesRepositoryUrl}`;
         (0, helpers_3.spawnProcess)(installCommand);
     }
-    const packageJson = JSON.parse(fs_extra_1.default.readFileSync(path_1.default.join(PacksExamplesDirectory, 'package.json'), 'utf-8'));
+    const packageJson = JSON.parse(fs_extra_1.default.readFileSync(path_1.default.join(PluginsExamplesDirectory, 'package.json'), 'utf-8'));
     const devDependencies = packageJson.devDependencies;
     const devDependencyPackages = Object.keys(devDependencies)
         .map(dependency => `${dependency}@${devDependencies[dependency]}`)
         .join(' ');
     (0, helpers_3.spawnProcess)(escapeShellCmd(`npm install --save-dev ${devDependencyPackages}`));
-    await ensurePackSdkInstalled();
+    if (legacySdkAlias) {
+        await ensureLegacySdkAliasInstalled();
+    }
+    else {
+        await ensurePluginsSdkInstalled();
+    }
     // developers may run in NodeJs 16 where some packages need to be patched to avoid warnings.
     addPatches();
-    fs_extra_1.default.copySync(`${PacksExamplesDirectory}/examples/template`, process.cwd());
+    fs_extra_1.default.copySync(`${PluginsExamplesDirectory}/examples/template`, process.cwd());
     // npm removes .gitignore files when installing a package, so we can't simply put the .gitignore
     // in the template example alongside the other files. So we just create it explicitly
     // here as part of the init step.
     appendGitIgnore();
-    if (!isPacksExamplesInstalled) {
-        const uninstallCommand = `npm uninstall @codahq/packs-examples`;
+    if (!isPluginsExamplesInstalled) {
+        const uninstallCommand = `npm uninstall ${PluginsExamplesPackageName}`;
         (0, helpers_3.spawnProcess)(uninstallCommand);
     }
 }
@@ -136,7 +160,7 @@ async function handleAgentInit({ yes, name }) {
     // Agent scaffolding is vendored in this package. Unlike the default path it
     // never shells out to git or github.com, so it works on machines with
     // neither.
-    await ensurePackSdkInstalled(await getCliSdkVersion());
+    await ensurePluginsSdkInstalled(await getCliSdkVersion());
     fs_extra_1.default.writeFileSync(packPath, (0, agent_template_1.renderAgentPackTemplate)(agentName));
     appendGitIgnore();
     (0, helpers_2.printAndExit)(`Scaffolded agent "${agentName}" in pack.ts. Next: packs validate pack.ts`, 0);

@@ -32,7 +32,7 @@ An object schema used by a formula. This sample defines the schema for informati
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Define a schema for the information about the daylight at a given location.
@@ -64,7 +64,7 @@ An object schema used by a sync table. This sample defines the schema for the in
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Schema that defines a spell object.
@@ -131,7 +131,7 @@ An object schema used by a sync table, that includes a row reference to itself. 
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // A reference to a synced Task. Usually you can use

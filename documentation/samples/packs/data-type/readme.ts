@@ -1,4 +1,4 @@
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Returns the contents of GitHub repo's README.md file as markdown.
@@ -10,7 +10,7 @@ pack.addFormula({
       type: sdk.ParameterType.String,
       name: "repo",
       description: "The repo to read from.",
-      suggestedValue: "coda/packs-sdk",
+      suggestedValue: "superhuman/plugins-sdk",
     }),
   ],
   resultType: sdk.ValueType.String,

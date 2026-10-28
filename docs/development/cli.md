@@ -48,7 +48,7 @@ Create a new project directory if you haven't already and initialize your projec
 npm init
 
 # Install the Packs SDK locally in your project
-npm install --save @codahq/packs-sdk
+npm install --save @superhuman/plugins-sdk
 ```
 
 You can now access the CLI within this directory, using the command `npx packs`.
@@ -59,7 +59,7 @@ You can now access the CLI within this directory, using the command `npx packs`.
 Alternatively you can install the SDK globally and access the CLI everywhere:
 
 ```sh
-npm install --global @codahq/packs-sdk
+npm install --global @superhuman/plugins-sdk
 ```
 
 You can now access the CLI in any directory by typing the command `packs`.

@@ -36,15 +36,17 @@ const errors_2 = require("./errors");
 const fs_1 = __importDefault(require("fs"));
 const config_storage_2 = require("./config_storage");
 const coda_1 = require("../helpers/external-api/coda");
+const connector_access_1 = require("./connector_access");
 const path = __importStar(require("path"));
 const helpers_4 = require("../testing/helpers");
 const config_storage_3 = require("./config_storage");
 const errors_3 = require("./errors");
-async function handleCreate({ manifestFile, apiEndpoint, name, description, workspace, apiToken, }) {
-    await createPack(manifestFile, apiEndpoint, { name, description, workspace }, apiToken);
+async function handleCreate({ manifestFile, apiEndpoint, name, description, workspace, allowedAgents, allowAllAgents, apiToken, }) {
+    const allowedAgentIds = (0, connector_access_1.parseConnectorAccess)({ allowedAgents, allowAllAgents });
+    await createPack(manifestFile, apiEndpoint, { name, description, workspace, allowedAgentIds }, apiToken);
 }
 exports.handleCreate = handleCreate;
-async function createPack(manifestFile, apiEndpoint, { name, description, workspace }, apiToken) {
+async function createPack(manifestFile, apiEndpoint, { name, description, workspace, allowedAgentIds, }, apiToken) {
     const manifestDir = path.dirname(manifestFile);
     const formattedEndpoint = (0, helpers_3.formatEndpoint)(apiEndpoint);
     apiToken = (0, helpers_1.assertApiToken)(apiEndpoint, apiToken);
@@ -59,7 +61,12 @@ async function createPack(manifestFile, apiEndpoint, { name, description, worksp
     }
     const codaClient = (0, helpers_2.createCodaClient)(apiToken, formattedEndpoint);
     try {
-        const response = await codaClient.createPack({}, { name, description, workspaceId: parseWorkspace(workspace) });
+        const response = await codaClient.createPack({}, {
+            name,
+            description,
+            workspaceId: parseWorkspace(workspace),
+            ...(allowedAgentIds === undefined ? {} : { allowedAgentIds }),
+        });
         const packId = response.packId;
         (0, config_storage_3.storePackId)(manifestDir, packId, apiEndpoint);
         return (0, helpers_4.printAndExit)(`created pack_id: ${packId}\nurl: ${apiEndpoint}/p/${packId}`, 0);

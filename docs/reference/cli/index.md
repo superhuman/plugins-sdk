@@ -12,11 +12,128 @@ search:
 
 Reference documentation for the `packs` CLI.
 
-## agent
+## agent chat
 
-Build and run agents
+Run your installed agent from the terminal and print its reply
 
-**Usage:** `packs agent`
+**Usage:** `packs agent chat <manifestPath> <prompt>`
+
+**Options:**
+
+`--agentInstanceId`
+:   Installed agent instance to run. Defaults to this pack's install for the caller.
+
+    **Type:** string
+
+`--tenantId`
+:   Brain tenant id for the agent install. Defaults to the trigger response.
+
+    **Type:** string
+
+`--chatId`
+:   Continue this chat instead of the last one. Its agent runs unless --agentInstanceId is set.
+
+    **Type:** string
+
+`--new`
+:   Start a new chat instead of continuing the last one.
+
+    **Type:** boolean
+
+`--timeout`
+:   Seconds to wait for a reply before giving up.
+
+    **Type:** number | **Default:** `120`
+
+`--apiToken`, `-t`
+:   API token to use for the operation. Use the `register` command to define a default token.
+
+    **Type:** string
+
+`--apiEndpoint`, `--codaApiEndpoint`
+:   API endpoint to use for the operation (default: https://coda.io). Required for single-tenant instances. Can also be set persistently via `packs setOption <manifestFile> apiEndpoint <url>`.
+
+    **Type:** string
+
+---
+
+## agent install
+
+Install an uploaded agent version to your account
+
+**Usage:** `packs agent install <manifestPath>`
+
+**Options:**
+
+`--version`
+:   Agent version to install. Defaults to the latest upload.
+
+    **Type:** string
+
+`--reinstall`
+:   Rebind even if already installed. Needed after changing tools or triggers.
+
+    **Type:** boolean | **Default:** `false`
+
+`--yes`, `-y`
+:   Skip confirmation prompts. Required in non-interactive environments.
+
+    **Type:** boolean | **Default:** `false`
+
+`--apiToken`, `-t`
+:   API token to use for the operation. Use the `register` command to define a default token.
+
+    **Type:** string
+
+`--apiEndpoint`, `--codaApiEndpoint`
+:   API endpoint to use for the operation (default: https://coda.io). Required for single-tenant instances. Can also be set persistently via `packs setOption <manifestFile> apiEndpoint <url>`.
+
+    **Type:** string
+
+---
+
+## agent logs
+
+Show recent logs for an installed agent instance
+
+**Usage:** `packs agent logs <manifestPath>`
+
+**Options:**
+
+`--tenant`
+:   Tenant id owning the agent instance. Defaults to the caller's tenant for this pack.
+
+    **Type:** string
+
+`--instance`
+:   Agent instance id. Defaults to this pack's install for the caller.
+
+    **Type:** string
+
+`--session`
+:   Show only this agent session. Defaults to the latest session (tail follows new sessions).
+
+    **Type:** string
+
+`--limit`
+:   Maximum log records per fetch.
+
+    **Type:** number | **Default:** `20`
+
+`--tail`
+:   Keep polling for new logs for up to 5 minutes, then stop (re-run to continue, Ctrl-C exits).
+
+    **Type:** boolean | **Default:** `false`
+
+`--apiToken`, `-t`
+:   API token to use for the operation. Use the `register` command to define a default token.
+
+    **Type:** string
+
+`--apiEndpoint`, `--codaApiEndpoint`
+:   API endpoint to use for the operation (default: https://coda.io). Required for single-tenant instances. Can also be set persistently via `packs setOption <manifestFile> apiEndpoint <url>`.
+
+    **Type:** string
 
 ---
 
@@ -111,6 +228,16 @@ Register a new Pack with the server
 :   The workspace ID, or workspace URL that you want your Pack to be created under.
 
     **Type:** string
+
+`--allowedAgents`
+:   Agent Pack IDs that can use the connector. This replaces the whole list. With no IDs, no agents can use it.
+
+    **Type:** number
+
+`--allowAllAgents`
+:   Let every agent use the connector.
+
+    **Type:** boolean
 
 `--apiToken`, `-t`
 :   API token to use for the operation. Use the `register` command to define a default token.
@@ -292,6 +419,126 @@ Set the Pack version that is installable for users. You may specify a specific v
 Set a persistent build option for the pack (.coda-pack.json)
 
 **Usage:** `packs setOption <manifestFile> <option> <value>`
+
+---
+
+## settings get
+
+Read Pack settings
+
+**Usage:** `packs settings get [manifestFile]`
+
+**Options:**
+
+`--manifestFile`
+:   Pack definition file.
+
+    **Type:** string | **Default:** `pack.ts`
+
+`--packIdOrUrl`
+:   Pack ID or URL. Overrides the ID in .coda-pack.json.
+
+    **Type:** string
+
+`--apiToken`, `-t`
+:   API token to use for the operation. Use the `register` command to define a default token.
+
+    **Type:** string
+
+`--apiEndpoint`, `--codaApiEndpoint`
+:   API endpoint to use for the operation (default: https://coda.io). Required for single-tenant instances. Can also be set persistently via `packs setOption <manifestFile> apiEndpoint <url>`.
+
+    **Type:** string
+
+---
+
+## settings update
+
+Update the Pack listing fields used in the Superhuman Store and Go. To change the Docs and Coda Gallery listing, use Pack Studio.
+
+**Usage:** `packs settings update [manifestFile]`
+
+**Options:**
+
+`--manifestFile`
+:   Pack definition file.
+
+    **Type:** string | **Default:** `pack.ts`
+
+`--packIdOrUrl`
+:   Pack ID or URL. Overrides the ID in .coda-pack.json.
+
+    **Type:** string
+
+`--allowedAgents`
+:   Agent Pack IDs that can use the connector. This replaces the whole list. With no IDs, no agents can use it.
+
+    **Type:** number
+
+`--allowAllAgents`
+:   Let every agent use the connector.
+
+    **Type:** boolean
+
+`--name`
+:   Pack name.
+
+    **Type:** string
+
+`--icon`
+:   Path to the icon image. The CLI uploads it.
+
+    **Type:** string
+
+`--images`
+:   Paths to images shown in Superhuman Go, which replace the current ones. With no paths, removes them all.
+
+    **Type:** string
+
+`--tagline`
+:   Tagline shown in Superhuman Go. When unset, Go uses --description, and connectors then fall back to the Docs tagline set in Pack Studio.
+
+    **Type:** string
+
+`--description`
+:   Description shown in Superhuman Go. When unset, connectors fall back to the Docs description set in Pack Studio. Use an empty string to clear it.
+
+    **Type:** string
+
+`--entrypoints`
+:   Where the Pack is available: go, docs, or both.
+
+    **Type:** string
+
+`--supportEmail`
+:   Support email address.
+
+    **Type:** string
+
+`--termsOfServiceUrl`
+:   Terms of Service URL.
+
+    **Type:** string
+
+`--privacyPolicyUrl`
+:   Privacy Policy URL.
+
+    **Type:** string
+
+`--yes`, `-y`
+:   Skip confirmation prompts. Required in non-interactive environments.
+
+    **Type:** boolean | **Default:** `false`
+
+`--apiToken`, `-t`
+:   API token to use for the operation. Use the `register` command to define a default token.
+
+    **Type:** string
+
+`--apiEndpoint`, `--codaApiEndpoint`
+:   API endpoint to use for the operation (default: https://coda.io). Required for single-tenant instances. Can also be set persistently via `packs setOption <manifestFile> apiEndpoint <url>`.
+
+    **Type:** string
 
 ---
 

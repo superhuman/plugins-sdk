@@ -4,7 +4,7 @@
  * available at https://docs.superhuman.com/developers/apis/v1
  *
  * Version: v1
- * Hash: 4f64de8de03e3a7e64fa67827a25c62de87d1a332fbb5c6414943849dff961f6
+ * Hash: 039810dbaad3d22856d7e1308dfc9129814698e347f97c8ae05a44be67da64b2
  */
 
 import 'es6-promise/auto';
@@ -116,6 +116,7 @@ export class Client {
       inGallery?: boolean;
       workspaceId?: string;
       folderId?: string;
+      minimumAccess?: types.PublicApiAccessTypeNotNone;
       limit?: number;
       pageToken?: string;
     } = {},
@@ -1033,6 +1034,28 @@ export class Client {
     });
   }
 
+  async listFolderChildren(
+    folderId: string,
+    params: {
+      limit?: number;
+      pageToken?: string;
+    } = {},
+    headers?: Record<string, string>,
+  ): Promise<types.PublicApiFolderChildList> {
+    const allParams = {
+      ...params,
+    };
+    const {pageToken, ...rest} = allParams;
+    const codaUrl = withQueryParams(`/apis/v1/folders/${folderId}/children`, pageToken ? {pageToken} : rest);
+    return this._transport.makeRequest({
+      method: 'GET',
+      url: codaUrl,
+      body: undefined,
+      headers,
+      operationId: `listFolderChildren`,
+    });
+  }
+
   async getFolder(folderId: string, params: {} = {}, headers?: Record<string, string>): Promise<types.PublicApiFolder> {
     const allParams = {
       ...params,
@@ -1100,6 +1123,48 @@ export class Client {
       body: undefined,
       headers,
       operationId: `whoami`,
+    });
+  }
+
+  async getApiToken(params: {} = {}, headers?: Record<string, string>): Promise<types.PublicApiToken> {
+    const allParams = {
+      ...params,
+    };
+    const codaUrl = withQueryParams(`/apis/v1/token`, allParams);
+    return this._transport.makeRequest({
+      method: 'GET',
+      url: codaUrl,
+      body: undefined,
+      headers,
+      operationId: `getApiToken`,
+    });
+  }
+
+  async revokeApiToken(params: {} = {}, headers?: Record<string, string>): Promise<types.PublicApiTokenRevoke> {
+    const allParams = {
+      ...params,
+    };
+    const codaUrl = withQueryParams(`/apis/v1/token`, allParams);
+    return this._transport.makeRequest({
+      method: 'DELETE',
+      url: codaUrl,
+      body: undefined,
+      headers,
+      operationId: `revokeApiToken`,
+    });
+  }
+
+  async refreshApiToken(params: {} = {}, headers?: Record<string, string>): Promise<types.PublicApiTokenRotation> {
+    const allParams = {
+      ...params,
+    };
+    const codaUrl = withQueryParams(`/apis/v1/token/refresh`, allParams);
+    return this._transport.makeRequest({
+      method: 'POST',
+      url: codaUrl,
+      body: undefined,
+      headers,
+      operationId: `refreshApiToken`,
     });
   }
 
@@ -1421,6 +1486,7 @@ export class Client {
       excludeNomosOrganizationAcls?: boolean;
       excludeGrammarlyInstitutionAcls?: boolean;
       excludeGroupAcls?: boolean;
+      excludeAgentBuilderPacks?: boolean;
       packEntrypoint?: types.PublicApiPackEntrypoint;
       excludePackCategories?: string;
       limit?: number;
@@ -1610,6 +1676,44 @@ export class Client {
       body: payload,
       headers,
       operationId: `registerPackVersion`,
+    });
+  }
+
+  async getInstalledAgent(
+    packId: number,
+    params: {} = {},
+    headers?: Record<string, string>,
+  ): Promise<types.PublicApiAgentInstanceLookup> {
+    const allParams = {
+      ...params,
+    };
+    const codaUrl = withQueryParams(`/apis/v1/packs/${packId}/agentInstance`, allParams);
+    return this._transport.makeRequest({
+      method: 'GET',
+      url: codaUrl,
+      body: undefined,
+      headers,
+      operationId: `getInstalledAgent`,
+    });
+  }
+
+  async installAgent(
+    packId: number,
+    packVersion: string,
+    params: {} = {},
+    payload: types.PublicApiAgentInstallRequest,
+    headers?: Record<string, string>,
+  ): Promise<types.PublicApiAgentInstallResult> {
+    const allParams = {
+      ...params,
+    };
+    const codaUrl = withQueryParams(`/apis/v1/packs/${packId}/versions/${packVersion}/agentInstall`, allParams);
+    return this._transport.makeRequest({
+      method: 'POST',
+      url: codaUrl,
+      body: payload,
+      headers,
+      operationId: `installAgent`,
     });
   }
 
@@ -2321,6 +2425,7 @@ export class Client {
 
   async listPackListings(
     params: {
+      consumingAgentPackId?: number;
       packAccessTypes?: types.PublicApiPackAccessTypes;
       packIds?: string;
       onlyWorkspaceId?: string;
@@ -2360,6 +2465,7 @@ export class Client {
   async getPackListing(
     packId: number,
     params: {
+      consumingAgentPackId?: number;
       workspaceId?: string;
       docId?: string;
       ingestionId?: string;
@@ -2660,6 +2766,24 @@ export class Client {
     });
   }
 
+  async triggerAgent(
+    params: {} = {},
+    payload: types.PublicApiAgentTriggerRequest,
+    headers?: Record<string, string>,
+  ): Promise<types.PublicApiAgentTriggerResult> {
+    const allParams = {
+      ...params,
+    };
+    const codaUrl = withQueryParams(`/apis/v1/agents/trigger`, allParams);
+    return this._transport.makeRequest({
+      method: 'POST',
+      url: codaUrl,
+      body: payload,
+      headers,
+      operationId: `triggerAgent`,
+    });
+  }
+
   async listAgentSessionIds(
     tenantId: string,
     agentInstanceId: string,
@@ -2749,6 +2873,61 @@ export class Client {
       body: undefined,
       headers,
       operationId: `getAgentPackLogDetails`,
+    });
+  }
+
+  async getAgentRunStatus(
+    tenantId: string,
+    agentInstanceId: string,
+    chatId: string,
+    executionId: string,
+    params: {
+      afterTimestamp?: string;
+    } = {},
+    headers?: Record<string, string>,
+  ): Promise<types.PublicApiAgentRunStatus> {
+    const allParams = {
+      ...params,
+
+      executionId,
+    };
+    const codaUrl = withQueryParams(
+      `/apis/v1/go/tenants/${tenantId}/agentInstances/${agentInstanceId}/chats/${chatId}/runStatus`,
+      allParams,
+    );
+    return this._transport.makeRequest({
+      method: 'GET',
+      url: codaUrl,
+      body: undefined,
+      headers,
+      operationId: `getAgentRunStatus`,
+    });
+  }
+
+  async listAgentChatMessages(
+    tenantId: string,
+    agentInstanceId: string,
+    chatId: string,
+    params: {
+      limit?: number;
+      pageToken?: string;
+    } = {},
+    headers?: Record<string, string>,
+  ): Promise<types.PublicApiAgentChatMessages> {
+    const allParams = {
+      ...params,
+    };
+    const {pageToken, ...rest} = allParams;
+    const codaUrl = withQueryParams(
+      `/apis/v1/go/tenants/${tenantId}/agentInstances/${agentInstanceId}/chats/${chatId}/messages`,
+      pageToken ? {pageToken} : rest,
+    );
+    return this._transport.makeRequest({
+      method: 'GET',
+      url: codaUrl,
+      body: undefined,
+      headers,
+      operationId: `listAgentChatMessages`,
     });
   }
 }

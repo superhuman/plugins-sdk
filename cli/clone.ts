@@ -73,10 +73,14 @@ export async function handleClone({packIdOrUrl, apiEndpoint, apiToken, yes}: Arg
 
   print(`Fetched source at version ${packVersion}`);
 
-  await handleInit({yes: true});
+  await handleInit({yes: true, legacySdkAlias: true});
   storePackId(manifestDir, packId, apiEndpoint);
 
   fs.writeFileSync(path.join(manifestDir, 'pack.ts'), sourceCode);
+  print(
+    'Installed @codahq/packs-sdk as an alias of @superhuman/plugins-sdk. ' +
+      'Migrate imports to @superhuman/plugins-sdk when convenient.',
+  );
   printAndExit(`cloned pack_id: ${packId}\nversion: ${packVersion}\nfile: pack.ts`, 0);
 }
 

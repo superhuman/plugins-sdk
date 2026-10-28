@@ -8,6 +8,6 @@
   },
   "license": "./LICENSE",
   "devDependencies": {
-    "@codahq/packs-sdk": "workspace:*"
+    "@superhuman/plugins-sdk": "workspace:*"
   }
 }

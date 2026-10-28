@@ -4,9 +4,9 @@
  * This file is auto-generated from OpenAPI definitions by `make build-openapi`. Do not edit manually.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PublicApiPackAssetType = exports.PublicApiPackEntrypoint = exports.PublicApiPackAccessType = exports.PublicApiPackPrincipalType = exports.PublicApiPackListingsSortBy = exports.PublicApiPacksSortBy = exports.PublicApiPackFormulaAnalyticsOrderBy = exports.PublicApiAnalyticsScale = exports.PublicApiPackAnalyticsOrderBy = exports.PublicApiDocAnalyticsOrderBy = exports.PublicApiWorkspaceUserRole = exports.PublicApiTableType = exports.PublicApiSortBy = exports.PublicApiControlType = exports.PublicApiValueFormat = exports.PublicApiRowsSortBy = exports.PublicApiImageStatus = exports.PublicApiLinkedDataType = exports.PublicApiColumnFormatType = exports.PublicApiCheckboxDisplayType = exports.PublicApiSliderDisplayType = exports.PublicApiIconSet = exports.PublicApiDurationUnit = exports.PublicApiLinkDisplayType = exports.PublicApiImageShapeStyle = exports.PublicApiEmailDisplayType = exports.PublicApiCurrencyFormatType = exports.PublicApiSyncPageType = exports.PublicApiSortDirection = exports.PublicApiPageLineStyle = exports.PublicApiPageType = exports.PublicApiPageContentFormat = exports.PublicApiLayout = exports.PublicApiPageEmbedRenderMethod = exports.PublicApiPageContentExportStatus = exports.PublicApiPageContentOutputFormat = exports.PublicApiPageContentInsertionMode = exports.PublicApiPageContentItemContentFormat = exports.PublicApiPageContentItemType = exports.PublicApiFolderIconColor = exports.PublicApiCustomDomainConnectedStatus = exports.PublicApiCustomDocDomainSetupStatus = exports.PublicApiCustomDocDomainProvider = exports.PublicApiDocPublishMode = exports.PublicApiAccessTypeNotNone = exports.PublicApiAccessType = exports.PublicApiPrincipalType = exports.PublicApiType = exports.OpenApiSpecVersion = exports.OpenApiSpecHash = void 0;
-exports.PublicApiIngestionChildExecutionType = exports.PublicApiIngestionExecutionType = exports.PublicApiIngestionStatus = exports.PublicApiPackPlanPricingType = exports.PublicApiPackPlanCurrency = exports.PublicApiPackSourceCodeVisibility = exports.PublicApiPackFormulaType = exports.PublicApiFeaturedDocStatus = exports.PublicApiPaidFeatureSet = exports.PublicApiFeatureSet = exports.PublicApiLogLevel = exports.PublicApiPackLogType = exports.PublicApiPackLogRequestType = exports.PublicApiPackOAuth2ClientCredentialsLocation = exports.PublicApiPackConnectionType = exports.PublicApiIngestionPackReleaseChannel = exports.PublicApiPackListingInstallContextType = exports.PublicApiPackCategoryType = exports.PublicApiPackType = exports.PublicApiPackDiscoverability = exports.PublicApiPackSource = exports.PublicApiPackReviewStatus = void 0;
-exports.OpenApiSpecHash = '4f64de8de03e3a7e64fa67827a25c62de87d1a332fbb5c6414943849dff961f6';
+exports.PublicApiPackEntrypoint = exports.PublicApiPackAccessType = exports.PublicApiPackPrincipalType = exports.PublicApiPackListingsSortBy = exports.PublicApiPacksSortBy = exports.PublicApiPackFormulaAnalyticsOrderBy = exports.PublicApiAnalyticsScale = exports.PublicApiPackAnalyticsOrderBy = exports.PublicApiDocAnalyticsOrderBy = exports.PublicApiWorkspaceUserRole = exports.PublicApiTableType = exports.PublicApiSortBy = exports.PublicApiControlType = exports.PublicApiValueFormat = exports.PublicApiRowsSortBy = exports.PublicApiImageStatus = exports.PublicApiLinkedDataType = exports.PublicApiColumnFormatType = exports.PublicApiCheckboxDisplayType = exports.PublicApiSliderDisplayType = exports.PublicApiIconSet = exports.PublicApiDurationUnit = exports.PublicApiLinkDisplayType = exports.PublicApiImageShapeStyle = exports.PublicApiEmailDisplayType = exports.PublicApiCurrencyFormatType = exports.PublicApiSyncPageType = exports.PublicApiSortDirection = exports.PublicApiPageLineStyle = exports.PublicApiPageType = exports.PublicApiPageContentFormat = exports.PublicApiLayout = exports.PublicApiPageEmbedRenderMethod = exports.PublicApiPageContentExportStatus = exports.PublicApiPageContentOutputFormat = exports.PublicApiPageContentInsertionMode = exports.PublicApiPageContentItemContentFormat = exports.PublicApiPageContentItemType = exports.PublicApiFolderIconColor = exports.PublicApiFolderVisibility = exports.PublicApiCustomDomainConnectedStatus = exports.PublicApiCustomDocDomainSetupStatus = exports.PublicApiCustomDocDomainProvider = exports.PublicApiDocPublishMode = exports.PublicApiAccessTypeNotNone = exports.PublicApiAccessType = exports.PublicApiPrincipalType = exports.PublicApiType = exports.OpenApiSpecVersion = exports.OpenApiSpecHash = void 0;
+exports.PublicApiIngestionChildExecutionType = exports.PublicApiIngestionExecutionType = exports.PublicApiIngestionStatus = exports.PublicApiPackPlanPricingType = exports.PublicApiPackPlanCurrency = exports.PublicApiPackSourceCodeVisibility = exports.PublicApiPackFormulaType = exports.PublicApiFeaturedDocStatus = exports.PublicApiPaidFeatureSet = exports.PublicApiFeatureSet = exports.PublicApiLogLevel = exports.PublicApiPackLogType = exports.PublicApiPackLogRequestType = exports.PublicApiPackOAuth2ClientCredentialsLocation = exports.PublicApiPackConnectionType = exports.PublicApiIngestionPackReleaseChannel = exports.PublicApiPackListingInstallContextType = exports.PublicApiPackDistributionMode = exports.PublicApiPackCategoryType = exports.PublicApiPackType = exports.PublicApiPackDiscoverability = exports.PublicApiPackSource = exports.PublicApiPackReviewStatus = exports.PublicApiPackAssetType = void 0;
+exports.OpenApiSpecHash = '039810dbaad3d22856d7e1308dfc9129814698e347f97c8ae05a44be67da64b2';
 exports.OpenApiSpecVersion = '1.6.0';
 /**
  * A constant identifying the type of the resource.
@@ -17,6 +17,7 @@ var PublicApiType;
     PublicApiType["AclPermissions"] = "aclPermissions";
     PublicApiType["AclSettings"] = "aclSettings";
     PublicApiType["AgentPackLog"] = "agentPackLog";
+    PublicApiType["AgentRun"] = "agentRun";
     PublicApiType["AnalyticsLastUpdated"] = "analyticsLastUpdated";
     PublicApiType["ApiLink"] = "apiLink";
     PublicApiType["Automation"] = "automation";
@@ -126,6 +127,14 @@ var PublicApiCustomDomainConnectedStatus;
     PublicApiCustomDomainConnectedStatus["Connected"] = "connected";
     PublicApiCustomDomainConnectedStatus["NotConnected"] = "notConnected";
 })(PublicApiCustomDomainConnectedStatus || (exports.PublicApiCustomDomainConnectedStatus = PublicApiCustomDomainConnectedStatus = {}));
+/**
+ * Whether the caller can access a folder returned in a children listing.
+ */
+var PublicApiFolderVisibility;
+(function (PublicApiFolderVisibility) {
+    PublicApiFolderVisibility["Visible"] = "visible";
+    PublicApiFolderVisibility["Restricted"] = "restricted";
+})(PublicApiFolderVisibility || (exports.PublicApiFolderVisibility = PublicApiFolderVisibility = {}));
 /**
  * Color scheme for folder icons.
  */
@@ -645,6 +654,15 @@ var PublicApiPackCategoryType;
     PublicApiPackCategoryType["Agent"] = "agent";
     PublicApiPackCategoryType["CustomAgent"] = "customAgent";
 })(PublicApiPackCategoryType || (exports.PublicApiPackCategoryType = PublicApiPackCategoryType = {}));
+/**
+ * How a Pack can be consumed. templateOnly marks a custom agent published as a template, which the user completes with their own data sources rather than installing as-is.
+ */
+var PublicApiPackDistributionMode;
+(function (PublicApiPackDistributionMode) {
+    PublicApiPackDistributionMode["InstallOnly"] = "installOnly";
+    PublicApiPackDistributionMode["AppOnly"] = "appOnly";
+    PublicApiPackDistributionMode["TemplateOnly"] = "templateOnly";
+})(PublicApiPackDistributionMode || (exports.PublicApiPackDistributionMode = PublicApiPackDistributionMode = {}));
 /**
  * Type of context in which a Pack is being installed.
  */

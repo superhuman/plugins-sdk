@@ -84,7 +84,7 @@ class PackDefinitionBuilder extends BaseDefinitionBuilder {
      */
     constructor(definition) {
         super();
-        const { formulas, formats, syncTables, skills, chatSkill, benchInitializationSkill, networkDomains, defaultAuthentication, systemConnectionAuthentication, version, formulaNamespace, skillEntrypoints, suggestedPrompts, mcpServers, } = definition || {};
+        const { formulas, formats, syncTables, skills, chatSkill, benchInitializationSkill, networkDomains, defaultAuthentication, systemConnectionAuthentication, version, formulaNamespace, skillEntrypoints, suggestedPrompts, mcpServers, suggestionProviders, } = definition || {};
         this.formulas = formulas || [];
         this.formats = formats || [];
         this.syncTables = syncTables || [];
@@ -95,6 +95,9 @@ class PackDefinitionBuilder extends BaseDefinitionBuilder {
         this.suggestedPrompts = suggestedPrompts || [];
         this.networkDomains = networkDomains || [];
         this.mcpServers = mcpServers || [];
+        if (suggestionProviders) {
+            this.suggestionProviders = suggestionProviders;
+        }
         this.defaultAuthentication = defaultAuthentication;
         this.systemConnectionAuthentication = systemConnectionAuthentication;
         this.version = version;
@@ -228,6 +231,15 @@ class PackDefinitionBuilder extends BaseDefinitionBuilder {
      */
     addSkill(skill) {
         this.skills.push(skill);
+        return this;
+    }
+    /**
+     * Declares a provider of suggestions while the user writes.
+     * @hidden Experimental early access for internal users and approved external developers; the shape may change.
+     */
+    addSuggestionProvider(provider) {
+        var _a;
+        ((_a = this.suggestionProviders) !== null && _a !== void 0 ? _a : (this.suggestionProviders = [])).push(provider);
         return this;
     }
     /**
@@ -562,6 +574,7 @@ class AgentDefinitionBuilder extends BaseDefinitionBuilder {
      * ```
      * pack.setTools({docs: true, mail: true, webSearch: {allowedDomains: ['docs.example.com']}});
      * pack.setTools({connectors: [{packId: 1234, formulas: [{formulaName: 'CreateTask'}]}]});
+     * pack.setTools({connectors: [{packId: 5678, mcpTools: [{toolName: 'search_issues'}]}]});
      * ```
      */
     setTools({ docs, mail, webSearch, connectors }) {
@@ -581,6 +594,8 @@ class AgentDefinitionBuilder extends BaseDefinitionBuilder {
                 type: types_4.ToolType.Pack,
                 packId: connector.packId,
                 ...(connector.formulas ? { formulas: connector.formulas } : {}),
+                ...(connector.useSuggestions !== undefined ? { useSuggestions: connector.useSuggestions } : {}),
+                ...(connector.mcpTools ? { mcpTools: connector.mcpTools } : {}),
             });
         }
         const state = stateOf(this);
@@ -664,6 +679,8 @@ class AgentDefinitionBuilder extends BaseDefinitionBuilder {
     }
     /**
      * Adds a notetaker event trigger this agent runs on.
+     *
+     * @hidden In early access, live in production for Codans only, but the shape may change.
      *
      * @example
      * ```

@@ -140,7 +140,7 @@ Start by scaffolding out the structure of the sync table, coming back to some of
     <div markdown>
 
     ```ts
-    import * as sdk from "@codahq/packs-sdk";
+    import * as sdk from "@superhuman/plugins-sdk";
     export const pack = sdk.newPack();
 
     pack.addNetworkDomain("gutendex.com");
@@ -166,7 +166,7 @@ Start by scaffolding out the structure of the sync table, coming back to some of
     <div markdown>
 
     ```{.ts hl_lines="7-9"}
-    import * as sdk from "@codahq/packs-sdk";
+    import * as sdk from "@superhuman/plugins-sdk";
     export const pack = sdk.newPack();
 
     pack.addNetworkDomain("gutendex.com");
@@ -192,7 +192,7 @@ Start by scaffolding out the structure of the sync table, coming back to some of
     <div markdown>
 
     ```{.ts hl_lines="10"}
-    import * as sdk from "@codahq/packs-sdk";
+    import * as sdk from "@superhuman/plugins-sdk";
     export const pack = sdk.newPack();
 
     pack.addNetworkDomain("gutendex.com");
@@ -224,7 +224,7 @@ Start by scaffolding out the structure of the sync table, coming back to some of
     <div markdown>
 
     ```{.ts hl_lines="11-18"}
-    import * as sdk from "@codahq/packs-sdk";
+    import * as sdk from "@superhuman/plugins-sdk";
     export const pack = sdk.newPack();
 
     pack.addNetworkDomain("gutendex.com");
@@ -391,7 +391,7 @@ The schema is essentially a blueprint for each row in the sync table, describing
     <div markdown>
 
     ```{.ts hl_lines="6-8"}
-    import * as sdk from "@codahq/packs-sdk";
+    import * as sdk from "@superhuman/plugins-sdk";
     export const pack = sdk.newPack();
 
     pack.addNetworkDomain("gutendex.com");

@@ -129,7 +129,7 @@ repository, use a clean working tree.
 ## Full working example
 
 ```typescript
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 
 export const pack = sdk.newAgent();
 pack.setInstructions("print hello world, then send a slack message to myself for the current date");

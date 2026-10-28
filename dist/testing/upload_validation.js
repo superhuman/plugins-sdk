@@ -73,9 +73,10 @@ const types_20 = require("../types");
 const schema_16 = require("../schema");
 const types_21 = require("../types");
 const types_22 = require("../types");
-const api_types_7 = require("../api_types");
 const types_23 = require("../types");
+const api_types_7 = require("../api_types");
 const types_24 = require("../types");
+const types_25 = require("../types");
 const api_types_8 = require("../api_types");
 const url_parse_1 = __importDefault(require("url-parse"));
 const schema_17 = require("../schema");
@@ -782,7 +783,7 @@ function buildMetadataSchema({ sdkVersion }) {
             resource: z.string().refine(validateUrlParsesIfAbsolute).optional(),
             scopeParamName: z.string().optional(),
             nestedResponseKey: z.string().optional(),
-            credentialsLocation: z.nativeEnum(types_23.TokenExchangeCredentialsLocation).optional(),
+            credentialsLocation: z.nativeEnum(types_24.TokenExchangeCredentialsLocation).optional(),
             useDynamicClientRegistration: z.boolean().optional(),
             ...baseAuthenticationValidators,
         }).superRefine((authDef, context) => {
@@ -835,7 +836,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
             resource: z.string().url().refine(validateUrlParsesIfAbsolute).optional(),
             scopeParamName: z.string().optional(),
             nestedResponseKey: z.string().optional(),
-            credentialsLocation: z.nativeEnum(types_23.TokenExchangeCredentialsLocation).optional(),
+            credentialsLocation: z.nativeEnum(types_24.TokenExchangeCredentialsLocation).optional(),
             ...baseAuthenticationValidators,
         }).superRefine(({ requiresEndpointUrl, tokenUrl }, context) => {
             const isValid = requiresEndpointUrl
@@ -1889,8 +1890,9 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         }
     });
     const packToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_24.ToolType.Pack),
+        type: z.literal(types_25.ToolType.Pack),
         packId: z.number().optional(),
+        useSuggestions: z.boolean().optional(),
         formulas: z
             .array(zodCompleteStrictObject({
             formulaName: z
@@ -1919,7 +1921,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         }),
     ]);
     const knowledgeToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_24.ToolType.Knowledge),
+        type: z.literal(types_25.ToolType.Knowledge),
         source: knowledgeToolSourceSchema,
     });
     const screenAnnotationSchema = z.discriminatedUnion('type', [
@@ -1931,7 +1933,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         }),
     ]);
     const screenAnnotationToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_24.ToolType.ScreenAnnotation),
+        type: z.literal(types_25.ToolType.ScreenAnnotation),
         annotation: screenAnnotationSchema,
     });
     const embeddedContentSchema = z.discriminatedUnion('type', [
@@ -1946,25 +1948,25 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         }),
     ]);
     const embeddedContentToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_24.ToolType.EmbeddedContent),
+        type: z.literal(types_25.ToolType.EmbeddedContent),
         embeddedContent: embeddedContentSchema,
     });
     const mcpToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_24.ToolType.MCP),
+        type: z.literal(types_25.ToolType.MCP),
         serverNames: z.array(z.string()).optional(),
         packId: z.number().optional(),
     });
     const contactResolutionToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_24.ToolType.ContactResolution),
+        type: z.literal(types_25.ToolType.ContactResolution),
     });
     const codaDocsToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_24.ToolType.CodaDocsAndTables),
+        type: z.literal(types_25.ToolType.CodaDocsAndTables),
     });
     const mailAndCalendarToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_24.ToolType.MailAndCalendar),
+        type: z.literal(types_25.ToolType.MailAndCalendar),
     });
     const webSearchToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_24.ToolType.WebSearch),
+        type: z.literal(types_25.ToolType.WebSearch),
         allowedDomains: z.array(z.string().min(1)).min(1).max(100).optional(),
     });
     const skillModelConfigurationSchema = zodCompleteStrictObject({
@@ -2007,7 +2009,33 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
     const chatSkillSchema = skillSchema.partial();
     // Missing and empty are separate Zod failures, so both carry the same message.
     const MissingInstructions = 'An agent must have instructions. Call setInstructions() on the agent.';
-    const agentToolSchema = z.discriminatedUnion('type', [packToolSchema.extend({ packId: z.number() }), codaDocsToolSchema, mailAndCalendarToolSchema, webSearchToolSchema], { error: 'An agent can only use the Docs, Mail, web search, and Pack tools.' });
+    const agentConnectorMcpToolSchema = zodCompleteStrictObject({
+        toolName: z.string().min(1),
+        serverName: z.string().min(1).optional(),
+    });
+    const agentPackToolSchema = packToolSchema.extend({
+        packId: z.number(),
+        mcpTools: z
+            .array(agentConnectorMcpToolSchema)
+            .min(1, 'List at least one MCP tool, or leave mcpTools out to offer all of them.')
+            .superRefine((mcpTools, context) => {
+            const seen = new Set();
+            mcpTools.forEach((mcpTool, index) => {
+                var _a;
+                const key = JSON.stringify([(_a = mcpTool.serverName) !== null && _a !== void 0 ? _a : null, mcpTool.toolName]);
+                if (seen.has(key)) {
+                    context.addIssue({
+                        code: 'custom',
+                        path: [index],
+                        message: `MCP tool "${mcpTool.toolName}" is listed more than once.`,
+                    });
+                }
+                seen.add(key);
+            });
+        })
+            .optional(),
+    });
+    const agentToolSchema = z.discriminatedUnion('type', [agentPackToolSchema, codaDocsToolSchema, mailAndCalendarToolSchema, webSearchToolSchema], { error: 'An agent can only use the Docs, Mail, web search, and Pack tools.' });
     const agentSchema = zodCompleteStrictObject({
         instructions: z.string({ error: MissingInstructions }).min(1, MissingInstructions).max(exports.Limits.PromptLength),
         tools: z
@@ -2017,12 +2045,12 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
             .superRefine((tools, context) => {
             const seen = new Set();
             tools.forEach((tool, index) => {
-                const key = tool.type === types_24.ToolType.Pack ? `${tool.type}:${tool.packId}` : tool.type;
+                const key = tool.type === types_25.ToolType.Pack ? `${tool.type}:${tool.packId}` : tool.type;
                 if (seen.has(key)) {
                     context.addIssue({
                         code: 'custom',
                         path: [index],
-                        message: tool.type === types_24.ToolType.Pack
+                        message: tool.type === types_25.ToolType.Pack
                             ? `An agent can only name pack ${tool.packId} once.`
                             : `An agent can only use the ${tool.type} tool once.`,
                     });
@@ -2334,6 +2362,22 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         agent: agentSchema.optional(),
         defaultTriggers: defaultTriggersSchema.optional(),
         defaultRoutines: z.array(routineSchema).optional(),
+        suggestionProviders: z
+            .array(zodCompleteStrictObject({
+            type: z.literal(types_23.SuggestionProviderType.Endpoint),
+            name: z.string().min(1).max(100),
+            endpointUrl: z
+                .string()
+                .url()
+                .refine(value => Boolean(parseDomainName(value)), 'A valid HTTPS URL is required.'),
+        }))
+            .max(10)
+            .optional()
+            .superRefine((endpoints, context) => {
+            for (const name of getNonUniqueElements((endpoints !== null && endpoints !== void 0 ? endpoints : []).map(endpoint => endpoint.name))) {
+                context.addIssue({ code: 'custom', message: `Duplicate suggestion endpoint name: ${name}` });
+            }
+        }),
         mcpServers: z
             .array(mcpServerSchema)
             .max(1)
@@ -2570,7 +2614,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
                     // Cross-pack tool calls (with packId set) are not validated here, though they will
                     // fail at runtime for third-party packs since only first-party Coda agents can
                     // access formulas from other packs.
-                    if (tool.type === types_24.ToolType.Pack && !tool.packId && tool.formulas) {
+                    if (tool.type === types_25.ToolType.Pack && !tool.packId && tool.formulas) {
                         tool.formulas.forEach((formula, formulaIndex) => {
                             const { formulaName } = formula;
                             if (!formulaNames.has(formulaName)) {
@@ -2711,6 +2755,20 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         path: ['networkDomains'],
     })
         .superRefine((untypedData, context) => {
+        var _a, _b;
+        const data = untypedData;
+        for (const [i, endpoint] of ((_a = data.suggestionProviders) !== null && _a !== void 0 ? _a : []).entries()) {
+            const hostname = (0, url_parse_1.default)(endpoint.endpointUrl).hostname;
+            if (!isEndpointDomainAllowed(hostname, (_b = data.networkDomains) !== null && _b !== void 0 ? _b : [])) {
+                context.addIssue({
+                    code: 'custom',
+                    path: ['suggestionProviders', i, 'endpointUrl'],
+                    message: 'Suggestion endpoint must be on a declared network domain.',
+                });
+            }
+        }
+    })
+        .superRefine((untypedData, context) => {
         var _a;
         const data = untypedData;
         for (const authInfo of getAuthentications(data)) {
@@ -2776,17 +2834,13 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
             return;
         }
         for (const [i, server] of data.mcpServers.entries()) {
-            // A relative endpointUrl yields an empty hostname here and is skipped; its host comes from
-            // the user's connection endpoint and is validated against networkDomains at request time.
-            const usedNetworkDomain = (0, url_parse_1.default)(server.endpointUrl).hostname;
-            if (!usedNetworkDomain) {
-                continue;
-            }
-            if (!data.networkDomains.some(domain => domain === usedNetworkDomain || usedNetworkDomain.endsWith('.' + domain))) {
+            // Relative endpoints use the connection's hostname, checked at request time.
+            const hostname = (0, url_parse_1.default)(server.endpointUrl).hostname;
+            if (!isEndpointDomainAllowed(hostname, data.networkDomains)) {
                 context.addIssue({
                     code: 'custom',
                     path: [`mcpServers[${i}].endpointUrl`],
-                    message: `Domain ${usedNetworkDomain} is used in MCP server ${server.name} but not declared in the pack's "networkDomains".`,
+                    message: `Domain ${hostname} is used in MCP server ${server.name} but not declared in the pack's "networkDomains".`,
                 });
                 return;
             }
@@ -2894,7 +2948,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
     })
         .superRefine((data, context) => {
         const metadata = data;
-        const hasMcpToolWithoutPackId = (metadata.skills || []).some(skill => skill.tools.some(tool => tool.type === types_24.ToolType.MCP && !tool.packId));
+        const hasMcpToolWithoutPackId = (metadata.skills || []).some(skill => skill.tools.some(tool => tool.type === types_25.ToolType.MCP && !tool.packId));
         if (hasMcpToolWithoutPackId && (!metadata.mcpServers || metadata.mcpServers.length === 0)) {
             context.addIssue({
                 code: 'custom',
@@ -2973,6 +3027,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
             ['formats', 'column formats'],
             ['skills', 'skills'],
             ['mcpServers', 'MCP servers'],
+            ['suggestionProviders', 'suggestion endpoints'],
             ['networkDomains', 'network domains'],
             ['adminAuthentications', 'admin authentication'],
         ];
@@ -3230,6 +3285,9 @@ function validateDeprecatedParameterFields(param, pathPrefix, context) {
         pathPrefix,
         context,
     });
+}
+function isEndpointDomainAllowed(hostname, networkDomains) {
+    return !hostname || networkDomains.some(domain => hostname === domain || hostname.endsWith(`.${domain}`));
 }
 function isAbsoluteUrl(url) {
     return url.startsWith('https://');

@@ -47,7 +47,7 @@ A formula that gets a JSON value. This sample generates random bacon-themed Lore
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // When using the fetcher, this is the domain of the API that your pack makes
@@ -88,7 +88,7 @@ A formula that fetches binary data. This sample gets image data and calculates t
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Regular expression that matches Superhuman-hosted images.
@@ -134,7 +134,7 @@ A sync table that queries a GraphQL API. This sample lists the products in a moc
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 const PageSize = 20;
@@ -252,7 +252,7 @@ An action formula that sends application/x-www-form-urlencoded data. This sample
 
 ```ts
 {% raw %}
-import * as sdk from "@codahq/packs-sdk";
+import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 pack.addFormula({
