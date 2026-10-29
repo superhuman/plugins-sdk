@@ -184,7 +184,8 @@
       }
     },
     "patchedDependencies": {
-      "jsonpath-plus@10.4.0": "patches/jsonpath-plus@10.4.0.patch"
+      "jsonpath-plus@10.4.0": "patches/jsonpath-plus@10.4.0.patch",
+      "@release-it/keep-a-changelog@8.0.1": "patches/@release-it__keep-a-changelog@8.0.1.patch"
     },
     "ignoredBuiltDependencies": [
       "aws-sdk",
