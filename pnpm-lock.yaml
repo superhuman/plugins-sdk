@@ -50,9 +50,6 @@ overrides:
 packageExtensionsChecksum: sha256-jOFugJbEjo38UV1unLJM/6itxPFBBiGGEtfcaEfSRi4=
 
 patchedDependencies:
-  '@release-it/keep-a-changelog@8.0.1':
-    hash: d7ef2cd124c23d6f9c32d41db78a7e9897cfb0b06f74fe575148a6d56b7d13ed
-    path: patches/@release-it__keep-a-changelog@8.0.1.patch
   jsonpath-plus@10.4.0:
     hash: 635c0a86814535f0be1e334798007fedebfa67aa4c298c2af403b1bfb0dc3b98
     path: patches/jsonpath-plus@10.4.0.patch
@@ -181,7 +178,7 @@ importers:
         version: 3.7.6
       '@release-it/keep-a-changelog':
         specifier: 8.0.1
-        version: 8.0.1(patch_hash=d7ef2cd124c23d6f9c32d41db78a7e9897cfb0b06f74fe575148a6d56b7d13ed)(release-it@21.1.0(@types/node@18.19.68))
+        version: 8.0.1(release-it@21.1.0(@types/node@18.19.68))
       '@stylistic/eslint-plugin':
         specifier: 5.8.0
         version: 5.8.0(eslint@9.39.2(jiti@2.7.0))
@@ -6183,7 +6180,7 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@release-it/keep-a-changelog@8.0.1(patch_hash=d7ef2cd124c23d6f9c32d41db78a7e9897cfb0b06f74fe575148a6d56b7d13ed)(release-it@21.1.0(@types/node@18.19.68))':
+  '@release-it/keep-a-changelog@8.0.1(release-it@21.1.0(@types/node@18.19.68))':
     dependencies:
       detect-newline: 4.0.1
       release-it: 21.1.0(@types/node@18.19.68)
