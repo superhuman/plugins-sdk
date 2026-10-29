@@ -1,6 +1,6 @@
 {
   "name": "@superhuman/plugins-sdk",
-  "version": "1.18.4",
+  "version": "1.19.0",
   "license": "MIT",
   "engines": {
     "node": ">=22.0.0",

@@ -4,6 +4,8 @@ This changelog keeps track of all changes to the Packs SDK. We follow convention
 
 ## [Unreleased]
 
+## [1.19.0] - 2026-10-29
+
 ### Added
 
 - The `packs settings get` and `packs settings update` commands read and change Pack settings on the server.
@@ -1206,7 +1208,7 @@ await myHelper(context);
 
 - Beginning of alpha versioning.
 
-[Unreleased]: https://github.com/superhuman/plugins-sdk/compare/v1.18.4...HEAD
+[Unreleased]: https://github.com/superhuman/plugins-sdk/compare/v1.19.0...HEAD
 [1.7.5]: https://github.com/coda/packs-sdk/compare/v1.7.1...v1.7.5
 [1.7.4]: https://github.com/coda/packs-sdk/compare/v1.7.1...v1.7.4
 [1.7.3]: https://github.com/coda/packs-sdk/compare/v1.7.1...v1.7.3
@@ -1296,3 +1298,4 @@ await myHelper(context);
 [1.18.2]: https://github.com/coda/packs-sdk/compare/v1.7.8...v1.18.2
 [1.18.3]: https://github.com/coda/packs-sdk/compare/v1.18.2...v1.18.3
 [1.18.4]: https://github.com/superhuman/plugins-sdk/compare/v1.18.3...v1.18.4
+[1.19.0]: https://github.com/superhuman/plugins-sdk/compare/v1.18.4...v1.19.0
