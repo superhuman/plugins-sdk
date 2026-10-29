@@ -1,0 +1,29 @@
+diff --git a/index.js b/index.js
+index bff4249b89ed2d2307e4dc16e3db5e6e72848053..09e0dab9ce55faa057e288581d50afb47f41309c 100644
+--- a/index.js
++++ b/index.js
+@@ -128,7 +128,7 @@ class KeepAChangelog extends Plugin {
+   }
+ 
+   addVersionUrls(changelog) {
+-    const { version, latestVersion, tagName, latestTag, repo } = this.config.getContext();
++    const { version, tagName, latestTag, repo } = this.config.getContext();
+     let updatedChangelog = changelog;
+ 
+     const repositoryUrl = format(this.versionUrlFormats.repositoryUrl, repo);
+@@ -151,14 +151,9 @@ class KeepAChangelog extends Plugin {
+     }
+ 
+     // Add a link for the new version
+-    const latestVersionLink = `[${latestVersion}]:`;
+     const versionUrl = format(this.versionUrlFormats.versionUrl, { repositoryUrl, previousTag: latestTag, tagName });
+     const versionLink = `[${version}]: ${versionUrl}`;
+-    if (updatedChangelog.includes(latestVersionLink)) {
+-      return updatedChangelog.replace(latestVersionLink, `${versionLink}${this.EOL}${latestVersionLink}`);
+-    } else {
+-      return `${updatedChangelog}${this.EOL}${versionLink}`;
+-    }
++    return `${updatedChangelog}${this.EOL}${versionLink}`;
+   }
+ 
+   beforeRelease() {
