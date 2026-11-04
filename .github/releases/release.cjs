@@ -72,7 +72,8 @@ async function prepare(env) {
     `packs-sdk: release v${version}`,
     '--body',
     'Review the changelog and diff, then merge after CI passes. Approve bot-created workflow runs if requested. ' +
-      'Complete documentation deployments and the internal dependency update in the release runbook after publication.',
+      'Contact SDK maintainers to arrange documentation publication and confirm completion. ' +
+      'Complete the internal dependency update in the release runbook after publication.',
   ]);
   summary(`Prepared ${url}\nBranch: ${branch}\nCommit: ${git('rev-parse', 'HEAD')}`, env);
 }
