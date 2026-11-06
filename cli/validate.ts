@@ -1,6 +1,8 @@
 import type {AgentTool} from '../types';
 import type {ArgumentsCamelCase} from 'yargs';
 import type {Client} from '../helpers/external-api/coda';
+import type {CompilePackBundleOptions} from '../testing/compile';
+import {PackDefinitionExportValidationError} from '../helpers/pack_exports';
 import type {PackMetadataValidationError} from '../testing/upload_validation';
 import type {PackVersionDefinition} from '..';
 import type {PackVersionMetadata} from '../compiled_types';
@@ -10,6 +12,7 @@ import {compilePackBundle} from '../testing/compile';
 import {compilePackMetadata} from '../helpers/metadata';
 import {createCodaClient} from './helpers';
 import {formatEndpoint} from './helpers';
+import {formatError} from './errors';
 import {formatResponseError} from './errors';
 import {getApiKey} from './config_storage';
 import {importManifest} from './helpers';
@@ -19,6 +22,21 @@ import {makeManifestFullPath} from './helpers';
 import {print} from '../testing/helpers';
 import {printAndExit} from '../testing/helpers';
 import {validatePackVersionMetadata} from '../testing/upload_validation';
+
+/** Compiles a Pack for CLI commands only, exiting on failure. */
+export async function compilePack(
+  options: CompilePackBundleOptions,
+): Promise<{bundlePath: string; bundleSourceMapPath: string}> {
+  try {
+    const {bundlePath, bundleSourceMapPath} = await compilePackBundle(options);
+    return {bundlePath, bundleSourceMapPath};
+  } catch (error: unknown) {
+    if (error instanceof PackDefinitionExportValidationError) {
+      printAndExit(error.message);
+    }
+    printAndExit(`Unable to compile Pack: ${formatError(error)}`);
+  }
+}
 
 interface ValidateArgs {
   manifestFile: string;
@@ -36,7 +54,7 @@ export async function handleValidate({
   apiEndpoint,
 }: ArgumentsCamelCase<ValidateArgs>) {
   const fullManifestPath = makeManifestFullPath(manifestFile);
-  const {bundlePath} = await compilePackBundle({manifestPath: fullManifestPath, minify: false});
+  const {bundlePath} = await compilePack({manifestPath: fullManifestPath, minify: false, validateExports: true});
   const manifest = await importManifest<PackVersionDefinition>(bundlePath);
 
   // Since it's okay to not specify a version, we inject one if it's not provided.

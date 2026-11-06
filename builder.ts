@@ -58,7 +58,26 @@ import {validateRRuleString} from './testing/rrule_validation';
 import {wrapMetadataFunction} from './api';
 
 /**
+ * Creates a new skeleton connector definition that can be added to.
+ *
+ * @example
+ * ```
+ * export const connector = newConnector();
+ * connector.addFormula({resultType: ValueType.String, name: 'MyFormula', ...});
+ * connector.addSyncTable('MyTable', ...);
+ * connector.setUserAuthentication({type: AuthenticationType.HeaderBearerToken});
+ * ```
+ */
+export function newConnector(
+  definition?: Partial<Omit<PackVersionDefinition, 'agent' | 'defaultTriggers' | 'defaultRoutines'>>,
+): PackDefinitionBuilder {
+  return new PackDefinitionBuilder(definition);
+}
+
+/**
  * Creates a new skeleton pack definition that can be added to.
+ *
+ * @deprecated Use {@link newConnector}.
  *
  * @example
  * ```
@@ -71,7 +90,7 @@ import {wrapMetadataFunction} from './api';
 export function newPack(
   definition?: Partial<Omit<PackVersionDefinition, 'agent' | 'defaultTriggers' | 'defaultRoutines'>>,
 ): PackDefinitionBuilder {
-  return new PackDefinitionBuilder(definition);
+  return newConnector(definition);
 }
 
 /**
@@ -122,7 +141,7 @@ export class BaseDefinitionBuilder {
 }
 
 /**
- * A class that assists in constructing a pack definition. Use {@link newPack} to create one.
+ * A class that assists in constructing a pack definition. Use {@link newConnector} to create one.
  */
 export class PackDefinitionBuilder extends BaseDefinitionBuilder implements BasicPackDefinition {
   /**
@@ -200,7 +219,7 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
   private _defaultConnectionRequirement: ConnectionRequirement | undefined;
 
   /**
-   * Constructs a {@link PackDefinitionBuilder}. However, `sdk.newPack()` should be used instead
+   * Constructs a {@link PackDefinitionBuilder}. However, `sdk.newConnector()` should be used instead
    * rather than constructing a builder directly.
    */
   constructor(definition?: Partial<Omit<PackVersionDefinition, 'agent' | 'defaultTriggers' | 'defaultRoutines'>>) {

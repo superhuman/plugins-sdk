@@ -11,6 +11,7 @@ import {buildAgentInstallCommand} from '../cli/index';
 import {buildAgentInstallUrl} from '../cli/agent_install';
 import {buildAgentRouteUrl} from '../cli/agent_api';
 import {buildAgentRunStatusUrl} from '../cli/agent_chat';
+import {buildAgentSettingsUrl} from '../cli/agent_install';
 import {buildInstalledAgentUrl} from '../cli/agent_api';
 import {buildTriggerAgentUrl} from '../cli/agent_chat';
 import {checkAgentConnectorListings} from '../cli/validate';
@@ -607,6 +608,44 @@ describe('CLI', () => {
 
     it('looks up the installed agent by pack id', () => {
       assert.equal(buildInstalledAgentUrl('https://coda.io', 1234), 'https://coda.io/apis/v1/packs/1234/agentInstance');
+    });
+
+    it('builds the Go Home settings URL for the API host', () => {
+      const agentInstanceId = '8724bcb7-78a4-4872-9f5c-5a10e90b66de';
+      assert.equal(
+        buildAgentSettingsUrl('https://coda.io', agentInstanceId),
+        `https://go.superhuman.com/builder/${agentInstanceId}`,
+      );
+      assert.equal(
+        buildAgentSettingsUrl('coda.io', agentInstanceId),
+        `https://go.superhuman.com/builder/${agentInstanceId}`,
+      );
+      assert.equal(
+        buildAgentSettingsUrl('https://docs.superhuman.com', agentInstanceId),
+        `https://go.superhuman.com/builder/${agentInstanceId}`,
+      );
+      assert.equal(
+        buildAgentSettingsUrl('https://staging.coda.io', agentInstanceId),
+        `https://go.pp-sh.io/builder/${agentInstanceId}`,
+      );
+      assert.equal(
+        buildAgentSettingsUrl('https://docs.pp-sh.io', agentInstanceId),
+        `https://go.pp-sh.io/builder/${agentInstanceId}`,
+      );
+      assert.equal(
+        buildAgentSettingsUrl('https://head.coda.io', agentInstanceId),
+        `https://go.qa-sh.io/builder/${agentInstanceId}`,
+      );
+      assert.equal(
+        buildAgentSettingsUrl('https://docs.qa-sh.io', agentInstanceId),
+        `https://go.qa-sh.io/builder/${agentInstanceId}`,
+      );
+      assert.equal(buildAgentSettingsUrl('https://dev.coda.io:8080', agentInstanceId), undefined);
+      assert.equal(buildAgentSettingsUrl('https://tenant.example.com', agentInstanceId), undefined);
+      assert.equal(
+        buildAgentSettingsUrl('https://coda.io', 'id with spaces'),
+        'https://go.superhuman.com/builder/id%20with%20spaces',
+      );
     });
   });
 

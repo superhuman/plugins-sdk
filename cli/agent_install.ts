@@ -1,6 +1,7 @@
 import type {ArgumentsCamelCase} from 'yargs';
 import {buildAgentRouteUrl} from './agent_api';
 import {confirmOrFail} from './confirm';
+import {formatEndpoint} from './helpers';
 import {postAgentRoute} from './agent_api';
 import {print} from '../testing/helpers';
 import {printAndExit} from '../testing/helpers';
@@ -17,6 +18,30 @@ export interface AgentInstallArgs {
 
 export function buildAgentInstallUrl(apiEndpoint: string, packId: number, version: string): string {
   return buildAgentRouteUrl(apiEndpoint, packId, version, 'agentInstall');
+}
+
+// The settings page lives on Go Home, not on the Packs API host.
+const GO_HOME_ORIGIN_BY_API_HOST: Record<string, string> = {
+  'coda.io': 'https://go.superhuman.com',
+  'docs.superhuman.com': 'https://go.superhuman.com',
+  'staging.coda.io': 'https://go.pp-sh.io',
+  'docs.pp-sh.io': 'https://go.pp-sh.io',
+  'head.coda.io': 'https://go.qa-sh.io',
+  'docs.qa-sh.io': 'https://go.qa-sh.io',
+};
+
+export function buildAgentSettingsUrl(apiEndpoint: string, agentInstanceId: string): string | undefined {
+  let hostname: string;
+  try {
+    hostname = new URL(formatEndpoint(apiEndpoint)).hostname;
+  } catch {
+    return;
+  }
+  const origin = GO_HOME_ORIGIN_BY_API_HOST[hostname];
+  if (!origin) {
+    return;
+  }
+  return `${origin}/builder/${encodeURIComponent(agentInstanceId)}`;
 }
 
 function missingInstallRouteMessage(url: string): string {
@@ -57,6 +82,7 @@ function formatInstallResult({
   packId,
   agentInstanceId,
   tenantId,
+  settingsUrl,
 }: {
   reinstall: boolean;
   alreadyInstalled: boolean;
@@ -64,10 +90,14 @@ function formatInstallResult({
   packId: number;
   agentInstanceId: string;
   tenantId?: string;
+  settingsUrl?: string;
 }): string {
   const identity = [`  agent instance: ${agentInstanceId}`];
   if (tenantId) {
     identity.push(`  tenant: ${tenantId}`);
+  }
+  if (settingsUrl) {
+    identity.push(`  settings: ${settingsUrl}`);
   }
   const ids = identity.join('\n');
   if (reinstall) {
@@ -151,6 +181,7 @@ export async function handleAgentInstall({
       packId,
       agentInstanceId: install.agentInstanceId,
       tenantId: install.tenantId,
+      settingsUrl: buildAgentSettingsUrl(apiEndpoint, install.agentInstanceId),
     }),
   );
 }

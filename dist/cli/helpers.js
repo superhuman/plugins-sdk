@@ -83,7 +83,7 @@ function getPackAuth(packDef) {
 exports.getPackAuth = getPackAuth;
 async function importManifest(bundleFilename) {
     const module = await Promise.resolve(`${path_1.default.resolve(bundleFilename)}`).then(s => __importStar(require(s)));
-    return module.pack || module.manifest;
+    return module.agent || module.connector || module.pack || module.manifest;
 }
 exports.importManifest = importManifest;
 function assertApiToken(codaApiEndpoint, cliApiToken) {

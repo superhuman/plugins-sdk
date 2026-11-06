@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AgentDefinitionBuilder = exports.PackDefinitionBuilder = exports.BaseDefinitionBuilder = exports.newAgent = exports.newPack = void 0;
+exports.AgentDefinitionBuilder = exports.PackDefinitionBuilder = exports.BaseDefinitionBuilder = exports.newAgent = exports.newPack = exports.newConnector = void 0;
 const types_1 = require("./types");
 const api_types_1 = require("./api_types");
 const types_2 = require("./types");
@@ -18,7 +18,24 @@ const migration_1 = require("./helpers/migration");
 const rrule_validation_1 = require("./testing/rrule_validation");
 const api_7 = require("./api");
 /**
+ * Creates a new skeleton connector definition that can be added to.
+ *
+ * @example
+ * ```
+ * export const connector = newConnector();
+ * connector.addFormula({resultType: ValueType.String, name: 'MyFormula', ...});
+ * connector.addSyncTable('MyTable', ...);
+ * connector.setUserAuthentication({type: AuthenticationType.HeaderBearerToken});
+ * ```
+ */
+function newConnector(definition) {
+    return new PackDefinitionBuilder(definition);
+}
+exports.newConnector = newConnector;
+/**
  * Creates a new skeleton pack definition that can be added to.
+ *
+ * @deprecated Use {@link newConnector}.
  *
  * @example
  * ```
@@ -29,7 +46,7 @@ const api_7 = require("./api");
  * ```
  */
 function newPack(definition) {
-    return new PackDefinitionBuilder(definition);
+    return newConnector(definition);
 }
 exports.newPack = newPack;
 /**
@@ -75,11 +92,11 @@ class BaseDefinitionBuilder {
 }
 exports.BaseDefinitionBuilder = BaseDefinitionBuilder;
 /**
- * A class that assists in constructing a pack definition. Use {@link newPack} to create one.
+ * A class that assists in constructing a pack definition. Use {@link newConnector} to create one.
  */
 class PackDefinitionBuilder extends BaseDefinitionBuilder {
     /**
-     * Constructs a {@link PackDefinitionBuilder}. However, `sdk.newPack()` should be used instead
+     * Constructs a {@link PackDefinitionBuilder}. However, `sdk.newConnector()` should be used instead
      * rather than constructing a builder directly.
      */
     constructor(definition) {

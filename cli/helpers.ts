@@ -59,7 +59,7 @@ export async function importManifest<T extends BasicPackDefinition = BasicPackDe
   bundleFilename: string,
 ): Promise<T> {
   const module = await import(path.resolve(bundleFilename));
-  return module.pack || module.manifest;
+  return module.agent || module.connector || module.pack || module.manifest;
 }
 
 export function assertApiToken(codaApiEndpoint: string, cliApiToken?: string): string {

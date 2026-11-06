@@ -4,16 +4,22 @@
 
 # Superhuman Plugins SDK
 
-Superhuman Packs allow you to extend the Superhuman suite, creating agents for Go and adding building blocks to Coda. To learn more, see [our SDK documentation](https://docs.superhuman.com/packs/build).
+Superhuman plugins allow you to extend the Superhuman suite, creating agents for Go and adding building blocks to Docs. To learn more, see [our SDK documentation](https://docs.superhuman.com/packs/build).
 
-## Agent skill
+## Agent skills
 
-This repo ships an [agent skill](.agents/skills/create-agent-pack) that walks through building and
-uploading an agent pack. Install it with the [`skills` CLI](https://github.com/vercel-labs/skills):
+This repo ships [coding-agent skills](.agents/README.md) for building connector plugins and Go agent plugins.
+The portable bundle supports Cursor and Codex. The existing `create-agent-pack` skill covers
+`sdk.newAgent()`; `plugin-scaffold`, `plugin-tools`, and `plugin-test-upload` cover connector plugins
+built with `sdk.newConnector()`.
+
+Install a skill with the [`skills` CLI](https://github.com/vercel-labs/skills):
 
 ```bash
 bunx skills add superhuman/plugins-sdk --skill create-agent-pack --global
 ```
+
+See the [bundle guide](.agents/README.md) to install all four skills from a checkout or contribute changes.
 
 ## Contributing
 

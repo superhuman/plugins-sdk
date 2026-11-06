@@ -30,7 +30,7 @@ exports.handleUpload = void 0;
 const v1_1 = require("../helpers/external-api/v1");
 const helpers_1 = require("./helpers");
 const helpers_2 = require("./helpers");
-const compile_1 = require("../testing/compile");
+const validate_1 = require("./validate");
 const metadata_1 = require("../helpers/metadata");
 const crypto_1 = require("../helpers/crypto");
 const helpers_3 = require("./helpers");
@@ -48,7 +48,7 @@ const helpers_8 = require("../testing/helpers");
 const helpers_9 = require("../testing/helpers");
 const errors_3 = require("./errors");
 const uuid_1 = require("uuid");
-const validate_1 = require("./validate");
+const validate_2 = require("./validate");
 function cleanup(intermediateOutputDirectory, logger) {
     logger.info('\n\nCleaning up...');
     if (fs_extra_1.default.existsSync(intermediateOutputDirectory)) {
@@ -75,11 +75,12 @@ async function handleUpload({ intermediateOutputDirectory, manifestFile, apiEndp
     // we need to generate the bundle file in the working directory instead of a temp directory in
     // order to set source map right. The source map tool chain isn't smart enough to resolve a
     // relative path in the end.
-    const { bundlePath, bundleSourceMapPath } = await (0, compile_1.compilePackBundle)({
+    const { bundlePath, bundleSourceMapPath } = await (0, validate_1.compilePack)({
         manifestPath: manifestFile,
         outputDirectory: intermediateOutputDirectory,
         intermediateOutputDirectory,
         timerStrategy,
+        validateExports: true,
     });
     const manifest = await (0, helpers_5.importManifest)(bundlePath);
     // Since package.json isn't in dist, we grab it from the root directory instead.
@@ -95,7 +96,7 @@ async function handleUpload({ intermediateOutputDirectory, manifestFile, apiEndp
         // notice if there are issues with how it's returned.
         logger.info('Validating Pack metadata...');
         const metadataWithFakeVersion = !packVersion ? { ...metadata, version: '0.0.1' } : metadata;
-        await (0, validate_1.validateMetadata)(metadataWithFakeVersion, { checkDeprecationWarnings: false });
+        await (0, validate_2.validateMetadata)(metadataWithFakeVersion, { checkDeprecationWarnings: false });
         if (!packVersion) {
             try {
                 const nextPackVersionInfo = await client.getNextPackVersion(packId, {}, { proposedMetadata: JSON.stringify(metadata), sdkVersion: codaPacksSDKVersion });
