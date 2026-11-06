@@ -2,7 +2,7 @@ import * as sdk from "@superhuman/plugins-sdk";
 export const pack = sdk.newPack();
 
 // Regular expression that matches Superhuman-hosted images.
-const HostedImageUrlRegex = new RegExp("^https://(?:[^/]*\.)?codahosted.io/.*");
+const HostedImageUrlRegex = /^https:\/\/(?:[a-z0-9-]+\.)*codahosted\.io\//i;
 
 // A custom type that bundles together the image buffer and content type.
 interface ImageData {
