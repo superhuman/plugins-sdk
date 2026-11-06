@@ -1,15 +1,15 @@
-# Agent builder API reference
+# Agent plugin builder API reference
 
-These are the calls `sdk.newAgent()` returns. Everything else in `packs-sdk`'s builder API (sync
-tables, formulas, `newPack()`) is for connector packs, not agents — an agent pack only uses the calls
-below.
+These are the calls `sdk.newAgent()` returns for an agent plugin. Connector plugins use the sync-table, formula, and `newConnector()` builder APIs.
+
+Examples use the current SDK's `agent` export. If the agent skill selected the older-SDK `pack` export, use `pack` for these builder calls while keeping `sdk.newAgent()`.
 
 ## `setInstructions(instructions: string)`
 
 The only required call. A plain string — the agent's system instructions.
 
 ```typescript
-pack.setInstructions("You help a team run async standups. Keep replies short.");
+agent.setInstructions("You help a team run async standups. Keep replies short.");
 ```
 
 ## `setTools({docs, mail, webSearch, connectors})`
@@ -18,7 +18,7 @@ Anything left out is off — this call replaces the tool set each time, it doesn
 call.
 
 ```typescript
-pack.setTools({
+agent.setTools({
   docs: true,
   mail: true,
   webSearch: {allowedDomains: ['docs.example.com']},   // or just `true` for unrestricted
@@ -33,19 +33,79 @@ pack.setTools({
 - `mail: true` → Mail & Calendar (Superhuman Mail) access.
 - `webSearch: true | {allowedDomains: string[]}` → web search, optionally domain-restricted.
 - `connectors: Array<{packId: number, formulas?: Array<{formulaName: string}>}>` → grants access to
-  other packs (e.g. Slack) by pack ID, optionally narrowed to specific formulas.
+  connector plugins (e.g. Slack) by plugin ID, optionally narrowed to specific formulas.
 
-### Finding a connector's pack ID
+### Finding a connector plugin's ID
 
-Browse https://superhuman.com/store/connectors, open the connector's listing, and read its pack ID off
+Browse https://superhuman.com/store/connectors, open the connector's listing, and read its plugin ID off
 the listing page.
 
-Use `setTools` above and the two trigger setters below to define the agent.
+Use `setTools` above, `addDefaultRoutine` for named jobs, and the plain trigger setters below when a
+wake-up needs no separate name or per-run instructions.
+
+## `addDefaultRoutine({name?, instructions?, trigger})`
+
+Adds one named job: a label and/or per-run instructions wrapped around a single trigger. Call it
+once per job. A routine needs a non-blank `name` or `instructions` (or both). Prefer this over a
+plain trigger setter when the agent has more than one wake-up path, or when a wake-up should do
+something different from `setInstructions`. Routines are still **one agent with many jobs** — they
+do not hand work to another custom agent or grant a different tool set.
+
+```typescript
+agent.addDefaultRoutine({
+  name: 'Daily brief',
+  instructions: 'Summarize overnight changes. Include source links.',
+  trigger: {
+    kind: sdk.DefaultTriggerKind.Schedule,
+    rruleString: [
+      'DTSTART;TZID=America/New_York:20260101T090000',
+      'RRULE:FREQ=DAILY;BYHOUR=9;BYMINUTE=0',
+    ].join('\n'),
+  },
+});
+
+agent.addDefaultRoutine({
+  name: 'Deploy watch',
+  instructions: 'Explain the deploy and link the runbook.',
+  trigger: {
+    kind: sdk.DefaultTriggerKind.Event,
+    type: sdk.EventTriggerType.Slack,
+    eventType: sdk.SlackEventType.MessageKeyword,
+    keywords: ['deploy', 'rollback'],
+  },
+});
+
+agent.addDefaultRoutine({
+  name: 'Citation assist',
+  instructions: 'Offer a citation when the user asserts a statistic.',
+  trigger: {
+    kind: sdk.DefaultTriggerKind.WhileWriting,
+    condition: 'The draft asserts a statistic without a source',
+    surfaces: [sdk.ContextualTriggerSurface.Docs, sdk.ContextualTriggerSurface.Email],
+  },
+});
+```
+
+- `name` — optional label in the agent builder (max 80 characters).
+- `instructions` — optional text appended for that routine's run (max 20,000 characters). Omit when
+  the base `setInstructions` already cover the job.
+- `trigger` — one `DefaultTriggerDefinition`: schedule (`kind: Schedule` + `rruleString`),
+  while-writing (`kind: WhileWriting` + `condition` / `surfaces`), or a plugin-declarable event
+  (`kind: Event` + mail `message_received` / `message_sent` or Slack `message_keyword`). Docs
+  events and Slack `agent_mentioned` are builder-only and are not plugin-declarable.
+
+Routines share the one-schedule and event-count caps with plain `defaultTriggers`. Docs folds each
+routine into the matching installed-agent default on release (name and instruction ride on that
+trigger). Metadata still copies at install time — see [Installation refresh](#installation-refresh).
 
 ## `setDefaultScheduleTrigger({rruleString})`
 
+Use when the schedule only wakes the agent and the base instructions already cover that run. For a
+named daily brief (or any schedule whose action differs from the base prompt), prefer
+`addDefaultRoutine` with a schedule trigger instead.
+
 ```typescript
-pack.setDefaultScheduleTrigger({
+agent.setDefaultScheduleTrigger({
   rruleString: [
     "DTSTART;TZID=America/New_York:20260101T090000",
     "RRULE:FREQ=WEEKLY;BYDAY=MO;BYHOUR=9;BYMINUTE=0",
@@ -82,8 +142,11 @@ Use the accepted/rejected parts above when choosing test cases.
 
 ## `setDefaultWhileWritingTrigger({condition, surfaces})`
 
+Use when while-writing assistance should just wake the agent under the base instructions. Prefer
+`addDefaultRoutine` when that assist needs its own name or per-run instructions.
+
 ```typescript
-pack.setDefaultWhileWritingTrigger({
+agent.setDefaultWhileWritingTrigger({
   condition: "Offer a citation when the user asserts a statistic",
   surfaces: [sdk.ContextualTriggerSurface.Docs, sdk.ContextualTriggerSurface.Email],
 });
@@ -94,16 +157,16 @@ array of `sdk.ContextualTriggerSurface` values (e.g. `Docs`, `Email`) naming whe
 
 ## Installation refresh
 
-Triggers and tool grants are copied at install time; later uploads do not live-sync them.
+Triggers, routines, and tool grants are copied at install time; later uploads do not live-sync them.
 To verify a changed definition in the builder, reinstall the agent if the product surface
-supports refreshing an install. Otherwise create a fresh pack in a new directory and install it:
+supports refreshing an install. Otherwise create a fresh agent plugin in a new directory and install it:
 
 1. Copy `pack.ts` into the new directory and install the published SDK there.
 2. Confirm credentials with `whoami`; register only if no parent credentials are available.
 3. Validate, create with a distinct name, and upload using the main workflow.
 4. Install the new agent and inspect its tools/triggers.
 
-The fresh-pack route is the default when installation refresh is unavailable.
+Creating a fresh agent plugin is the default when installation refresh is unavailable.
 
 ## Build debugging
 
@@ -123,7 +186,7 @@ it should become broadly installable:
 npx packs release pack.ts <version> --notes "<release notes>"
 ```
 
-Choose an uploaded version greater than the latest release. If the pack directory is a git
+Choose an uploaded version greater than the latest release. If the plugin directory is a git
 repository, use a clean working tree.
 
 ## Full working example
@@ -131,25 +194,37 @@ repository, use a clean working tree.
 ```typescript
 import * as sdk from "@superhuman/plugins-sdk";
 
-export const pack = sdk.newAgent();
-pack.setInstructions("print hello world, then send a slack message to myself for the current date");
+export const agent = sdk.newAgent();
+agent.setInstructions(
+  "You help an ops team stay on top of status and drafts. Keep replies short.",
+);
 
-pack.setTools({
+agent.setTools({
   docs: true,
   mail: true,
   webSearch: {allowedDomains: ['status.example.com']},
   connectors: [{packId: 1000}, {packId: 1002}, {packId: 1004}],
 });
 
-pack.setDefaultScheduleTrigger({
-  rruleString: [
-    "DTSTART;TZID=America/New_York:20260101T090000",
-    "RRULE:FREQ=WEEKLY;BYDAY=MO;BYHOUR=9;BYMINUTE=0",
-  ].join("\n"),
+agent.addDefaultRoutine({
+  name: 'Monday brief',
+  instructions: 'Summarize overnight status changes. Include source links.',
+  trigger: {
+    kind: sdk.DefaultTriggerKind.Schedule,
+    rruleString: [
+      "DTSTART;TZID=America/New_York:20260101T090000",
+      "RRULE:FREQ=WEEKLY;BYDAY=MO;BYHOUR=9;BYMINUTE=0",
+    ].join("\n"),
+  },
 });
 
-pack.setDefaultWhileWritingTrigger({
-  condition: "Offer a citation when the user asserts a statistic",
-  surfaces: [sdk.ContextualTriggerSurface.Docs, sdk.ContextualTriggerSurface.Email],
+agent.addDefaultRoutine({
+  name: 'Citation assist',
+  instructions: 'Offer a citation when the draft asserts a statistic.',
+  trigger: {
+    kind: sdk.DefaultTriggerKind.WhileWriting,
+    condition: "Offer a citation when the user asserts a statistic",
+    surfaces: [sdk.ContextualTriggerSurface.Docs, sdk.ContextualTriggerSurface.Email],
+  },
 });
 ```

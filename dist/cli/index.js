@@ -71,9 +71,9 @@ const CommandExamples = {
         ['$0 clone https://coda.io/p/1234 --yes', 'Overwrite pack.ts without prompting.'],
     ],
     register: [
-        ['$0 register --apiToken <token>', 'Validate and store a Pack API token.'],
+        ['$0 register <token>', 'Validate and store a Pack API token.'],
         ['$0 register --open', 'Open the token creation page, then pass --apiToken to store it.'],
-        ['$0 login --apiToken <token>', 'Alias for register: store the token without opening a browser.'],
+        ['$0 login <token>', 'Alias for register: store the token without opening a browser.'],
     ],
     whoami: [['$0 whoami', 'Print the account and token currently registered.']],
     agent: [

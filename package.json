@@ -10,6 +10,7 @@
   "main": "dist/index.js",
   "bin": {
     "packs": "dist/cli/index.js",
+    "plugins": "dist/cli/index.js",
     "coda": "dist/cli/index.js",
     "superhuman": "dist/cli/index.js"
   },
@@ -42,7 +43,7 @@
     "open": "8.4.2",
     "parse5": "7.3.0",
     "pascalcase": "1.0.0",
-    "qs": "6.16.0",
+    "qs": "6.16.1",
     "readline-sync": "1.4.10",
     "semver": "7.6.3",
     "sha.js": "2.4.12",
@@ -122,6 +123,7 @@
     "typedoc-plugin-markdown": "4.9.0",
     "unified-lint-rule": "3.0.1",
     "unist-util-visit": "^5.0.0",
+    "util": "0.12.5",
     "webpack": "5.104.1"
   },
   "lint-staged": {

@@ -1,7 +1,13 @@
 import type { AgentTool } from '../types';
 import type { ArgumentsCamelCase } from 'yargs';
 import type { Client } from '../helpers/external-api/coda';
+import type { CompilePackBundleOptions } from '../testing/compile';
 import type { PackVersionMetadata } from '../compiled_types';
+/** Compiles a Pack for CLI commands only, exiting on failure. */
+export declare function compilePack(options: CompilePackBundleOptions): Promise<{
+    bundlePath: string;
+    bundleSourceMapPath: string;
+}>;
 interface ValidateArgs {
     manifestFile: string;
     checkDeprecationWarnings: boolean;

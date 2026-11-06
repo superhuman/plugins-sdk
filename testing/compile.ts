@@ -13,6 +13,7 @@ import semver from 'semver';
 import {tryGetIvm} from './ivm_wrapper';
 import uglify from 'uglify-js';
 import {v4} from 'uuid';
+import {validatePackDefinitionExports} from '../helpers/pack_exports';
 
 export interface CompilePackBundleOptions {
   bundleFilename?: string;
@@ -21,6 +22,7 @@ export interface CompilePackBundleOptions {
   intermediateOutputDirectory?: string;
   sourceMap?: boolean;
   minify?: boolean;
+  validateExports?: boolean;
   timerStrategy?: TimerShimStrategy;
 }
 
@@ -207,6 +209,7 @@ export async function compilePackBundle({
   minify = true,
   intermediateOutputDirectory,
   timerStrategy = TimerShimStrategy.None,
+  validateExports = false,
 }: CompilePackBundleOptions): Promise<CompilePackBundleResult> {
   const esbuildBundleFilename = 'esbuild-bundle.js';
   const browserifyBundleFilename = 'browserify-bundle.js';
@@ -275,6 +278,11 @@ export async function compilePackBundle({
     await loadIntoVM(tempBundlePath);
   } catch (err: any) {
     throw await processVmError(err, tempBundlePath);
+  }
+
+  if (validateExports) {
+    const packDefinitionModule = await import(path.resolve(tempBundlePath));
+    validatePackDefinitionExports(packDefinitionModule);
   }
 
   // Write the generated metadata. It's not used by the upload command, but

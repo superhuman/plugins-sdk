@@ -1,5 +1,8 @@
 # Documentation includes image files not needed in the node module.
 docs/
+
+# Internal SDK maintainer guides.
+agents/
 site/
 
 # From .gitignore

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "superhuman-plugin",
+  "version": "0.1.1",
+  "description": "Build, validate, and upload Superhuman plugins with the Plugins SDK.",
+  "author": {"name": "Superhuman"},
+  "license": "MIT",
+  "keywords": ["superhuman", "plugins-sdk", "connectors", "agents", "routines"]
+}

@@ -10,7 +10,7 @@ search:
 
 # Class: PackDefinitionBuilder
 
-A class that assists in constructing a pack definition. Use [newPack](../functions/newPack.md) to create one.
+A class that assists in constructing a pack definition. Use [newConnector](../functions/newConnector.md) to create one.
 
 ## Extends
 
@@ -26,7 +26,7 @@ A class that assists in constructing a pack definition. Use [newPack](../functio
 
 > **new PackDefinitionBuilder**(`definition?`): `PackDefinitionBuilder`
 
-Constructs a PackDefinitionBuilder. However, `sdk.newPack()` should be used instead
+Constructs a PackDefinitionBuilder. However, `sdk.newConnector()` should be used instead
 rather than constructing a builder directly.
 
 #### Parameters

@@ -37,7 +37,21 @@ import type { UserAuthenticationDef } from './api_types';
 import type { ValueType } from './schema';
 import type { WhileWritingTriggerDefinition } from './types';
 /**
+ * Creates a new skeleton connector definition that can be added to.
+ *
+ * @example
+ * ```
+ * export const connector = newConnector();
+ * connector.addFormula({resultType: ValueType.String, name: 'MyFormula', ...});
+ * connector.addSyncTable('MyTable', ...);
+ * connector.setUserAuthentication({type: AuthenticationType.HeaderBearerToken});
+ * ```
+ */
+export declare function newConnector(definition?: Partial<Omit<PackVersionDefinition, 'agent' | 'defaultTriggers' | 'defaultRoutines'>>): PackDefinitionBuilder;
+/**
  * Creates a new skeleton pack definition that can be added to.
+ *
+ * @deprecated Use {@link newConnector}.
  *
  * @example
  * ```
@@ -88,7 +102,7 @@ export declare class BaseDefinitionBuilder {
     setVersion(version: string): this;
 }
 /**
- * A class that assists in constructing a pack definition. Use {@link newPack} to create one.
+ * A class that assists in constructing a pack definition. Use {@link newConnector} to create one.
  */
 export declare class PackDefinitionBuilder extends BaseDefinitionBuilder implements BasicPackDefinition {
     /**
@@ -161,7 +175,7 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
     formulaNamespace?: string;
     private _defaultConnectionRequirement;
     /**
-     * Constructs a {@link PackDefinitionBuilder}. However, `sdk.newPack()` should be used instead
+     * Constructs a {@link PackDefinitionBuilder}. However, `sdk.newConnector()` should be used instead
      * rather than constructing a builder directly.
      */
     constructor(definition?: Partial<Omit<PackVersionDefinition, 'agent' | 'defaultTriggers' | 'defaultRoutines'>>);

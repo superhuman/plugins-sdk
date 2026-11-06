@@ -23,13 +23,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateMetadata = exports.checkAgentConnectorListings = exports.getConnectorPackIds = exports.handleValidate = void 0;
+exports.validateMetadata = exports.checkAgentConnectorListings = exports.getConnectorPackIds = exports.handleValidate = exports.compilePack = void 0;
+const pack_exports_1 = require("../helpers/pack_exports");
 const types_1 = require("../types");
 const compile_1 = require("../testing/compile");
 const metadata_1 = require("../helpers/metadata");
 const helpers_1 = require("./helpers");
 const helpers_2 = require("./helpers");
 const errors_1 = require("./errors");
+const errors_2 = require("./errors");
 const config_storage_1 = require("./config_storage");
 const helpers_3 = require("./helpers");
 const coda_1 = require("../helpers/external-api/coda");
@@ -38,10 +40,24 @@ const helpers_5 = require("./helpers");
 const helpers_6 = require("../testing/helpers");
 const helpers_7 = require("../testing/helpers");
 const upload_validation_1 = require("../testing/upload_validation");
+/** Compiles a Pack for CLI commands only, exiting on failure. */
+async function compilePack(options) {
+    try {
+        const { bundlePath, bundleSourceMapPath } = await (0, compile_1.compilePackBundle)(options);
+        return { bundlePath, bundleSourceMapPath };
+    }
+    catch (error) {
+        if (error instanceof pack_exports_1.PackDefinitionExportValidationError) {
+            (0, helpers_7.printAndExit)(error.message);
+        }
+        (0, helpers_7.printAndExit)(`Unable to compile Pack: ${(0, errors_1.formatError)(error)}`);
+    }
+}
+exports.compilePack = compilePack;
 async function handleValidate({ manifestFile, checkDeprecationWarnings, checkConnectors, apiToken, apiEndpoint, }) {
     var _a, _b;
     const fullManifestPath = (0, helpers_5.makeManifestFullPath)(manifestFile);
-    const { bundlePath } = await (0, compile_1.compilePackBundle)({ manifestPath: fullManifestPath, minify: false });
+    const { bundlePath } = await compilePack({ manifestPath: fullManifestPath, minify: false, validateExports: true });
     const manifest = await (0, helpers_3.importManifest)(bundlePath);
     // Since it's okay to not specify a version, we inject one if it's not provided.
     if (!manifest.version) {
@@ -84,7 +100,7 @@ async function checkAgentConnectorListings(client, packIds) {
         if (result.status === 'rejected') {
             const err = result.reason;
             if ((0, coda_1.isResponseError)(err)) {
-                warnings.push(`Connector pack ${packIds[index]} was not found or is not visible to this token: ${await (0, errors_1.formatResponseError)(err)}. ` +
+                warnings.push(`Connector pack ${packIds[index]} was not found or is not visible to this token: ${await (0, errors_2.formatResponseError)(err)}. ` +
                     'Find connector IDs at https://superhuman.com/store/connectors.');
             }
             else {

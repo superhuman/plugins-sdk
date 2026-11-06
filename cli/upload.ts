@@ -8,7 +8,7 @@ import type {PublicApiPackVersionUploadInfo} from '../helpers/external-api/v1';
 import type {TimerShimStrategy} from '../testing/compile';
 import {assertApiToken} from './helpers';
 import {assertPackId} from './helpers';
-import {compilePackBundle} from '../testing/compile';
+import {compilePack} from './validate';
 import {compilePackMetadata} from '../helpers/metadata';
 import {computeSha256} from '../helpers/crypto';
 import {createCodaClient} from './helpers';
@@ -80,13 +80,13 @@ export async function handleUpload({
   // we need to generate the bundle file in the working directory instead of a temp directory in
   // order to set source map right. The source map tool chain isn't smart enough to resolve a
   // relative path in the end.
-  const {bundlePath, bundleSourceMapPath} = await compilePackBundle({
+  const {bundlePath, bundleSourceMapPath} = await compilePack({
     manifestPath: manifestFile,
     outputDirectory: intermediateOutputDirectory,
     intermediateOutputDirectory,
     timerStrategy,
+    validateExports: true,
   });
-
   const manifest = await importManifest<PackVersionDefinition>(bundlePath);
 
   // Since package.json isn't in dist, we grab it from the root directory instead.

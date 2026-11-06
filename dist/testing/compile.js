@@ -41,6 +41,7 @@ const semver_1 = __importDefault(require("semver"));
 const ivm_wrapper_1 = require("./ivm_wrapper");
 const uglify_js_1 = __importDefault(require("uglify-js"));
 const uuid_1 = require("uuid");
+const pack_exports_1 = require("../helpers/pack_exports");
 var TimerShimStrategy;
 (function (TimerShimStrategy) {
     TimerShimStrategy["None"] = "none";
@@ -160,7 +161,7 @@ async function buildWithES({ lastBundleFilename, outputBundleFilename, options: 
     await esbuild.build(options);
 }
 async function compilePackBundle({ bundleFilename = 'bundle.js', // the output bundle filename
-outputDirectory, manifestPath, minify = true, intermediateOutputDirectory, timerStrategy = TimerShimStrategy.None, }) {
+outputDirectory, manifestPath, minify = true, intermediateOutputDirectory, timerStrategy = TimerShimStrategy.None, validateExports = false, }) {
     const esbuildBundleFilename = 'esbuild-bundle.js';
     const browserifyBundleFilename = 'browserify-bundle.js';
     const browserifyWithShimBundleFilename = 'browserify-with-shim-bundle.js';
@@ -218,6 +219,10 @@ outputDirectory, manifestPath, minify = true, intermediateOutputDirectory, timer
     }
     catch (err) {
         throw await (0, helpers_2.processVmError)(err, tempBundlePath);
+    }
+    if (validateExports) {
+        const packDefinitionModule = await Promise.resolve(`${path_1.default.resolve(tempBundlePath)}`).then(s => __importStar(require(s)));
+        (0, pack_exports_1.validatePackDefinitionExports)(packDefinitionModule);
     }
     // Write the generated metadata. It's not used by the upload command, but
     // it's helpful for debugging upload validation errors.

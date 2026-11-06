@@ -5,6 +5,7 @@ export interface CompilePackBundleOptions {
     intermediateOutputDirectory?: string;
     sourceMap?: boolean;
     minify?: boolean;
+    validateExports?: boolean;
     timerStrategy?: TimerShimStrategy;
 }
 export declare enum TimerShimStrategy {
@@ -18,4 +19,4 @@ export interface CompilePackBundleResult {
     intermediateOutputDirectory: string;
 }
 export declare function compilePackBundle({ bundleFilename, // the output bundle filename
-outputDirectory, manifestPath, minify, intermediateOutputDirectory, timerStrategy, }: CompilePackBundleOptions): Promise<CompilePackBundleResult>;
+outputDirectory, manifestPath, minify, intermediateOutputDirectory, timerStrategy, validateExports, }: CompilePackBundleOptions): Promise<CompilePackBundleResult>;

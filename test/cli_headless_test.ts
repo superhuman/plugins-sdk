@@ -17,15 +17,18 @@ import {handleInit} from '../cli/init';
 import {handleRegister} from '../cli/register';
 import {handleRelease} from '../cli/release';
 import {handleUpdatePackSettings} from '../cli/pack_settings';
+import {handleUpload} from '../cli/upload';
 import {handleValidate} from '../cli/validate';
 import * as helpers from '../cli/helpers';
 import mockFs from 'mock-fs';
 import os from 'os';
 import {parsePackSettingsUpdate} from '../cli/pack_settings';
 import path from 'path';
+import {rejects} from 'assert';
 import sinon from 'sinon';
 import * as testingHelpers from '../testing/helpers';
 import {tmpdir} from 'os';
+import {tryGetIvm} from '../testing/ivm_wrapper';
 import yargs from 'yargs/yargs';
 
 describe('Headless CLI', () => {
@@ -1215,6 +1218,7 @@ describe('Headless CLI', () => {
       assert.include(printedOutput(), 'Installed agent version 3 of pack 1234.');
       assert.include(printedOutput(), 'agent instance: ai-1');
       assert.include(printedOutput(), 'tenant: bt-1');
+      assert.include(printedOutput(), 'settings: https://go.superhuman.com/builder/ai-1');
       assert.isFalse(fsExtra.existsSync(path.join(manifestDir, '.coda-agent.json')));
     });
 
@@ -1245,6 +1249,7 @@ describe('Headless CLI', () => {
       assert.deepEqual(postedBodies, [{reinstall: true}]);
       assert.include(printedOutput(), 'Reinstalled agent version 3 of pack 1234.');
       assert.include(printedOutput(), 'agent instance: ai-1');
+      assert.include(printedOutput(), 'settings: https://go.superhuman.com/builder/ai-1');
     });
 
     it('says the agent is already installed', async () => {
@@ -1257,6 +1262,7 @@ describe('Headless CLI', () => {
       await install({});
 
       assert.include(printedOutput(), 'Agent version 3 of pack 1234 is already installed.');
+      assert.include(printedOutput(), 'settings: https://go.superhuman.com/builder/ai-1');
       assert.notInclude(printedOutput(), 'Installed agent version');
       assert.isFalse(fsExtra.existsSync(path.join(manifestDir, '.coda-agent.json')));
     });
@@ -1450,6 +1456,7 @@ describe('Headless CLI', () => {
 
   describe('validate connector check', () => {
     const apiEndpoint = 'https://coda.io';
+    const itVmOnly = tryGetIvm() ? it : it.skip;
     let dir: string;
     let manifestFile: string;
     let createdClientArgs: Array<{apiToken: string; endpoint: string}>;
@@ -1499,6 +1506,57 @@ describe('Headless CLI', () => {
         ...args,
       } as any);
     }
+
+    for (const [name, source] of [
+      ['primitive', 'export const pack = 1;'],
+      ['missing', 'export const other = {};'],
+      ['null pack', 'export const pack = null;'],
+      ['null manifest', 'export const manifest = null;'],
+    ]) {
+      for (const command of ['validate', 'upload']) {
+        it(`${command} rejects a ${name} definition with an actionable export-validation error`, async () => {
+          fsExtra.writeFileSync(manifestFile, source);
+          configStorage.storePackId(dir, 1234, apiEndpoint);
+          const result =
+            command === 'validate'
+              ? validate({checkConnectors: false})
+              : handleUpload({
+                  manifestFile,
+                  apiEndpoint,
+                  apiToken: 'test-token',
+                  intermediateOutputDirectory: path.join(dir, 'build'),
+                  timerStrategy: configStorage.DEFAULT_TIMER_STRATEGY,
+                  $0: '',
+                  _: [],
+                });
+          await rejects(result, {
+            message:
+              'Invalid Pack definition export. Export a definition object as "agent", "connector", "pack", or "manifest".',
+          });
+          assert.equal(exitCode, 1);
+          assert.equal(
+            exitMessage,
+            'Invalid Pack definition export. Export a definition object as "agent", "connector", "pack", or "manifest".',
+          );
+          sinon.assert.calledOnce(printAndExitStub);
+          assert.deepEqual(createdClientArgs, []);
+        });
+      }
+    }
+
+    itVmOnly('preserves mapped source locations for compilation failures', async () => {
+      fsExtra.writeFileSync(
+        manifestFile,
+        "export const pack = {};\n\nthrow new Error('Pack initialization failed');\n",
+      );
+      await rejects(validate({checkConnectors: false}), /Pack initialization failed/);
+
+      assert.equal(exitCode, 1);
+      assert.include(exitMessage, 'pack.ts:3:7');
+      assert.include(exitMessage, 'Unable to compile Pack: Error: Pack initialization failed');
+      sinon.assert.calledOnce(printAndExitStub);
+      assert.deepEqual(createdClientArgs, []);
+    });
 
     it('skips listing requests without a token and still passes', async () => {
       sinon.stub(configStorage, 'getApiKey').returns(undefined);
