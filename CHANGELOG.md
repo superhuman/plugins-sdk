@@ -4,6 +4,8 @@ This changelog keeps track of all changes to the Packs SDK. We follow convention
 
 ## [Unreleased]
 
+## [1.20.0] - 2026-11-06
+
 ### Added
 
 - You can use the `plugins` CLI wherever you use `packs`, with the same commands and options.
@@ -1223,7 +1225,8 @@ await myHelper(context);
 
 - Beginning of alpha versioning.
 
-[Unreleased]: https://github.com/superhuman/plugins-sdk/compare/v1.19.0...HEAD
+[Unreleased]: https://github.com/superhuman/plugins-sdk/compare/v1.20.0...HEAD
+[1.20.0]: https://github.com/superhuman/plugins-sdk/compare/v1.19.0...v1.20.0
 [1.19.0]: https://github.com/superhuman/plugins-sdk/compare/v1.18.4...v1.19.0
 [1.18.4]: https://github.com/superhuman/plugins-sdk/compare/v1.18.3...v1.18.4
 [1.18.3]: https://github.com/coda/packs-sdk/compare/v1.18.2...v1.18.3
