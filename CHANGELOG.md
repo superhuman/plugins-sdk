@@ -4,6 +4,10 @@ This changelog keeps track of all changes to the Packs SDK. We follow convention
 
 ## [Unreleased]
 
+### Fixed
+
+- `packs release --git-tag` passes the tag name and release notes to git directly instead of through a shell, so release notes containing `$(...)`, backticks, or backslashes are stored literally in the tag message and are never run as commands.
+
 ## [1.20.0] - 2026-11-06
 
 ### Added
