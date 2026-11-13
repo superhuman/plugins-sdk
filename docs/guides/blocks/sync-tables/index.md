@@ -95,7 +95,7 @@ const TaskSchema = sdk.makeObjectSchema({
 The sync table itself is defined using the `addSyncTable()` method:
 
 ```ts
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   schema: TaskSchema,
   identityName: "Task",
@@ -113,7 +113,7 @@ It includes the name of the sync table, the schema for each row, and other metad
 Inside each sync table definition is a formula definition, detailing the hidden formula used to sync data into the sync table. If you aren't already familiar with creating formulas, read the [Formulas guide][formulas] first.
 
 ```ts
-pack.addSyncTable({
+connector.addSyncTable({
   // ...
   formula: {
     name: "SyncTasks",
@@ -129,7 +129,7 @@ pack.addSyncTable({
 This formula fetches items from the external data source, adjust them to fit the schema, and returns them. The return value must be a [`SyncFormulaResult`][SyncFormulaResult], which is an object where the `result` property contains the array of item objects.
 
 ```ts
-pack.addSyncTable({
+connector.addSyncTable({
   // ...
   formula: {
     // ...
@@ -237,7 +237,7 @@ exists -- Yes\nSet as context.sync.continuation --> run
 The contents of the continuation are flexible and will depend on the API to the external data source, but usually involve offsets or page tokens. The continuation must be an object of type [`Continuation`][Continuation], which allows for storing string and number values. Continuations are not designed for persisting large amounts of data between executions, so we recommend against using a task queue pattern.
 
 ```ts
-pack.addSyncTable({
+connector.addSyncTable({
   // ...
   formula: {
     // ...

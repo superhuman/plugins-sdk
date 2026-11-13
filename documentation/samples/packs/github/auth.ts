@@ -1,10 +1,10 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Setup per-user authentication using GitHub's OAuth2.
 // Remember to set your client ID and secret in the "Settings" tab.
 // See https://docs.github.com/en/developers/apps/building-oauth-apps
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://github.com/login/oauth/authorize",
   tokenUrl: "https://github.com/login/oauth/access_token",
@@ -22,4 +22,4 @@ pack.setUserAuthentication({
 });
 
 // Allow the Pack to access the GitHub domain.
-pack.addNetworkDomain("github.com");
+connector.addNetworkDomain("github.com");

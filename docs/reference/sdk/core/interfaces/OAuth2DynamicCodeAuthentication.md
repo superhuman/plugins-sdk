@@ -12,7 +12,7 @@ search:
 
 OAuth2 authentication with Dynamic Client Registration (DCR) enabled.
 `authorizationUrl` and `tokenUrl` are optional because they are automatically
-discovered using the pack's declared MCP servers and network domains.
+discovered using the connector's declared MCP servers and network domains.
 
 ## Extends
 
@@ -41,7 +41,7 @@ user to the [authorizationUrl](#authorizationurl).
 
 > `optional` **authorizationUrl**: `string`
 
-The URL to which the user will be redirected in order to authorize this pack.
+The URL to which the user will be redirected in order to authorize this connector.
 Optional when using DCR, as it is automatically discovered.
 
 ***
@@ -68,8 +68,8 @@ codes when there is an error in the token exchange.
 When requiresEndpointUrl is set to true, this should be the root domain that all endpoints share.
 For example, this value would be "example.com" if specific endpoints looked like {custom-subdomain}.example.com.
 
-For packs that make requests to multiple domains (uncommon), this should be the domain within
-[PackVersionDefinition.networkDomains](PackVersionDefinition.md#networkdomains) that this configuration applies to.
+For connectors that make requests to multiple domains (uncommon), this should be the domain within
+[ComponentVersionDefinition.networkDomains](ComponentVersionDefinition.md#networkdomains) that this configuration applies to.
 
 #### Inherited from
 
@@ -116,7 +116,7 @@ with the creating user's Superhuman username.
 
 > `optional` **instructionsUrl**: `string`
 
-A link to a help article or other page with more instructions about how to set up an account for this pack.
+A link to a help article or other page with more instructions about how to set up an account for this connector.
 
 #### Inherited from
 
@@ -141,8 +141,8 @@ their authentication response.
 
 > `optional` **networkDomain**: `string` \| `string`[]
 
-Which domain(s) should get auth credentials, when a pack is configured with multiple domains.
-Packs configured with only one domain or with requiresEndpointUrl set to true can omit this.
+Which domain(s) should get auth credentials, when a connector is configured with multiple domains.
+Connectors configured with only one domain or with requiresEndpointUrl set to true can omit this.
 
 Using multiple authenticated network domains is uncommon and requires Superhuman approval.
 
@@ -168,8 +168,8 @@ See [useProofKeyForCodeExchange](#useproofkeyforcodeexchange)
 
 > `optional` **postSetup**: [`SetEndpoint`](SetEndpoint.md)[]
 
-One or more setup steps to run after the user has set up the account, before completing installation of the pack.
-This is not common.
+One or more setup steps to run after the user has set up the account, before completing installation of the
+connector. This is not common.
 
 #### Inherited from
 
@@ -181,7 +181,7 @@ This is not common.
 
 > `optional` **requiresEndpointUrl**: `boolean`
 
-If true, indicates this pack has a specific endpoint domain for each account, that is used
+If true, indicates this connector has a specific endpoint domain for each account, that is used
 as the basis of HTTP requests. For example, API requests are made to <custom-subdomain>.example.com
 rather than example.com. If true, the user will be prompted to provide their specific endpoint domain
 when creating a new account.
@@ -309,7 +309,7 @@ Identifies this as OAuth2 authentication.
 Indicates that this OAuth provider supports Dynamic Client Registration.
 When enabled, the platform will automatically discover authorization endpoints
 and dynamically register OAuth client credentials (client ID and secret) using the
-pack's declared MCP servers and network domains.
+connector's declared MCP servers and network domains.
 
 See https://datatracker.ietf.org/doc/html/rfc7591 for more details.
 

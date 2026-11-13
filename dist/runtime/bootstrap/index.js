@@ -8,6 +8,7 @@ const ensure_1 = require("../../helpers/ensure");
 const fs_1 = __importDefault(require("fs"));
 const ivm_wrapper_1 = require("../../testing/ivm_wrapper");
 const marshaling_1 = require("../common/marshaling");
+const schema_1 = require("../../schema");
 const path_1 = __importDefault(require("path"));
 const source_map_1 = require("../common/source_map");
 const marshaling_2 = require("../common/marshaling");
@@ -205,7 +206,7 @@ async function injectExecutionContext({ context, fetcher, temporaryBlobStorage, 
         invocationLocation,
         timezone,
         invocationToken,
-        sync,
+        sync: sync && { ...sync, ...(sync.schema && { schema: (0, schema_1.normalizeSchemaIdentities)(sync.schema) }) },
         executionId,
         authenticationName,
         previousAttemptError,

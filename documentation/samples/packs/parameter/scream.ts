@@ -1,8 +1,8 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Formats text to look like screaming. For example, "Hello" => "HELLO!!!".
-pack.addFormula({
+connector.addFormula({
   name: "Scream",
   description: "Make text uppercase and add exclamation points.",
   parameters: [

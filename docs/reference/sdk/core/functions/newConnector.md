@@ -13,6 +13,7 @@ search:
 > **newConnector**(`definition?`): [`PackDefinitionBuilder`](../classes/PackDefinitionBuilder.md)
 
 Creates a new skeleton connector definition that can be added to.
+Returns a [PackDefinitionBuilder](../classes/PackDefinitionBuilder.md) for compatibility. Use as a [ConnectorDefinitionBuilder](../classes/ConnectorDefinitionBuilder.md).
 
 ## Example
 

@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Define the schema that will be used to render the card.
 const WeatherSchema = sdk.makeObjectSchema({
@@ -29,7 +29,7 @@ const WeatherSchema = sdk.makeObjectSchema({
 });
 
 // Add a formula that fetches the weather and returns it as a card.
-pack.addFormula({
+connector.addFormula({
   name: "CurrentWeather",
   description: "Get the current weather at a specific location (US only).",
   parameters: [
@@ -97,4 +97,4 @@ async function getForecastUrl(latitude: number, longitude: number,
   }
 }
 
-pack.addNetworkDomain("weather.gov");
+connector.addNetworkDomain("weather.gov");

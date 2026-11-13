@@ -1,16 +1,16 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Column format that displays the cell's value within a random cat image,
 // using the CatPhoto() formula defined above.
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Cat Photo",
   instructions: "Displays the text over the photo of a random cat.",
   formulaName: "CatPhoto",
 });
 
 // Formula that fetches a random cat photo, with various options.
-pack.addFormula({
+connector.addFormula({
   name: "CatPhoto",
   description: "Gets a random cat image.",
   parameters: [
@@ -37,5 +37,5 @@ pack.addFormula({
   },
 });
 
-// Allow the pack to make requests to Cat-as-a-service API.
-pack.addNetworkDomain("cataas.com");
+// Allow the connector to make requests to Cat-as-a-service API.
+connector.addNetworkDomain("cataas.com");

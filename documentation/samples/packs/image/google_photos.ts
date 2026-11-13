@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Regular expression that matches Superhuman-hosted images.
 const HostedImageUrlRegex = new RegExp("^https://(?:[^/]*\.)?codahosted.io/.*");
@@ -11,7 +11,7 @@ interface ImageData {
 }
 
 // Action that uploads a list of images to Google Photos.
-pack.addFormula({
+connector.addFormula({
   name: "Upload",
   description: "Uploads images to Google Photos.",
   parameters: [
@@ -149,7 +149,7 @@ async function addImages(uploadTokens: string[],
   return urls;
 }
 
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
   tokenUrl: "https://oauth2.googleapis.com/token",
@@ -162,4 +162,4 @@ pack.setUserAuthentication({
   },
 });
 
-pack.addNetworkDomain("googleapis.com");
+connector.addNetworkDomain("googleapis.com");

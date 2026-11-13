@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 const PageSize = 100;
 
@@ -17,9 +17,9 @@ const SpellSchema = sdk.makeObjectSchema({
   featuredProperties: ["description", "level", "school"],
 });
 
-pack.addNetworkDomain("dnd5eapi.co");
+connector.addNetworkDomain("dnd5eapi.co");
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Spells",
   identityName: "Spell",
   schema: SpellSchema,

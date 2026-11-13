@@ -26,11 +26,11 @@ const TaskUrlPatterns: RegExp[] = [
 
 // #region Pack setup
 
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addNetworkDomain("todoist.com");
+connector.addNetworkDomain("todoist.com");
 
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   // OAuth2 URLs and scopes are found in the Todoist OAuth guide:
   // https://developer.todoist.com/guides/#oauth
@@ -272,7 +272,7 @@ function formatTaskForAPI(task: any) {
 
 // #region Formulas
 
-pack.addFormula({
+connector.addFormula({
   name: "Project",
   description: "Gets a Todoist project by URL",
   parameters: [
@@ -294,7 +294,7 @@ pack.addFormula({
   },
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "Task",
   description: "Gets a Todoist task by URL",
   parameters: [
@@ -321,13 +321,13 @@ pack.addFormula({
 
 // #region Column Formats
 
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Project",
   formulaName: "Project",
   matchers: ProjectUrlPatterns,
 });
 
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Task",
   formulaName: "Task",
   matchers: TaskUrlPatterns,
@@ -338,7 +338,7 @@ pack.addColumnFormat({
 
 // #region Actions
 
-pack.addFormula({
+connector.addFormula({
   name: "AddProject",
   description: "Add a new Todoist project",
   parameters: [
@@ -365,7 +365,7 @@ pack.addFormula({
   },
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "AddTask",
   description: "Add a new task.",
   parameters: [
@@ -400,7 +400,7 @@ pack.addFormula({
   },
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "SetDueDate",
   description: "Change the due date of a task.",
   parameters: [
@@ -455,7 +455,7 @@ pack.addFormula({
 
 // #region Sync tables
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Projects",
   schema: ProjectSchema,
   identityName: "Project",
@@ -500,7 +500,7 @@ pack.addSyncTable({
   },
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   schema: TaskSchema,
   identityName: "Task",

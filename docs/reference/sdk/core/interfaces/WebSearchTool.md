@@ -31,14 +31,8 @@ Maximum of 100 domains allowed.
 #### Example
 
 ```ts
-pack.addSkill({
-  // ...
-  tools: [
-    {
-      type: sdk.ToolType.WebSearch,
-      allowedDomains: ["docs.google.com", "stackoverflow.com"],
-    },
-  ],
+agent.setTools({
+  webSearch: {allowedDomains: ["docs.google.com", "stackoverflow.com"]},
 });
 ```
 

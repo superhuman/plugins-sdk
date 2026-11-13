@@ -1,4 +1,6 @@
 import type { ExecutionContext } from '../api';
+import type { ExternalPackMetadata } from '../compiled_types';
+import type { ExternalPackVersionMetadata } from '../compiled_types';
 import type { Formula } from '../api';
 import type { GenericSyncTable } from '../api';
 import type { LegacyDefaultMetadataReturnType } from '../api';
@@ -14,6 +16,11 @@ import type { PackVersionMetadata } from '../compiled_types';
 import type { TypedPackFormula } from '../api';
 export declare function compilePackMetadata(manifest: PackDefinition): PackMetadata;
 export declare function compilePackMetadata(manifest: PackVersionDefinition): PackVersionMetadata;
+/** @internal Hydrate schema identity aliases in compiled or historically stored metadata. */
+export declare function normalizePackMetadataIdentities(metadata: PackMetadata): PackMetadata;
+export declare function normalizePackMetadataIdentities(metadata: PackVersionMetadata): PackVersionMetadata;
+export declare function normalizePackMetadataIdentities(metadata: ExternalPackMetadata): ExternalPackMetadata;
+export declare function normalizePackMetadataIdentities(metadata: ExternalPackVersionMetadata): ExternalPackVersionMetadata;
 export declare function compileFormulasMetadata(formulas: Formula[]): PackFormulaMetadata[];
 export declare function compileFormulaMetadata(formula: TypedPackFormula): PackFormulaMetadata;
 export declare function compileSyncTable(syncTable: GenericSyncTable): PackSyncTable;

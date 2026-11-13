@@ -18,7 +18,7 @@ A JavaScript function for property options.
 
 | Type Parameter |
 | ------ |
-| `ResultT` *extends* [`PackFormulaResult`](PackFormulaResult.md)[] |
+| `ResultT` *extends* [`FormulaResult`](FormulaResult.md)[] |
 
 ## Parameters
 

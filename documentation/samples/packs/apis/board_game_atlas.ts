@@ -1,11 +1,11 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Authenticate using a client ID.
 // See: https://www.boardgameatlas.com/api/docs/apps
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.QueryParamToken,
   paramName: "client_id",
 });
 
-pack.addNetworkDomain("boardgameatlas.com");
+connector.addNetworkDomain("boardgameatlas.com");

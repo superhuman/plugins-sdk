@@ -29,10 +29,10 @@ A formula without any parameters. This sample returns the name of the current da
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Formula that gets the current weekday, for example "Monday".
-pack.addFormula({
+connector.addFormula({
   name: "CurrentWeekday",
   description: "Get the current day of the week.",
   parameters: [],
@@ -54,10 +54,10 @@ A formula that takes plain text as a parameter. This sample returns a greeting t
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Say Hello to the given name.
-pack.addFormula({
+connector.addFormula({
   name: "Hello",
   description: "A Hello World example.",
   parameters: [
@@ -80,10 +80,10 @@ A formula that takes a number as a parameter. This sample converts a number of s
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Formula that converts slices of a pizza into a percentage eaten.
-pack.addFormula({
+connector.addFormula({
   name: "PizzaEaten",
   description: "Calculates what percentage of a pizza was eaten.",
   parameters: [
@@ -107,9 +107,9 @@ A formula that takes a date as a parameter. This sample determines if the year o
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addFormula({
+connector.addFormula({
   name: "GoodNYEGlasses",
   description: "Determines if a date is good for New Years Eve glasses " +
     "(the year contains two zeros).",
@@ -140,13 +140,13 @@ A formula that takes an image as a parameter. This sample returns the file size 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Regular expression that matches Superhuman-hosted images.
 const HostedImageUrlRegex = new RegExp("^https://(?:[^/]*\.)?codahosted.io/.*");
 
 // Formula that calculates the file size of an image.
-pack.addFormula({
+connector.addFormula({
   name: "FileSize",
   description: "Gets the file size of an image, in bytes.",
   parameters: [
@@ -186,9 +186,9 @@ A formula that takes a string array as a parameter. This sample returns the long
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addFormula({
+connector.addFormula({
   name: "Longest",
   description: "Given a list of strings, returns the longest one.",
   parameters: [
@@ -220,9 +220,9 @@ A formula that takes sparse number arrays as a parameter, useful when passing ta
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addFormula({
+connector.addFormula({
   name: "TotalCost",
   description: "Calculates the total cost for an order.",
   parameters: [
@@ -279,10 +279,10 @@ A formula with some required and some optional parameters. This sample formats t
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Formats text to look like screaming. For example, "Hello" => "HELLO!!!".
-pack.addFormula({
+connector.addFormula({
   name: "Scream",
   description: "Make text uppercase and add exclamation points.",
   parameters: [
@@ -323,11 +323,11 @@ A formula with a parameter that defines a suggested value. This sample rolls vir
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Rolls virtual dice and returns the resulting numbers. Use it with a button in
 // table and store the results in another column.
-pack.addFormula({
+connector.addFormula({
   name: "RollDice",
   description: "Roll some virtual dice.",
   parameters: [
@@ -366,12 +366,12 @@ A formula that accepts a variable number of arguments. This sample draws a simpl
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Takes an unknown number of steps and labels and outputs a simple diagram.
 // Example: Steps("Idea", "Experiment", "Prototype", "Refine", "Product")
 // Result: Idea --Experiment--> Prototype --Refine--> Product
-pack.addFormula({
+connector.addFormula({
   name: "Steps",
   description: "Draws a simple step diagram using text.",
   parameters: [
@@ -413,7 +413,7 @@ A Pack that reuses a parameter across multiple formulas. This sample includes ma
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A "numbers" parameter shared by both formulas.
 const NumbersParameter = sdk.makeParameter({
@@ -422,7 +422,7 @@ const NumbersParameter = sdk.makeParameter({
   description: "The numbers to perform the calculation on.",
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "GCD",
   description: "Returns the greatest common divisor for a list of numbers.",
   parameters: [
@@ -451,7 +451,7 @@ pack.addFormula({
   },
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "LCM",
   description: "Returns the least common multiple for a list of numbers.",
   parameters: [
@@ -495,7 +495,7 @@ A Pack with a sync table that validates parameter values. This sample includes a
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 const PageSize = 100;
 
@@ -513,9 +513,9 @@ const SpellSchema = sdk.makeObjectSchema({
   featuredProperties: ["description", "level", "school"],
 });
 
-pack.addNetworkDomain("dnd5eapi.co");
+connector.addNetworkDomain("dnd5eapi.co");
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Spells",
   identityName: "Spell",
   schema: SpellSchema,

@@ -44,7 +44,7 @@ const ThingSchema = sdk.makeObjectSchema({
 });
 
 // A formula that accepts a URL and returns an object matching the schema above.
-pack.addFormula({
+connector.addFormula({
   name: "$1",
   description: "My description.",
   parameters: [
@@ -67,7 +67,7 @@ pack.addFormula({
 });
 
 // A column format that defines which URL patterns the formula should match.
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "$1",
   instructions: "My instructions.",
   formulaName: "$1",
@@ -84,7 +84,7 @@ A formula that returns a card containing an title, subtitle, and snippet. This s
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A schema defining the card, including all of metadata what specifically to
 // highlight in the card.
@@ -157,7 +157,7 @@ let SpellSchema = sdk.makeObjectSchema({
 // Formula that renders a card for a spell given its name. This will be shown
 // a "Card" in the Pack's list of building blocks, but is also a regular formula
 // that can be used elsewhere.
-pack.addFormula({
+connector.addFormula({
   name: "Spell",
   description: "Gets information about a spell, given its name.",
   parameters: [
@@ -197,7 +197,7 @@ pack.addFormula({
 });
 
 // Allow requests to the DND API.
-pack.addNetworkDomain("dnd5eapi.co");
+connector.addNetworkDomain("dnd5eapi.co");
 
 // Fetch a batch of spells from the API and return them formatted to match the
 // schema. This utility function is shared by the formula and sync table.
@@ -245,7 +245,7 @@ A formula that returns a card that includes an image. This samples returns a car
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Define the schema that will be used to render the card.
 const WeatherSchema = sdk.makeObjectSchema({
@@ -275,7 +275,7 @@ const WeatherSchema = sdk.makeObjectSchema({
 });
 
 // Add a formula that fetches the weather and returns it as a card.
-pack.addFormula({
+connector.addFormula({
   name: "CurrentWeather",
   description: "Get the current weather at a specific location (US only).",
   parameters: [
@@ -343,7 +343,7 @@ async function getForecastUrl(latitude: number, longitude: number,
   }
 }
 
-pack.addNetworkDomain("weather.gov");
+connector.addNetworkDomain("weather.gov");
 {% endraw %}
 ```
 ## With link matching
@@ -352,7 +352,7 @@ A card that can be created manually or automatically when pasting a link. This s
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A schema defining the card, including all of metadata what specifically to
 // highlight in the card.
@@ -395,7 +395,7 @@ const TaskSchema = sdk.makeObjectSchema({
 // Formula that renders a card for a task given its URL. This will be shown a
 // "Card" in the Pack's list of building blocks, but is also a regular formula
 // that can be used elsewhere.
-pack.addFormula({
+connector.addFormula({
   name: "Task",
   description: "Gets a Todoist task by URL",
   parameters: [
@@ -438,7 +438,7 @@ const TaskUrlPatterns: RegExp[] = [
 
 // Add a column format for the Task formula, to define which URLs it should
 // trigger for. This also makes it easier to use the formula in a table column.
-pack.addColumnFormat({
+connector.addColumnFormat({
   // How the option will show in the link and column type dialogs.
   name: "Task",
   // The formula that generates the card.
@@ -458,11 +458,11 @@ function extractTaskId(taskUrl: string) {
   throw new sdk.UserVisibleError("Invalid task URL: " + taskUrl);
 }
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 
 // Setup authentication using a Todoist API token.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });

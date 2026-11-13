@@ -20,10 +20,10 @@ This is an example which creates a single formula called `Hello`, that takes in 
     import * as sdk from "@superhuman/plugins-sdk";
 
     // This line creates your new Pack.
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
     // Here, we add a new formula to this Pack.
-    pack.addFormula({
+    connector.addFormula({
       // This is the name that will be called in the formula builder.
       // Remember, your formula name cannot have spaces in it.
       name: "Hello",

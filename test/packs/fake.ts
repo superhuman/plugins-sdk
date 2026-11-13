@@ -38,6 +38,12 @@ function throwError() {
 export const manifest: PackDefinition = createFakePack({
   formulaNamespace: 'Fake',
   formulas: [
+    makeStringFormula({
+      name: 'SyncSchema',
+      description: 'Read the sync schema provided to executing connector code.',
+      parameters: [],
+      execute: ([], context) => JSON.stringify({schema: context.sync?.schema, dynamicUrl: context.sync?.dynamicUrl}),
+    }),
     makeNumericFormula({
       name: 'Timer',
       description: 'Timer',

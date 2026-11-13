@@ -1,10 +1,10 @@
 import * as sdk from "@superhuman/plugins-sdk";
 
-const pack = sdk.newPack();
+const connector = sdk.newConnector();
 
 // BEGIN
 
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.CustomHeaderToken,
   headerName: "${1:MyToken}",
   instructionsUrl: "${2:https://help.example.com/api-tokens}",

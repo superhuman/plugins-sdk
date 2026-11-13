@@ -67,7 +67,7 @@ sync tables that have a dynamic schema.
 
 > **formula**: [`FormulaOptions`](../type-aliases/FormulaOptions.md)\<`ParamDefsT`, [`SyncFormulaDef`](SyncFormulaDef.md)\<`K`, `L`, `ParamDefsT`, `SchemaT`, `ContextT`, `PermissionsContextT`\>\>
 
-The definition of the formula that implements this sync. This is a Pack formula
+The definition of the formula that implements this sync. This is a formula
 that returns an array of objects fitting the given schema and optionally a [Continuation](Continuation.md).
 (The [SyncFormulaDef.name](SyncFormulaDef.md#name) is redundant and should be the same as the `name` parameter here.
 These will eventually be consolidated.)
@@ -79,7 +79,7 @@ These will eventually be consolidated.)
 > **identityName**: `string`
 
 The "unique identifier" for the entity being synced. This will serve as the unique id for this
-table, and must be unique across other sync tables for your pack. This is often the singular
+table, and must be unique across other sync tables for your connector. This is often the singular
 form of the table name, e.g. if your table name was 'Products' you might choose 'Product'
 as the identity name.
 
@@ -103,7 +103,7 @@ they aren't relevant to most users, while still allowing users to opt in.
 #### Example
 
 ```
-pack.addSyncTable({
+connector.addSyncTable({
   name: "MessagesSharedMailbox",
   // ...
   indexing: {

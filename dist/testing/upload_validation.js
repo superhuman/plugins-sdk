@@ -27,56 +27,58 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.zodErrorDetailToValidationError = exports.findDuplicateTools = exports.normalizeTool = exports._hasCycle = exports.validateParents = exports.validateCrawlHierarchy = exports.validateSyncTableSchema = exports.validateVariousAuthenticationMetadata = exports.validatePackVersionMetadata = exports.validatePackResourceArtifacts = exports.PackMetadataValidationError = exports.Limits = exports.PACKS_VALID_COLUMN_FORMAT_MATCHER_REGEX = void 0;
+const types_1 = require("../types");
 const api_types_1 = require("../api_types");
 const schema_1 = require("../schema");
-const types_1 = require("../types");
+const types_2 = require("../types");
 const schema_2 = require("../schema");
 const api_types_2 = require("../api_types");
 const schema_3 = require("../schema");
-const types_2 = require("../types");
 const types_3 = require("../types");
 const types_4 = require("../types");
 const types_5 = require("../types");
+const types_6 = require("../types");
 const schema_4 = require("../schema");
 const api_types_3 = require("../api_types");
-const types_6 = require("../types");
+const types_7 = require("../types");
 const schema_5 = require("../schema");
 const schema_6 = require("../schema");
-const types_7 = require("../types");
 const types_8 = require("../types");
 const types_9 = require("../types");
 const types_10 = require("../types");
 const types_11 = require("../types");
+const types_12 = require("../types");
+const types_13 = require("../types");
 const api_types_4 = require("../api_types");
 const schema_7 = require("../schema");
 const schema_8 = require("../schema");
 const schema_9 = require("../schema");
 const schema_10 = require("../schema");
 const jsonpath_plus_1 = require("jsonpath-plus");
-const types_12 = require("../types");
+const types_14 = require("../types");
 const schema_11 = require("../schema");
 const schema_12 = require("../schema");
-const types_13 = require("../types");
-const types_14 = require("../types");
-const api_types_5 = require("../api_types");
 const types_15 = require("../types");
 const types_16 = require("../types");
+const api_types_5 = require("../api_types");
+const types_17 = require("../types");
+const types_18 = require("../types");
 const schema_13 = require("../schema");
 const api_types_6 = require("../api_types");
-const types_17 = require("../types");
-const schema_14 = require("../schema");
-const types_18 = require("../types");
-const __1 = require("..");
 const types_19 = require("../types");
-const schema_15 = require("../schema");
+const schema_14 = require("../schema");
 const types_20 = require("../types");
-const schema_16 = require("../schema");
+const __1 = require("..");
 const types_21 = require("../types");
+const schema_15 = require("../schema");
 const types_22 = require("../types");
+const schema_16 = require("../schema");
 const types_23 = require("../types");
-const api_types_7 = require("../api_types");
 const types_24 = require("../types");
 const types_25 = require("../types");
+const api_types_7 = require("../api_types");
+const types_26 = require("../types");
+const types_27 = require("../types");
 const api_types_8 = require("../api_types");
 const url_parse_1 = __importDefault(require("url-parse"));
 const schema_17 = require("../schema");
@@ -95,10 +97,11 @@ const schema_22 = require("../schema");
 const schema_23 = require("../schema");
 const schema_24 = require("../schema");
 const schema_25 = require("../schema");
+const schema_26 = require("../schema");
 const migration_1 = require("../helpers/migration");
 const parse5_1 = require("parse5");
 const semver_1 = __importDefault(require("semver"));
-const schema_26 = require("../schema");
+const schema_27 = require("../schema");
 const rrule_validation_1 = require("./rrule_validation");
 const z = __importStar(require("zod"));
 /**
@@ -367,7 +370,7 @@ function makePropertyValidator(schema, context) {
                 ? schema.properties[propertyValue]
                 : undefined;
             if (!propertySchema) {
-                const schemaPropertyPath = (0, schema_25.normalizePropertyValuePathIntoSchemaPath)(propertyValue);
+                const schemaPropertyPath = (0, schema_26.normalizePropertyValuePathIntoSchemaPath)(propertyValue);
                 propertySchema = (_a = (0, jsonpath_plus_1.JSONPath)({
                     path: schemaPropertyPath,
                     json: schema.properties,
@@ -543,6 +546,7 @@ function getNonUniqueElements(items) {
  * Normalizes a tool for comparison by sorting any arrays within it.
  * This ensures that tools with the same content but different array ordering
  * are considered equal.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 function normalizeTool(tool) {
     const normalized = { ...tool };
@@ -560,6 +564,7 @@ exports.normalizeTool = normalizeTool;
 /**
  * Finds duplicate tools in an array by comparing normalized versions.
  * Returns information about each duplicate found.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 function findDuplicateTools(tools) {
     const duplicates = [];
@@ -687,7 +692,7 @@ function zodUnionInput(schemas) {
     return schemas;
 }
 const setEndpointPostSetupValidator = zodCompleteObject({
-    type: zodDiscriminant(types_18.PostSetupType.SetEndpoint),
+    type: zodDiscriminant(types_20.PostSetupType.SetEndpoint),
     name: z.string(),
     description: z.string(),
     // TODO(jonathan): Remove this from the metadata object, only needs to be present in the full bundle.
@@ -701,6 +706,13 @@ function buildMetadataSchema({ sdkVersion }) {
         .refine(domain => domain.indexOf(' ') < 0, {
         message: 'The `networkDomain` in setUserAuthentication() cannot contain spaces. Use an array for multiple domains.',
     });
+    const requiresAdminSetupValidator = z
+        .array(z.nativeEnum(types_1.AdminSetupRequirement))
+        .min(1, 'requiresAdminSetup must list at least one requirement; omit it when there are none')
+        .refine(requirements => new Set(requirements).size === requirements.length, {
+        message: 'requiresAdminSetup must not contain duplicates',
+    })
+        .optional();
     const baseAuthenticationValidators = {
         // TODO(jonathan): Remove these after fixing/exporting types for Authentication metadata, as they're only present
         // in the full bundle, not the metadata.
@@ -708,33 +720,34 @@ function buildMetadataSchema({ sdkVersion }) {
         getConnectionUserId: z.unknown().optional(),
         instructionsUrl: z.string().optional(),
         requiresEndpointUrl: z.boolean().optional(),
+        endpointSetBy: z.nativeEnum(types_9.EndpointSetBy).optional(),
         endpointDomain: z.string().optional(),
         // The items are technically a discriminated union type but that union currently only has one member.
         postSetup: z.array(setEndpointPostSetupValidator).optional(),
         networkDomain: z.union([singleAuthDomainSchema, z.array(singleAuthDomainSchema).nonempty()]).optional(),
     };
     const defaultAuthenticationValidators = {
-        [types_1.AuthenticationType.None]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.None),
+        [types_2.AuthenticationType.None]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.None),
         }),
-        [types_1.AuthenticationType.HeaderBearerToken]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.HeaderBearerToken),
+        [types_2.AuthenticationType.HeaderBearerToken]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.HeaderBearerToken),
             ...baseAuthenticationValidators,
         }),
-        [types_1.AuthenticationType.CodaApiHeaderBearerToken]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.CodaApiHeaderBearerToken),
+        [types_2.AuthenticationType.CodaApiHeaderBearerToken]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.CodaApiHeaderBearerToken),
             deferConnectionSetup: z.boolean().optional(),
             shouldAutoAuthSetup: z.boolean().optional(),
             ...baseAuthenticationValidators,
         }),
-        [types_1.AuthenticationType.CustomHeaderToken]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.CustomHeaderToken),
+        [types_2.AuthenticationType.CustomHeaderToken]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.CustomHeaderToken),
             headerName: z.string(),
             tokenPrefix: z.string().optional(),
             ...baseAuthenticationValidators,
         }),
-        [types_1.AuthenticationType.MultiHeaderToken]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.MultiHeaderToken),
+        [types_2.AuthenticationType.MultiHeaderToken]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.MultiHeaderToken),
             headers: z
                 .array(zodCompleteStrictObject({
                 name: z.string(),
@@ -747,13 +760,13 @@ function buildMetadataSchema({ sdkVersion }) {
             }, { message: 'Duplicated header names in the MultiHeaderToken authentication config' }),
             ...baseAuthenticationValidators,
         }),
-        [types_1.AuthenticationType.QueryParamToken]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.QueryParamToken),
+        [types_2.AuthenticationType.QueryParamToken]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.QueryParamToken),
             paramName: z.string(),
             ...baseAuthenticationValidators,
         }),
-        [types_1.AuthenticationType.MultiQueryParamToken]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.MultiQueryParamToken),
+        [types_2.AuthenticationType.MultiQueryParamToken]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.MultiQueryParamToken),
             params: z
                 .array(zodCompleteStrictObject({
                 name: z.string(),
@@ -765,8 +778,8 @@ function buildMetadataSchema({ sdkVersion }) {
             }, { message: 'Duplicated parameter names in the MultiQueryParamToken authentication config' }),
             ...baseAuthenticationValidators,
         }),
-        [types_1.AuthenticationType.OAuth2]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.OAuth2),
+        [types_2.AuthenticationType.OAuth2]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.OAuth2),
             /** Accepts relative URLs when requiresEndpointUrl is true. */
             authorizationUrl: z.string().refine(validateUrlParsesIfAbsolute).optional(),
             /** Accepts relative URLs when requiresEndpointUrl is true. */
@@ -783,11 +796,13 @@ function buildMetadataSchema({ sdkVersion }) {
             resource: z.string().refine(validateUrlParsesIfAbsolute).optional(),
             scopeParamName: z.string().optional(),
             nestedResponseKey: z.string().optional(),
-            credentialsLocation: z.nativeEnum(types_24.TokenExchangeCredentialsLocation).optional(),
+            credentialsLocation: z.nativeEnum(types_26.TokenExchangeCredentialsLocation).optional(),
             useDynamicClientRegistration: z.boolean().optional(),
+            requiresAdminSetup: requiresAdminSetupValidator,
             ...baseAuthenticationValidators,
         }).superRefine((authDef, context) => {
-            const { requiresEndpointUrl, endpointKey, authorizationUrl, tokenUrl, resource, useDynamicClientRegistration } = authDef;
+            const { requiresEndpointUrl, endpointKey, authorizationUrl, tokenUrl, resource, useDynamicClientRegistration, requiresAdminSetup, } = authDef;
+            validateRequiresAdminSetup(requiresAdminSetup, { allowOAuthUrls: true, usesDcr: useDynamicClientRegistration === true }, context);
             if (useDynamicClientRegistration !== true) {
                 if (!authorizationUrl) {
                     context.addIssue({
@@ -824,8 +839,8 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
                 });
             }
         }),
-        [types_1.AuthenticationType.OAuth2ClientCredentials]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.OAuth2ClientCredentials),
+        [types_2.AuthenticationType.OAuth2ClientCredentials]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.OAuth2ClientCredentials),
             // Absolute (any scheme) always allowed; relative only when requiresEndpointUrl is true — see superRefine.
             tokenUrl: z.string(),
             scopes: z.array(z.string()).optional(),
@@ -836,9 +851,11 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
             resource: z.string().url().refine(validateUrlParsesIfAbsolute).optional(),
             scopeParamName: z.string().optional(),
             nestedResponseKey: z.string().optional(),
-            credentialsLocation: z.nativeEnum(types_24.TokenExchangeCredentialsLocation).optional(),
+            credentialsLocation: z.nativeEnum(types_26.TokenExchangeCredentialsLocation).optional(),
+            requiresAdminSetup: requiresAdminSetupValidator,
             ...baseAuthenticationValidators,
-        }).superRefine(({ requiresEndpointUrl, tokenUrl }, context) => {
+        }).superRefine(({ requiresEndpointUrl, tokenUrl, requiresAdminSetup }, context) => {
+            validateRequiresAdminSetup(requiresAdminSetup, { allowOAuthUrls: false, usesDcr: false }, context);
             const isValid = requiresEndpointUrl
                 ? isRootRelativeUrl(tokenUrl) || isAbsoluteUrlOfAnyScheme(tokenUrl)
                 : isAbsoluteUrlOfAnyScheme(tokenUrl);
@@ -852,8 +869,8 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
                 });
             }
         }),
-        [types_1.AuthenticationType.WebBasic]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.WebBasic),
+        [types_2.AuthenticationType.WebBasic]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.WebBasic),
             uxConfig: zodCompleteStrictObject({
                 placeholderUsername: z.string().optional(),
                 placeholderPassword: z.string().optional(),
@@ -861,18 +878,18 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
             }).optional(),
             ...baseAuthenticationValidators,
         }),
-        [types_1.AuthenticationType.AWSAccessKey]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.AWSAccessKey),
+        [types_2.AuthenticationType.AWSAccessKey]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.AWSAccessKey),
             service: z.string(),
             ...baseAuthenticationValidators,
         }),
-        [types_1.AuthenticationType.AWSAssumeRole]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.AWSAssumeRole),
+        [types_2.AuthenticationType.AWSAssumeRole]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.AWSAssumeRole),
             service: z.string(),
             ...baseAuthenticationValidators,
         }),
-        [types_1.AuthenticationType.Custom]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.Custom),
+        [types_2.AuthenticationType.Custom]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.Custom),
             params: z
                 .array(zodCompleteStrictObject({
                 name: z.string(),
@@ -884,73 +901,73 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
             }, { message: 'Duplicated parameter names in the mutli-query-token authentication config' }),
             ...baseAuthenticationValidators,
         }),
-        [types_1.AuthenticationType.GoogleDomainWideDelegation]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.GoogleDomainWideDelegation),
+        [types_2.AuthenticationType.GoogleDomainWideDelegation]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.GoogleDomainWideDelegation),
             scopes: z.array(z.string()).nonempty(),
             ...baseAuthenticationValidators,
         }),
-        [types_1.AuthenticationType.GoogleServiceAccount]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.GoogleServiceAccount),
+        [types_2.AuthenticationType.GoogleServiceAccount]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.GoogleServiceAccount),
             scopes: z.array(z.string()).nonempty(),
             ...baseAuthenticationValidators,
         }),
-        [types_1.AuthenticationType.EntraCertificate]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.EntraCertificate),
+        [types_2.AuthenticationType.EntraCertificate]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.EntraCertificate),
             ...baseAuthenticationValidators,
         }),
-        [types_1.AuthenticationType.Various]: zodCompleteStrictObject({
-            type: zodDiscriminant(types_1.AuthenticationType.Various),
+        [types_2.AuthenticationType.Various]: zodCompleteStrictObject({
+            type: zodDiscriminant(types_2.AuthenticationType.Various),
         }),
     };
     const systemAuthenticationTypes = {
-        [types_1.AuthenticationType.HeaderBearerToken]: true,
-        [types_1.AuthenticationType.CustomHeaderToken]: true,
-        [types_1.AuthenticationType.MultiHeaderToken]: true,
-        [types_1.AuthenticationType.MultiQueryParamToken]: true,
-        [types_1.AuthenticationType.QueryParamToken]: true,
-        [types_1.AuthenticationType.WebBasic]: true,
-        [types_1.AuthenticationType.AWSAccessKey]: true,
-        [types_1.AuthenticationType.AWSAssumeRole]: true,
-        [types_1.AuthenticationType.Custom]: true,
-        [types_1.AuthenticationType.OAuth2ClientCredentials]: true,
-        [types_1.AuthenticationType.GoogleServiceAccount]: true,
+        [types_2.AuthenticationType.HeaderBearerToken]: true,
+        [types_2.AuthenticationType.CustomHeaderToken]: true,
+        [types_2.AuthenticationType.MultiHeaderToken]: true,
+        [types_2.AuthenticationType.MultiQueryParamToken]: true,
+        [types_2.AuthenticationType.QueryParamToken]: true,
+        [types_2.AuthenticationType.WebBasic]: true,
+        [types_2.AuthenticationType.AWSAccessKey]: true,
+        [types_2.AuthenticationType.AWSAssumeRole]: true,
+        [types_2.AuthenticationType.Custom]: true,
+        [types_2.AuthenticationType.OAuth2ClientCredentials]: true,
+        [types_2.AuthenticationType.GoogleServiceAccount]: true,
     };
     const systemAuthenticationValidators = Object.entries(defaultAuthenticationValidators)
         .filter(([authType]) => authType in systemAuthenticationTypes)
         .map(([_authType, schema]) => schema);
     const adminAuthenticationTypes = {
-        [types_1.AuthenticationType.AWSAccessKey]: true,
-        [types_1.AuthenticationType.AWSAssumeRole]: true,
-        [types_1.AuthenticationType.CodaApiHeaderBearerToken]: true,
-        [types_1.AuthenticationType.Custom]: true,
-        [types_1.AuthenticationType.CustomHeaderToken]: true,
-        [types_1.AuthenticationType.GoogleServiceAccount]: true,
-        [types_1.AuthenticationType.EntraCertificate]: true,
-        [types_1.AuthenticationType.GoogleDomainWideDelegation]: true,
-        [types_1.AuthenticationType.HeaderBearerToken]: true,
-        [types_1.AuthenticationType.MultiHeaderToken]: true,
-        [types_1.AuthenticationType.MultiQueryParamToken]: true,
-        [types_1.AuthenticationType.OAuth2]: true,
-        [types_1.AuthenticationType.OAuth2ClientCredentials]: true,
-        [types_1.AuthenticationType.QueryParamToken]: true,
-        [types_1.AuthenticationType.WebBasic]: true,
+        [types_2.AuthenticationType.AWSAccessKey]: true,
+        [types_2.AuthenticationType.AWSAssumeRole]: true,
+        [types_2.AuthenticationType.CodaApiHeaderBearerToken]: true,
+        [types_2.AuthenticationType.Custom]: true,
+        [types_2.AuthenticationType.CustomHeaderToken]: true,
+        [types_2.AuthenticationType.GoogleServiceAccount]: true,
+        [types_2.AuthenticationType.EntraCertificate]: true,
+        [types_2.AuthenticationType.GoogleDomainWideDelegation]: true,
+        [types_2.AuthenticationType.HeaderBearerToken]: true,
+        [types_2.AuthenticationType.MultiHeaderToken]: true,
+        [types_2.AuthenticationType.MultiQueryParamToken]: true,
+        [types_2.AuthenticationType.OAuth2]: true,
+        [types_2.AuthenticationType.OAuth2ClientCredentials]: true,
+        [types_2.AuthenticationType.QueryParamToken]: true,
+        [types_2.AuthenticationType.WebBasic]: true,
     };
     const adminAuthenticationValidators = Object.entries(defaultAuthenticationValidators)
         .filter(([authType]) => authType in adminAuthenticationTypes)
         .map(([_authType, schema]) => schema);
     const variousSupportedAuthenticationTypes = {
-        [types_1.AuthenticationType.HeaderBearerToken]: true,
-        [types_1.AuthenticationType.CustomHeaderToken]: true,
-        [types_1.AuthenticationType.MultiHeaderToken]: true,
-        [types_1.AuthenticationType.MultiQueryParamToken]: true,
-        [types_1.AuthenticationType.QueryParamToken]: true,
-        [types_1.AuthenticationType.WebBasic]: true,
-        [types_1.AuthenticationType.None]: true,
+        [types_2.AuthenticationType.HeaderBearerToken]: true,
+        [types_2.AuthenticationType.CustomHeaderToken]: true,
+        [types_2.AuthenticationType.MultiHeaderToken]: true,
+        [types_2.AuthenticationType.MultiQueryParamToken]: true,
+        [types_2.AuthenticationType.QueryParamToken]: true,
+        [types_2.AuthenticationType.WebBasic]: true,
+        [types_2.AuthenticationType.None]: true,
     };
     const variousSupportedAuthenticationValidators = Object.entries(defaultAuthenticationValidators)
         .filter(([authType]) => authType in variousSupportedAuthenticationTypes)
         .map(([_authType, schema]) => schema);
-    const reservedAuthenticationNames = Object.values(types_19.ReservedAuthenticationNames).map(value => value.toString());
+    const reservedAuthenticationNames = Object.values(types_21.ReservedAuthenticationNames).map(value => value.toString());
     const adminAuthenticationValidator = zodCompleteObject({
         authentication: z.union(zodUnionInput(Object.values(adminAuthenticationValidators))),
         name: z
@@ -963,6 +980,15 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         }),
         displayName: z.string().min(1).max(exports.Limits.BuildingBlockName),
         description: z.string().min(1).max(exports.Limits.BuildingBlockDescription),
+    }).superRefine(({ authentication }, context) => {
+        // Org OAuth configuration is never used for named admin authentications, so the requirement can't take effect.
+        if ((authentication === null || authentication === void 0 ? void 0 : authentication.requiresAdminSetup) !== undefined) {
+            context.addIssue({
+                code: 'custom',
+                path: ['authentication', 'requiresAdminSetup'],
+                message: 'requiresAdminSetup is not supported on admin authentications',
+            });
+        }
     });
     const primitiveUnion = z.union([z.number(), z.string(), z.boolean(), z.date()]);
     const paramDefValidator = zodCompleteObject({
@@ -1434,12 +1460,13 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
     });
     const indexSchema = z.union([customIndexSchema, categorizationIndexSchema]);
     const identitySchema = zodCompleteObject({
+        connectorId: z.number().optional(),
         packId: z.number().optional(),
         name: z.string().nonempty(),
         dynamicUrl: z.string().optional(),
         attribution: attributionSchema,
         mergeKey: z.string().optional(),
-    });
+    }).transform(identity => (0, schema_25.normalizeIdentity)(identity));
     const parentSchema = zodCompleteStrictObject({
         parentIdProperty: propertySchema,
         lifecycle: z.nativeEnum(schema_11.LifecycleBehavior).optional(),
@@ -1764,7 +1791,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         }
         const schemaForOptions = (0, schema_24.maybeUnwrapArraySchema)(schema);
         const result = !schemaForOptions ||
-            (0, schema_26.unwrappedSchemaSupportsOptions)(schemaForOptions) ||
+            (0, schema_27.unwrappedSchemaSupportsOptions)(schemaForOptions) ||
             !('options' in schemaForOptions && schemaForOptions.options);
         return result;
     }, 'You must set "codaType" to ValueHintType.SelectList or ValueHintType.Reference when setting an "options" property.');
@@ -1890,7 +1917,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         }
     });
     const packToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_25.ToolType.Pack),
+        type: z.literal(types_27.ToolType.Pack),
         packId: z.number().optional(),
         useSuggestions: z.boolean().optional(),
         formulas: z
@@ -1913,64 +1940,64 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
     });
     const knowledgeToolSourceSchema = z.discriminatedUnion('type', [
         z.object({
-            type: z.literal(types_12.KnowledgeToolSourceType.Global),
+            type: z.literal(types_14.KnowledgeToolSourceType.Global),
         }),
         z.object({
-            type: z.literal(types_12.KnowledgeToolSourceType.Pack),
+            type: z.literal(types_14.KnowledgeToolSourceType.Pack),
             packId: z.number().optional(),
         }),
     ]);
     const knowledgeToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_25.ToolType.Knowledge),
+        type: z.literal(types_27.ToolType.Knowledge),
         source: knowledgeToolSourceSchema,
     });
     const screenAnnotationSchema = z.discriminatedUnion('type', [
         z.object({
-            type: z.literal(types_20.ScreenAnnotationType.Rewrite),
+            type: z.literal(types_22.ScreenAnnotationType.Rewrite),
         }),
         z.object({
-            type: z.literal(types_20.ScreenAnnotationType.Guide),
+            type: z.literal(types_22.ScreenAnnotationType.Guide),
         }),
     ]);
     const screenAnnotationToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_25.ToolType.ScreenAnnotation),
+        type: z.literal(types_27.ToolType.ScreenAnnotation),
         annotation: screenAnnotationSchema,
     });
     const embeddedContentSchema = z.discriminatedUnion('type', [
         z.object({
-            type: z.literal(types_7.EmbeddedContentType.CopyableBlock),
+            type: z.literal(types_8.EmbeddedContentType.CopyableBlock),
         }),
         z.object({
-            type: z.literal(types_7.EmbeddedContentType.CarouselView),
+            type: z.literal(types_8.EmbeddedContentType.CarouselView),
         }),
         z.object({
-            type: z.literal(types_7.EmbeddedContentType.TabView),
+            type: z.literal(types_8.EmbeddedContentType.TabView),
         }),
     ]);
     const embeddedContentToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_25.ToolType.EmbeddedContent),
+        type: z.literal(types_27.ToolType.EmbeddedContent),
         embeddedContent: embeddedContentSchema,
     });
     const mcpToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_25.ToolType.MCP),
+        type: z.literal(types_27.ToolType.MCP),
         serverNames: z.array(z.string()).optional(),
         packId: z.number().optional(),
     });
     const contactResolutionToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_25.ToolType.ContactResolution),
+        type: z.literal(types_27.ToolType.ContactResolution),
     });
     const codaDocsToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_25.ToolType.CodaDocsAndTables),
+        type: z.literal(types_27.ToolType.CodaDocsAndTables),
     });
     const mailAndCalendarToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_25.ToolType.MailAndCalendar),
+        type: z.literal(types_27.ToolType.MailAndCalendar),
     });
     const webSearchToolSchema = zodCompleteStrictObject({
-        type: z.literal(types_25.ToolType.WebSearch),
+        type: z.literal(types_27.ToolType.WebSearch),
         allowedDomains: z.array(z.string().min(1)).min(1).max(100).optional(),
     });
     const skillModelConfigurationSchema = zodCompleteStrictObject({
-        model: z.nativeEnum(types_21.SkillModel),
+        model: z.nativeEnum(types_23.SkillModel),
         prompt: z.string().min(1).max(exports.Limits.PromptLength).optional(),
     });
     const toolSchema = z.discriminatedUnion('type', [
@@ -2014,7 +2041,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         serverName: z.string().min(1).optional(),
     });
     const agentPackToolSchema = packToolSchema.extend({
-        packId: z.number(),
+        packId: z.number().int().min(1).max(2147483647),
         mcpTools: z
             .array(agentConnectorMcpToolSchema)
             .min(1, 'List at least one MCP tool, or leave mcpTools out to offer all of them.')
@@ -2034,6 +2061,9 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
             });
         })
             .optional(),
+        required: z
+            .union([z.literal(true), z.strictObject({ groupName: z.string().min(1).max(exports.Limits.BuildingBlockName) })])
+            .optional(),
     });
     const agentToolSchema = z.discriminatedUnion('type', [agentPackToolSchema, codaDocsToolSchema, mailAndCalendarToolSchema, webSearchToolSchema], { error: 'An agent can only use the Docs, Mail, web search, and Pack tools.' });
     const agentSchema = zodCompleteStrictObject({
@@ -2045,12 +2075,12 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
             .superRefine((tools, context) => {
             const seen = new Set();
             tools.forEach((tool, index) => {
-                const key = tool.type === types_25.ToolType.Pack ? `${tool.type}:${tool.packId}` : tool.type;
+                const key = tool.type === types_27.ToolType.Pack ? `${tool.type}:${tool.packId}` : tool.type;
                 if (seen.has(key)) {
                     context.addIssue({
                         code: 'custom',
                         path: [index],
-                        message: tool.type === types_25.ToolType.Pack
+                        message: tool.type === types_27.ToolType.Pack
                             ? `An agent can only name pack ${tool.packId} once.`
                             : `An agent can only use the ${tool.type} tool once.`,
                     });
@@ -2065,16 +2095,16 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         message: 'Invalid domain. Instead of "https://www.example.com", just specify "example.com".',
     });
     const whileWritingTriggerSchema = zodCompleteStrictObject({
-        kind: z.literal(types_6.DefaultTriggerKind.WhileWriting),
+        kind: z.literal(types_7.DefaultTriggerKind.WhileWriting),
         condition: z.string().min(1).max(exports.Limits.ConditionLength),
-        assistMode: z.nativeEnum(types_2.ContextualTriggerAssistMode).optional(),
-        suggestionColor: z.nativeEnum(types_4.ContextualTriggerSuggestionColor).optional(),
-        decorationStyle: z.nativeEnum(types_3.ContextualTriggerDecorationStyle).optional(),
-        surfaces: z.array(z.nativeEnum(types_5.ContextualTriggerSurface)).optional(),
+        assistMode: z.nativeEnum(types_3.ContextualTriggerAssistMode).optional(),
+        suggestionColor: z.nativeEnum(types_5.ContextualTriggerSuggestionColor).optional(),
+        decorationStyle: z.nativeEnum(types_4.ContextualTriggerDecorationStyle).optional(),
+        surfaces: z.array(z.nativeEnum(types_6.ContextualTriggerSurface)).optional(),
         blockedDomains: z.array(domainSchema).max(exports.Limits.MaxBlockedDomains).optional(),
     });
     const scheduleTriggerSchema = zodCompleteStrictObject({
-        kind: z.literal(types_6.DefaultTriggerKind.Schedule),
+        kind: z.literal(types_7.DefaultTriggerKind.Schedule),
         rruleString: z
             .string()
             .max(exports.Limits.RRuleStringLength)
@@ -2087,27 +2117,27 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
     });
     // The operator vocabulary each field family accepts.
     const addressFilterOperatorSchema = z.enum([
-        types_11.FilterOperator.TextContains,
-        types_11.FilterOperator.TextDoesNotContain,
-        types_11.FilterOperator.TextDoesNotEqual,
-        types_11.FilterOperator.TextEquals,
+        types_13.FilterOperator.TextContains,
+        types_13.FilterOperator.TextDoesNotContain,
+        types_13.FilterOperator.TextDoesNotEqual,
+        types_13.FilterOperator.TextEquals,
     ]);
-    const textFilterOperatorSchema = z.enum([types_11.FilterOperator.TextContains, types_11.FilterOperator.TextDoesNotContain]);
-    const idFilterOperatorSchema = z.enum([types_11.FilterOperator.TextDoesNotEqual, types_11.FilterOperator.TextEquals]);
+    const textFilterOperatorSchema = z.enum([types_13.FilterOperator.TextContains, types_13.FilterOperator.TextDoesNotContain]);
+    const idFilterOperatorSchema = z.enum([types_13.FilterOperator.TextDoesNotEqual, types_13.FilterOperator.TextEquals]);
     const numericFilterOperatorSchema = z.enum([
-        types_11.FilterOperator.NumberAtLeast,
-        types_11.FilterOperator.NumberAtMost,
-        types_11.FilterOperator.NumberEquals,
+        types_13.FilterOperator.NumberAtLeast,
+        types_13.FilterOperator.NumberAtMost,
+        types_13.FilterOperator.NumberEquals,
     ]);
     const keywordSchema = z.string().min(1).max(exports.Limits.KeywordLength);
-    const eventTriggerKindSchema = z.literal(types_6.DefaultTriggerKind.Event);
+    const eventTriggerKindSchema = z.literal(types_7.DefaultTriggerKind.Event);
     const mailAddressFilterConditionSchema = zodCompleteStrictObject({
-        field: z.enum([types_14.MailFilterField.From, types_14.MailFilterField.To]),
+        field: z.enum([types_16.MailFilterField.From, types_16.MailFilterField.To]),
         operator: addressFilterOperatorSchema,
         value: z.string().min(1).max(exports.Limits.MailFilterAddressValue),
     });
     const mailTextFilterConditionSchema = zodCompleteStrictObject({
-        field: z.enum([types_14.MailFilterField.Body, types_14.MailFilterField.Subject]),
+        field: z.enum([types_16.MailFilterField.Body, types_16.MailFilterField.Subject]),
         operator: textFilterOperatorSchema,
         value: z.string().min(1).max(exports.Limits.MailFilterTextValue),
     });
@@ -2116,43 +2146,43 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
             .array(z.discriminatedUnion('field', [mailAddressFilterConditionSchema, mailTextFilterConditionSchema]))
             .min(1)
             .max(exports.Limits.MaxFilterConditions),
-        combinator: z.nativeEnum(types_10.FilterCombinator).optional(),
+        combinator: z.nativeEnum(types_12.FilterCombinator).optional(),
     });
     const mailEventTriggerSchema = zodCompleteStrictObject({
         kind: eventTriggerKindSchema,
-        type: z.literal(types_8.EventTriggerType.Mail),
-        mailEventType: z.nativeEnum(types_13.MailEventType),
+        type: z.literal(types_10.EventTriggerType.Mail),
+        mailEventType: z.nativeEnum(types_15.MailEventType),
         filters: mailEventFiltersSchema,
     });
     const slackEventTriggerSchema = zodCompleteStrictObject({
         kind: eventTriggerKindSchema,
-        type: z.literal(types_8.EventTriggerType.Slack),
-        eventType: z.nativeEnum(types_22.SlackEventType),
+        type: z.literal(types_10.EventTriggerType.Slack),
+        eventType: z.nativeEnum(types_24.SlackEventType),
         keywords: z.array(keywordSchema).min(1).max(exports.Limits.MaxKeywords),
     });
     // Each notetaker field bounds its own value.
     const notetakerParticipantConditionSchema = zodCompleteStrictObject({
-        field: z.literal(types_16.NotetakerFilterField.Participant),
+        field: z.literal(types_18.NotetakerFilterField.Participant),
         operator: addressFilterOperatorSchema,
         value: z.string().min(1).max(exports.Limits.NotetakerParticipantValue),
     });
     const notetakerProjectTagConditionSchema = zodCompleteStrictObject({
-        field: z.literal(types_16.NotetakerFilterField.ProjectTag),
+        field: z.literal(types_18.NotetakerFilterField.ProjectTag),
         operator: addressFilterOperatorSchema,
         value: z.string().min(1).max(exports.Limits.NotetakerTagValue),
     });
     const notetakerMeetingTypeConditionSchema = zodCompleteStrictObject({
-        field: z.literal(types_16.NotetakerFilterField.MeetingType),
+        field: z.literal(types_18.NotetakerFilterField.MeetingType),
         operator: idFilterOperatorSchema,
         value: z.string().min(1).max(exports.Limits.NotetakerTagValue),
     });
     const notetakerNumericFilterConditionSchema = zodCompleteStrictObject({
-        field: z.enum([types_16.NotetakerFilterField.DurationMinutes, types_16.NotetakerFilterField.ParticipantCount]),
+        field: z.enum([types_18.NotetakerFilterField.DurationMinutes, types_18.NotetakerFilterField.ParticipantCount]),
         operator: numericFilterOperatorSchema,
         value: z.string().regex(/^\d{1,4}$/, 'A count must be a whole number of up to four digits.'),
     });
     const notetakerBooleanFilterConditionSchema = zodCompleteStrictObject({
-        field: z.enum([types_16.NotetakerFilterField.HasExternalAttendees, types_16.NotetakerFilterField.IsRecurring]),
+        field: z.enum([types_18.NotetakerFilterField.HasExternalAttendees, types_18.NotetakerFilterField.IsRecurring]),
         operator: idFilterOperatorSchema,
         value: z.enum(['false', 'true']),
     });
@@ -2167,15 +2197,15 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         ]))
             .max(exports.Limits.MaxFilterConditions)
             .optional(),
-        combinator: z.nativeEnum(types_10.FilterCombinator).optional(),
+        combinator: z.nativeEnum(types_12.FilterCombinator).optional(),
         keywords: z.array(keywordSchema).max(exports.Limits.MaxKeywords).optional(),
     }).refine(filters => { var _a, _b; return Boolean(((_a = filters.conditions) === null || _a === void 0 ? void 0 : _a.length) || ((_b = filters.keywords) === null || _b === void 0 ? void 0 : _b.length)); }, {
         message: 'A notetaker filter needs at least one condition or keyword.',
     });
     const notetakerEventTriggerSchema = zodCompleteStrictObject({
         kind: eventTriggerKindSchema,
-        type: z.literal(types_8.EventTriggerType.Notetaker),
-        eventType: z.nativeEnum(types_15.NotetakerEventType),
+        type: z.literal(types_10.EventTriggerType.Notetaker),
+        eventType: z.nativeEnum(types_17.NotetakerEventType),
         filters: notetakerEventFiltersSchema,
     });
     const eventTriggerSchema = z.discriminatedUnion('type', [
@@ -2364,7 +2394,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         defaultRoutines: z.array(routineSchema).optional(),
         suggestionProviders: z
             .array(zodCompleteStrictObject({
-            type: z.literal(types_23.SuggestionProviderType.Endpoint),
+            type: z.literal(types_25.SuggestionProviderType.Endpoint),
             name: z.string().min(1).max(100),
             endpointUrl: z
                 .string()
@@ -2448,7 +2478,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
             const metadata = untypedMetadata;
             for (const authInfo of getAuthentications(metadata)) {
                 const { name, authentication } = authInfo;
-                if (authentication.type !== types_1.AuthenticationType.CodaApiHeaderBearerToken) {
+                if (authentication.type !== types_2.AuthenticationType.CodaApiHeaderBearerToken) {
                     continue;
                 }
                 const allowedFirstPartyDomains = [
@@ -2485,7 +2515,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
             }
         })
             .superRefine((data, context) => {
-            if (data.defaultAuthentication && data.defaultAuthentication.type !== types_1.AuthenticationType.None) {
+            if (data.defaultAuthentication && data.defaultAuthentication.type !== types_2.AuthenticationType.None) {
                 return;
             }
             // if the pack has no default authentication, make sure all formulas don't set connection requirements.
@@ -2578,7 +2608,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
                 const { getter } = syncTable;
                 let { allowedAuthenticationNames } = getter;
                 // TODO(patrick): Better typing
-                if (!(0, api_1.isSyncPackFormula)(getter)) {
+                if (!(0, api_1.isSyncFormula)(getter)) {
                     continue;
                 }
                 const { supportsGetPermissions } = getter;
@@ -2614,7 +2644,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
                     // Cross-pack tool calls (with packId set) are not validated here, though they will
                     // fail at runtime for third-party packs since only first-party Coda agents can
                     // access formulas from other packs.
-                    if (tool.type === types_25.ToolType.Pack && !tool.packId && tool.formulas) {
+                    if (tool.type === types_27.ToolType.Pack && !tool.packId && tool.formulas) {
                         tool.formulas.forEach((formula, formulaIndex) => {
                             const { formulaName } = formula;
                             if (!formulaNames.has(formulaName)) {
@@ -2664,11 +2694,11 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         shortDescription: z.string().nonempty().optional(),
         description: z.string().nonempty().optional(),
         permissionsDescription: z.string().optional(),
-        category: z.nativeEnum(types_17.PackCategory).optional(),
+        category: z.nativeEnum(types_19.PackCategory).optional(),
         logoPath: z.string().optional(),
         exampleImages: z.array(z.string()).optional(),
         exampleVideoIds: z.array(z.string()).optional(),
-        minimumFeatureSet: z.nativeEnum(types_9.FeatureSet).optional(),
+        minimumFeatureSet: z.nativeEnum(types_11.FeatureSet).optional(),
         quotas: z.any().optional(),
         rateLimits: z.any().optional(),
         isSystem: z.boolean().optional(),
@@ -2730,10 +2760,10 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         var _a;
         const authentications = getAuthentications(data);
         if (((_a = data.networkDomains) === null || _a === void 0 ? void 0 : _a.length) ||
-            authentications.every(auth => auth.authentication.type === types_1.AuthenticationType.None ||
+            authentications.every(auth => auth.authentication.type === types_2.AuthenticationType.None ||
                 // Various is an internal authentication type that's only applicable to whitelisted Pack Ids.
                 // Skipping validation here to let it exempt from network domains.
-                auth.authentication.type === types_1.AuthenticationType.Various ||
+                auth.authentication.type === types_2.AuthenticationType.Various ||
                 (auth.authentication.requiresEndpointUrl && !auth.authentication.endpointDomain))) {
             return true;
         }
@@ -2778,7 +2808,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
                 // This is a Various or None auth pack.
                 return;
             }
-            const readableAuthTitle = name === types_19.ReservedAuthenticationNames.Default ? 'setUserAuthentication()' : `authentication ${name}`;
+            const readableAuthTitle = name === types_21.ReservedAuthenticationNames.Default ? 'setUserAuthentication()' : `authentication ${name}`;
             // Auth network domains must match pack network domains.
             for (const authNetworkDomain of authNetworkDomains) {
                 if (!((_a = data.networkDomains) === null || _a === void 0 ? void 0 : _a.includes(authNetworkDomain))) {
@@ -2812,7 +2842,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         }
         for (const authInfo of getAuthentications(data)) {
             const { name, authentication } = authInfo;
-            const readableAuthTitle = name === types_19.ReservedAuthenticationNames.Default ? 'setUserAuthentication()' : `authentication ${name}`;
+            const readableAuthTitle = name === types_21.ReservedAuthenticationNames.Default ? 'setUserAuthentication()' : `authentication ${name}`;
             const usedNetworkDomains = getUsedAuthNetworkDomains(authentication);
             if (usedNetworkDomains) {
                 for (const usedNetworkDomain of usedNetworkDomains) {
@@ -2847,6 +2877,13 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         }
     })
         .superRefine((untypedData, context) => {
+        var _a;
+        const data = untypedData;
+        validateEndpointSetBy(data.defaultAuthentication, ['defaultAuthentication'], context);
+        validateEndpointSetBy(data.systemConnectionAuthentication, ['systemConnectionAuthentication'], context);
+        (_a = data.adminAuthentications) === null || _a === void 0 ? void 0 : _a.forEach(({ authentication }, i) => validateEndpointSetBy(authentication, ['adminAuthentications', i, 'authentication'], context));
+    })
+        .superRefine((untypedData, context) => {
         var _a, _b;
         const data = untypedData;
         if (!((_a = data.mcpServers) === null || _a === void 0 ? void 0 : _a.length)) {
@@ -2860,8 +2897,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         const requiresEndpointUrl = auth && 'requiresEndpointUrl' in auth ? auth.requiresEndpointUrl : undefined;
         const endpointKey = auth && 'endpointKey' in auth ? auth.endpointKey : undefined;
         const postSetup = auth && 'postSetup' in auth ? auth.postSetup : undefined;
-        const hasSetEndpointStep = postSetup === null || postSetup === void 0 ? void 0 : postSetup.some(step => step.type === types_18.PostSetupType.SetEndpoint);
-        const canResolveRelativeUrl = Boolean(requiresEndpointUrl || endpointKey || hasSetEndpointStep);
+        const canResolveRelativeUrl = Boolean(requiresEndpointUrl || endpointKey || hasSetEndpointStep(postSetup));
         data.mcpServers.forEach((server, i) => {
             if (!server.endpointUrl || isAbsoluteUrl(server.endpointUrl)) {
                 return;
@@ -2893,7 +2929,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
                 // This is a Various or None auth pack.
                 return;
             }
-            const readableAuthTitle = name === types_19.ReservedAuthenticationNames.Default ? 'setUserAuthentication()' : `authentication ${name}`;
+            const readableAuthTitle = name === types_21.ReservedAuthenticationNames.Default ? 'setUserAuthentication()' : `authentication ${name}`;
             // A pack with multiple networks and auth must choose which domain(s) get auth on them.
             if (!(authNetworkDomains === null || authNetworkDomains === void 0 ? void 0 : authNetworkDomains.length)) {
                 if (data.networkDomains && data.networkDomains.length > 1) {
@@ -2948,7 +2984,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
     })
         .superRefine((data, context) => {
         const metadata = data;
-        const hasMcpToolWithoutPackId = (metadata.skills || []).some(skill => skill.tools.some(tool => tool.type === types_25.ToolType.MCP && !tool.packId));
+        const hasMcpToolWithoutPackId = (metadata.skills || []).some(skill => skill.tools.some(tool => tool.type === types_27.ToolType.MCP && !tool.packId));
         if (hasMcpToolWithoutPackId && (!metadata.mcpServers || metadata.mcpServers.length === 0)) {
             context.addIssue({
                 code: 'custom',
@@ -2988,7 +3024,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         const seen = new Set();
         let eventTriggers = 0;
         for (const { trigger, path } of triggers) {
-            if (trigger.kind === types_6.DefaultTriggerKind.Event) {
+            if (trigger.kind === types_7.DefaultTriggerKind.Event) {
                 eventTriggers += 1;
                 if (eventTriggers > exports.Limits.MaxDefaultEventTriggers) {
                     context.addIssue({
@@ -3056,7 +3092,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
         }
         for (const field of ['defaultAuthentication', 'systemConnectionAuthentication']) {
             const authentication = data[field];
-            if (authentication && authentication.type !== types_1.AuthenticationType.None) {
+            if (authentication && authentication.type !== types_2.AuthenticationType.None) {
                 context.addIssue({
                     code: 'custom',
                     path: [field],
@@ -3070,11 +3106,11 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
 function getAuthentications(data) {
     const authentications = [];
     if (data.defaultAuthentication) {
-        authentications.push({ name: types_19.ReservedAuthenticationNames.Default, authentication: data.defaultAuthentication });
+        authentications.push({ name: types_21.ReservedAuthenticationNames.Default, authentication: data.defaultAuthentication });
     }
     if (data.systemConnectionAuthentication) {
         authentications.push({
-            name: types_19.ReservedAuthenticationNames.System,
+            name: types_21.ReservedAuthenticationNames.System,
             authentication: data.systemConnectionAuthentication,
         });
     }
@@ -3093,7 +3129,7 @@ function getAuthentications(data) {
  * tokenUrl use a different domain than the API domain that is set on networkDomains.
  */
 function getUsedAuthNetworkDomains(authentication, includeOAuthTokenUrls = false) {
-    if (authentication.type === types_1.AuthenticationType.None || authentication.type === types_1.AuthenticationType.Various) {
+    if (authentication.type === types_2.AuthenticationType.None || authentication.type === types_2.AuthenticationType.Various) {
         return undefined;
     }
     const { endpointDomain, type } = authentication;
@@ -3105,7 +3141,7 @@ function getUsedAuthNetworkDomains(authentication, includeOAuthTokenUrls = false
         return domains;
     }
     switch (type) {
-        case types_1.AuthenticationType.OAuth2: {
+        case types_2.AuthenticationType.OAuth2: {
             const { authorizationUrl, tokenUrl } = authentication;
             if (authorizationUrl) {
                 const parsedAuthUrl = (0, url_parse_1.default)(authorizationUrl);
@@ -3121,7 +3157,7 @@ function getUsedAuthNetworkDomains(authentication, includeOAuthTokenUrls = false
             }
             return domains;
         }
-        case types_1.AuthenticationType.OAuth2ClientCredentials: {
+        case types_2.AuthenticationType.OAuth2ClientCredentials: {
             const { tokenUrl } = authentication;
             if (endpointDomain) {
                 domains.push(endpointDomain);
@@ -3134,19 +3170,19 @@ function getUsedAuthNetworkDomains(authentication, includeOAuthTokenUrls = false
             }
             return domains;
         }
-        case types_1.AuthenticationType.AWSAccessKey:
-        case types_1.AuthenticationType.AWSAssumeRole:
-        case types_1.AuthenticationType.CodaApiHeaderBearerToken:
-        case types_1.AuthenticationType.Custom:
-        case types_1.AuthenticationType.CustomHeaderToken:
-        case types_1.AuthenticationType.GoogleDomainWideDelegation:
-        case types_1.AuthenticationType.GoogleServiceAccount:
-        case types_1.AuthenticationType.EntraCertificate:
-        case types_1.AuthenticationType.HeaderBearerToken:
-        case types_1.AuthenticationType.MultiHeaderToken:
-        case types_1.AuthenticationType.MultiQueryParamToken:
-        case types_1.AuthenticationType.QueryParamToken:
-        case types_1.AuthenticationType.WebBasic:
+        case types_2.AuthenticationType.AWSAccessKey:
+        case types_2.AuthenticationType.AWSAssumeRole:
+        case types_2.AuthenticationType.CodaApiHeaderBearerToken:
+        case types_2.AuthenticationType.Custom:
+        case types_2.AuthenticationType.CustomHeaderToken:
+        case types_2.AuthenticationType.GoogleDomainWideDelegation:
+        case types_2.AuthenticationType.GoogleServiceAccount:
+        case types_2.AuthenticationType.EntraCertificate:
+        case types_2.AuthenticationType.HeaderBearerToken:
+        case types_2.AuthenticationType.MultiHeaderToken:
+        case types_2.AuthenticationType.MultiQueryParamToken:
+        case types_2.AuthenticationType.QueryParamToken:
+        case types_2.AuthenticationType.WebBasic:
             return domains;
         default:
             (0, ensure_2.ensureUnreachable)(type);
@@ -3154,7 +3190,7 @@ function getUsedAuthNetworkDomains(authentication, includeOAuthTokenUrls = false
 }
 // Returns undefined for None or Various auth, otherwise returns a string array.
 function getDeclaredAuthNetworkDomains(authentication) {
-    if (authentication.type === types_1.AuthenticationType.Various || authentication.type === types_1.AuthenticationType.None) {
+    if (authentication.type === types_2.AuthenticationType.Various || authentication.type === types_2.AuthenticationType.None) {
         return undefined;
     }
     if (Array.isArray(authentication.networkDomain)) {
@@ -3205,7 +3241,7 @@ const packMetadataSchemaBySdkVersion = [
                 });
                 for (const auth of getAuthentications(data)) {
                     const { authentication, name } = auth;
-                    if (authentication && authentication.type !== types_1.AuthenticationType.None && authentication.postSetup) {
+                    if (authentication && authentication.type !== types_2.AuthenticationType.None && authentication.postSetup) {
                         authentication.postSetup.forEach((step, i) => {
                             validateDeprecatedProperty({
                                 obj: step,
@@ -3316,6 +3352,40 @@ function validateUrlParsesIfAbsolute(url) {
         return true;
     }
     return Boolean(parseDomainName(url));
+}
+function validateRequiresAdminSetup(requiresAdminSetup, { allowOAuthUrls, usesDcr }, context) {
+    const adminSetup = new Set(requiresAdminSetup);
+    const addIssue = (message) => context.addIssue({ code: 'custom', path: ['requiresAdminSetup'], message });
+    const requiresClientIdAndSecret = adminSetup.has(types_1.AdminSetupRequirement.OAuthClientIdAndSecret);
+    if (usesDcr && requiresClientIdAndSecret) {
+        addIssue('OAuthClientIdAndSecret cannot be combined with useDynamicClientRegistration');
+    }
+    if (adminSetup.has(types_1.AdminSetupRequirement.OAuthUrls)) {
+        if (!allowOAuthUrls) {
+            addIssue('OAuthUrls is only supported on OAuth2 authentication');
+        }
+        else if (!requiresClientIdAndSecret) {
+            addIssue('OAuthUrls requires OAuthClientIdAndSecret');
+        }
+    }
+}
+function hasSetEndpointStep(postSetup) {
+    return Boolean(postSetup === null || postSetup === void 0 ? void 0 : postSetup.some(step => step.type === types_20.PostSetupType.SetEndpoint));
+}
+function validateEndpointSetBy(authentication, path, context) {
+    if (!authentication || !('endpointSetBy' in authentication) || authentication.endpointSetBy === undefined) {
+        return;
+    }
+    const addIssue = (message) => context.addIssue({ code: 'custom', path: [...path, 'endpointSetBy'], message });
+    if (!authentication.requiresEndpointUrl) {
+        addIssue('endpointSetBy requires requiresEndpointUrl');
+    }
+    if ('endpointKey' in authentication && authentication.endpointKey) {
+        addIssue('endpointSetBy cannot be combined with endpointKey');
+    }
+    if (hasSetEndpointStep(authentication.postSetup)) {
+        addIssue('endpointSetBy cannot be combined with a SetEndpoint postSetup step');
+    }
 }
 /**
  * Validates a field that must be relative exactly when `requiresEndpointUrl` is set (and no

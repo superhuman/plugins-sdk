@@ -1,13 +1,13 @@
 import * as sdk from "@superhuman/plugins-sdk";
 
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addMCPServer({
+connector.addMCPServer({
   name: "GoogleCalendar",
   endpointUrl: "https://calendarmcp.googleapis.com/mcp/v1",
 });
 
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
   tokenUrl: "https://oauth2.googleapis.com/token",
@@ -21,4 +21,4 @@ pack.setUserAuthentication({
   },
 });
 
-pack.addNetworkDomain("googleapis.com");
+connector.addNetworkDomain("googleapis.com");

@@ -1,6 +1,6 @@
 import * as sdk from "@superhuman/plugins-sdk";
 
-const pack = sdk.newPack();
+const connector = sdk.newConnector();
 
 // BEGIN
 
@@ -8,7 +8,7 @@ const pack = sdk.newPack();
 // to: https://docs.superhuman.com/packsAuth/oauth2/{PACK ID}
 // After building your Pack, remember to visit the Settings tab to set your
 // client ID and secret.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   // The following two URLs will be found in the API's documentation.
   authorizationUrl: "${1:https://example.com/authorize}",

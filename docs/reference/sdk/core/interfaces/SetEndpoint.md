@@ -20,7 +20,7 @@ an account, it is available at execution time as `context.endpoint`, and alterna
 can make fetcher requests using relative URLs and the fetcher will apply the endpoint
 to the URL automatically.)
 
-As an example, we use this in the Jira pack to set up the Jira instance endpoint
+As an example, we use this in the Jira connector to set up the Jira instance endpoint
 to use with the user's account. A Jira account may have access to multiple
 Jira instances; after authorizing the user account, this step makes an API call to
 fetch all of the Jira instances that the user has access to, which are rendered as

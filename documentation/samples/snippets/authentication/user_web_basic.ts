@@ -1,10 +1,10 @@
 import * as sdk from "@superhuman/plugins-sdk";
 
-const pack = sdk.newPack();
+const connector = sdk.newConnector();
 
 // BEGIN
 
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.WebBasic,
   instructionsUrl: "${1:https://help.example.com/api-tokens}",
   getConnectionName: async function (context) {

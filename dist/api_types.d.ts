@@ -74,15 +74,15 @@ export interface TypeMap {
     [Type.markdown]: string;
     [Type.email]: string;
 }
-/**
- * The union of types for arguments to the `execute` function for a formula.
- */
-export type PackFormulaValue = $Values<Omit<TypeMap, Type.object>> | PackFormulaValue[];
-/**
- * The union of types that can be returned by the `execute` function for a formula.
- */
-export type PackFormulaResult = $Values<TypeMap> | PackFormulaResult[];
-export type TypeOf<T extends PackFormulaResult> = T extends number ? Type.number : T extends string ? Type.string : T extends boolean ? Type.boolean : T extends Date ? Type.date : T extends object ? Type.object : never;
+/** @deprecated Use {@link FormulaValue}. */
+export type PackFormulaValue = FormulaValue;
+/** The union of types for arguments to the `execute` function for a formula. */
+export type FormulaValue = $Values<Omit<TypeMap, Type.object>> | FormulaValue[];
+/** @deprecated Use {@link FormulaResult}. */
+export type PackFormulaResult = FormulaResult;
+/** The union of types that can be returned by the `execute` function for a formula. */
+export type FormulaResult = $Values<TypeMap> | FormulaResult[];
+export type TypeOf<T extends FormulaResult> = T extends number ? Type.number : T extends string ? Type.string : T extends boolean ? Type.boolean : T extends Date ? Type.date : T extends object ? Type.object : never;
 /**
  * Enumeration of types of formula parameters. These describe semantic value types (as opposed to
  * JavaScript value types).
@@ -105,19 +105,19 @@ export declare enum ParameterType {
      */
     Date = "date",
     /**
-     * Indicates a parameter that is a rich text value that should be passed to the pack as HTML.
+     * Indicates a parameter that is a rich text value that should be passed to the connector as HTML.
      */
     Html = "html",
     /**
-     * Indicates a parameter that is an image. The pack is passed an image URL.
+     * Indicates a parameter that is an image. The connector is passed an image URL.
      */
     Image = "image",
     /**
-     * Indicates a parameter that is a file. The pack is passed a file URL.
+     * Indicates a parameter that is a file. The connector is passed a file URL.
      */
     File = "file",
     /**
-     * Indicates a parameter that is a rich text value that should be passed to the pack as Markdown.
+     * Indicates a parameter that is a rich text value that should be passed to the connector as Markdown.
      */
     Markdown = "markdown",
     /**
@@ -161,7 +161,7 @@ export declare enum ParameterType {
      *
      * Currently, when such a parameter is used with a sync table formula or an action formula
      * ({@link BaseFormulaDef.isAction}), which will generate a builder UI for selecting parameters, a date array
-     * parameter will always render as a date range selector. A date range will always be passed to a pack formula
+     * parameter will always render as a date range selector. A date range will always be passed to a formula
      * as a list of two elements, the beginning of the range and the end of the range.
      */
     DateArray = "dateArray",
@@ -170,7 +170,7 @@ export declare enum ParameterType {
      */
     SparseDateArray = "sparseDateArray",
     /**
-     * Indicates a parameter that is a list of rich text values that should be passed to the pack as HTML.
+     * Indicates a parameter that is a list of rich text values that should be passed to the connector as HTML.
      */
     HtmlArray = "htmlArray`",
     /**
@@ -178,7 +178,7 @@ export declare enum ParameterType {
      */
     SparseHtmlArray = "sparseHtmlArray",
     /**
-     * Indicates a parameter that is a list of image values. The pack is passed a list of image URLs.
+     * Indicates a parameter that is a list of image values. The connector is passed a list of image URLs.
      */
     ImageArray = "imageArray",
     /**
@@ -186,7 +186,7 @@ export declare enum ParameterType {
      */
     SparseImageArray = "sparseImageArray",
     /**
-     * Indicates a parameter that is a list of file values. The pack is passed a list of file URLs.
+     * Indicates a parameter that is a list of file values. The connector is passed a list of file URLs.
      */
     FileArray = "fileArray",
     /**
@@ -195,7 +195,7 @@ export declare enum ParameterType {
     SparseFileArray = "sparseFileArray",
     /**
      * Indicates a parameter that is a list of rich text values that should be passed to the
-     * pack as Markdown.
+     * connector as Markdown.
      */
     MarkdownArray = "markdownArray`",
     /**
@@ -303,9 +303,10 @@ export interface ParamDef<T extends UnionType> {
      * For a parameter that has an autocomplete providing options, or one that uses an allowedPresetValues
      * list, this setting controls whether the user is given an option to enter a custom value.
      *
-     * Pack code cannot completely assume it will never see other values, though. For example, if this
+     * Connector code cannot completely assume it will never see other values, though. For example, if this
      * parameter's value is being set via a formula (instead of a user manually picking a value from
-     * the Superhuman Docs UI), the platform will do nothing to validate that input before passing it to the pack.
+     * the Superhuman Docs UI), the platform will do nothing to validate that input before passing it to the
+     * connector.
      *
      * Defaults to true.
      *
@@ -420,10 +421,11 @@ export interface SyncTableRelation {
      */
     inheritPermissions?: boolean;
 }
-/**
- * Inputs for creating a formula that are common between regular formulas and sync table formulas.
- */
-export interface CommonPackFormulaDef<T extends ParamDefs> {
+/** @deprecated Use {@link CommonFormulaDef}. */
+export interface CommonPackFormulaDef<T extends ParamDefs> extends CommonFormulaDef<T> {
+}
+/** Inputs for creating a formula that are common between regular formulas and sync table formulas. */
+export interface CommonFormulaDef<T extends ParamDefs> {
     /**
      * The name of the formula, used to invoke it.
      */
@@ -451,8 +453,8 @@ export interface CommonPackFormulaDef<T extends ParamDefs> {
      * Sample inputs and outputs demonstrating usage of this formula.
      */
     readonly examples?: Array<{
-        params: Array<PackFormulaValue | undefined>;
-        result: PackFormulaResult;
+        params: Array<FormulaValue | undefined>;
+        result: FormulaResult;
     }>;
     /**
      * Does this formula take an action (vs retrieve data or make a calculation)?
@@ -476,7 +478,7 @@ export interface CommonPackFormulaDef<T extends ParamDefs> {
     readonly isExperimental?: boolean;
     /**
      * Whether this is a formula that will be used internally and not exposed directly to users.
-     * Not for use by packs that are not Superhuman-authored.
+     * Not for use by connectors that are not Superhuman-authored.
      */
     readonly isSystem?: boolean;
     /**
@@ -485,16 +487,16 @@ export interface CommonPackFormulaDef<T extends ParamDefs> {
      */
     readonly purpose?: FormulaPurpose;
     /**
-     * OAuth scopes that the formula needs that weren't requested in the pack's overall authentication
-     * config. For example, a Slack pack can have one formula that needs admin privileges, but non-admins
-     * can use the bulk of the pack without those privileges. The platform will give users help in understanding
+     * OAuth scopes that the formula needs that weren't requested in the connector's overall authentication
+     * config. For example, a Slack connector can have one formula that needs admin privileges, but non-admins
+     * can use the bulk of the connector without those privileges. The platform will give users help in understanding
      * that they need additional authentication to use a formula with extra OAuth scopes. Note that
-     * these scopes will always be requested in addition to the default scopes for the pack,
+     * these scopes will always be requested in addition to the default scopes for the connector,
      * so an end user must have both sets of permissions.
      */
     readonly extraOAuthScopes?: string[];
     /**
-     * Without this set, any authentication of the pack will be allowed to invoke this formula.
+     * Without this set, any authentication of the connector will be allowed to invoke this formula.
      *
      * This property is not allowed if connectionRequirement is None.
      *
@@ -570,14 +572,14 @@ export declare enum ConnectionRequirement {
     Required = "required"
 }
 /**
- * A full definition of a pack's user authentication settings, used in
- * {@link PackDefinitionBuilder.setUserAuthentication}.
+ * A full definition of a connector's user authentication settings, used in
+ * {@link ConnectorDefinitionBuilder.setUserAuthentication}.
  */
 export type UserAuthenticationDef = AuthenticationDef & {
     /**
-     * It can be annoying to set `connectionRequirement` on every building block in a Pack.
-     * Use this setting in your Pack's auth settings to quickly say "every building block
-     * in this Pack requires an account". Without a connectionRequirement, building blocks
+     * It can be annoying to set `connectionRequirement` on every building block in a connector.
+     * Use this setting in your connector's auth settings to quickly say "every building block
+     * in this connector requires an account". Without a connectionRequirement, building blocks
      * will be assumed to not need account connections.
      */
     defaultConnectionRequirement?: ConnectionRequirement;
@@ -608,7 +610,7 @@ export interface FetchRequest {
     method: FetchMethodType;
     /**
      * The URL to connect to. This is typically an absolute URL, but if your
-     * pack uses authentication and {@link BaseAuthentication.requiresEndpointUrl} and so has a unique
+     * connector uses authentication and {@link BaseAuthentication.requiresEndpointUrl} and so has a unique
      * endpoint per user account, you may also use a relative URL and the platform will
      * apply the user's endpoint automatically.
      */
@@ -634,7 +636,7 @@ export interface FetchRequest {
     /**
      * A time in seconds that the platform should cache the result of this HTTP request.
      *
-     * Any time that this pack makes the same FetchRequest, a cached value can be returned
+     * Any time that this connector makes the same FetchRequest, a cached value can be returned
      * instead of making the HTTP request. If left unspecified, the platform will automatically
      * cache all GET requests for approximately 5 minutes. To disable the default caching,
      * set this value to `0`.
@@ -660,7 +662,7 @@ export interface FetchRequest {
      */
     isBinaryResponse?: boolean;
     /**
-     * If true, the platform will not apply authentication credentials even if this pack is
+     * If true, the platform will not apply authentication credentials even if this connector is
      * configured to use authentication. This is very rare, but sometimes you may
      * wish to make an unauthenticated supporting request as part of a formula implementation.
      */
@@ -715,16 +717,16 @@ export interface FetchResponse<T extends any = any> {
     };
 }
 /**
- * A utility that allows you to make HTTP requests from a pack. The fetcher also
+ * A utility that allows you to make HTTP requests from a connector. The fetcher also
  * handles applying user authentication credentials to each request, if applicable.
  *
- * This is only way a pack is able to make HTTP requests, as using other libraries is unsupported.
+ * This is only way a connector is able to make HTTP requests, as using other libraries is unsupported.
  */
 export interface Fetcher {
     /**
      * Makes an HTTP request.
      *
-     * If authentication is used with this pack, the user's secret credentials will be
+     * If authentication is used with this connector, the user's secret credentials will be
      * automatically applied to the request (whether in the HTTP headers, as a URL parameter,
      * or whatever the authentication type dictates). Your invocation of `fetch()` need not
      * deal with authentication in any way, the platform will handle that entirely on your behalf.
@@ -740,20 +742,20 @@ export interface Fetcher {
  * you can just return an image or file URL from a formula invocation, and if the schema
  * indicates that the value represents an attachment, Superhuman Docs will ingest the data at that URL
  * and host it from Superhuman Docs. However, if the URL requires authentication, Superhuman Docs will be unable
- * to download the data since this ingestion does not happen within the packs execution
+ * to download the data since this ingestion does not happen within the connector execution
  * environment.
  *
- * The solution is for your pack code to fetch the data at the URL, since the pack
+ * The solution is for your connector code to fetch the data at the URL, since the connector
  * execution environment will apply the user's authentication, and then you can
  * stash the downloaded value in `TemporaryBlobStorage`, which will return a temporary
- * URL that you can return from the pack. Superhuman Docs will be able to ingest the data from
+ * URL that you can return from the connector. Superhuman Docs will be able to ingest the data from
  * that temporary URL.
  *
  * Similarly, suppose your formula generates a very large value like a dynamically-generated
- * image that you wish to return and have Superhuman Docs render. Pack return values are meant to be
+ * image that you wish to return and have Superhuman Docs render. Connector return values are meant to be
  * fairly small, representing human-readable data. Large values like images are meant to
  * be returned as URLs referencing that data. So rather than return the raw image data,
- * your pack should use {@link storeBlob} to upload that large data to temporary storage.
+ * your connector should use {@link storeBlob} to upload that large data to temporary storage.
  * You will be returned a URL that you can then return with your formula response, and
  * Superhuman Docs will ingest the data from that URL into permanent storage.
  */
@@ -995,7 +997,7 @@ type MissingInvocationErrorTypes = Exclude<InvocationErrorType, InvocationError[
  */
 export type _ensureInvocationErrorEnumCompletion = Assert<MissingInvocationErrorTypes extends never ? true : false>;
 /**
- * The source applications that can invoke a Pack.
+ * The source applications that can invoke a connector.
  */
 export declare enum InvocationSource {
     /**
@@ -1022,7 +1024,8 @@ export declare enum InvocationSource {
  */
 export interface InvocationLocation {
     /**
-     * The source application that invoked the Pack. Allows the Pack to adjust its functionality based on the context.
+     * The source application that invoked the connector. Allows the connector to adjust its functionality based on the
+     * context.
      */
     source?: InvocationSource;
     /** The base URL of the platform environment executing this formula. Only for internal use. */
@@ -1033,7 +1036,7 @@ export interface InvocationLocation {
     docId?: string;
     /**
      * The ID of the user this invocation runs on behalf of. Only populated for
-     * Superhuman-created Packs. Superhuman internal use only.
+     * Superhuman-created connectors. Superhuman internal use only.
      * @internal
      */
     userId?: string;
@@ -1049,7 +1052,7 @@ export interface ExecutionContext {
      */
     readonly fetcher: Fetcher;
     /**
-     * A utility to fetch and store files and images that either require the pack user's authentication
+     * A utility to fetch and store files and images that either require the connector user's authentication
      * or are too large to return inline. See {@link core.TemporaryBlobStorage}.
      */
     readonly temporaryBlobStorage: TemporaryBlobStorage;
@@ -1177,10 +1180,10 @@ export interface GetPermissionExecutionContext extends ExecutionContext {
  * be a fixed range, e.g. April 1, 2020 - May 15, 2020, or it can be a "live"
  * range, like "last 30 days".
  *
- * At execution time, a date range will always be passed to a pack as an
+ * At execution time, a date range will always be passed to a connector as an
  * array of two specific dates, but for many use cases, it is necessary
  * to provide a default value that is a "live" range rather than hardcoded
- * one. For example, if your pack has a table that syncs recent emails,
+ * one. For example, if your connector has a table that syncs recent emails,
  * you might want to have a date range parameter that default to
  * "last 7 days". Defaulting to a hardcoded date range would not be useful
  * and requiring the user to always specify a date range may be inconvenient.
@@ -1290,14 +1293,14 @@ export type OptionsReference = string & {
  * cacheTtlSecs to indicate how long the results can be cached for. The default cacheTtlSecs
  * is about 5 minutes, if unspecified.
  */
-export type PropertyOptionsMetadataResult<ResultT extends PackFormulaResult[]> = ResultT | {
+export type PropertyOptionsMetadataResult<ResultT extends FormulaResult[]> = ResultT | {
     result: ResultT;
     cacheTtlSecs?: number;
 };
 /**
  * A JavaScript function for property options.
  */
-export type PropertyOptionsMetadataFunction<ResultT extends PackFormulaResult[]> = (context: PropertyOptionsExecutionContext) => Promise<PropertyOptionsMetadataResult<ResultT>> | PropertyOptionsMetadataResult<ResultT>;
+export type PropertyOptionsMetadataFunction<ResultT extends FormulaResult[]> = (context: PropertyOptionsExecutionContext) => Promise<PropertyOptionsMetadataResult<ResultT>> | PropertyOptionsMetadataResult<ResultT>;
 export declare enum TableRole {
     Users = "users",
     GroupMembers = "groupMembers"

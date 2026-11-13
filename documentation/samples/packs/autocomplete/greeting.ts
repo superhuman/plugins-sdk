@@ -1,9 +1,9 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Greet someone in their language, with the greeting autocomplete adjusting
 // based on the language selected.
-pack.addFormula({
+connector.addFormula({
   name: "Greeting",
   description: "Greet someone.",
   parameters: [

@@ -1,9 +1,9 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Adds a column format to the Pack, which will display the contents of the
 // column as Roman numerals.
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Roman Numeral",
   instructions: "Displays the number as a Roman numeral.",
   formulaName: "RomanNumeral",
@@ -12,7 +12,7 @@ pack.addColumnFormat({
 // Adds a formula to this Pack to convert a number to a Roman numeral. It is
 // used by the column format above, but can also be used on its own anywhere in
 // the doc.
-pack.addFormula({
+connector.addFormula({
   name: "RomanNumeral",
   description: "Converts a number to the equivalent Roman numeral.",
   parameters: [

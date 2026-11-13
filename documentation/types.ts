@@ -30,6 +30,7 @@ export interface Example {
   description: string;
   icon?: string;
   category: ExampleCategory;
+  component: ExampleComponent;
   triggerTokens: string[];
   linkData: LinkData;
   contentFile: string;
@@ -42,6 +43,7 @@ export interface CompiledExample {
   description: string;
   icon?: string;
   category: ExampleCategory;
+  component: ExampleComponent;
   triggerTokens: string[];
   exampleFooterLink: string;
   learnMoreLink?: string;
@@ -64,6 +66,11 @@ export enum UrlType {
 export enum ExampleCategory {
   Topic = 'Topic',
   Full = 'Full',
+}
+
+export enum ExampleComponent {
+  Connector = 'Connector',
+  Agent = 'Agent',
 }
 
 export enum ExampleStatus {

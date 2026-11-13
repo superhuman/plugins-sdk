@@ -1,10 +1,10 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to Microsoft APIs, using OAuth2.
 // oxlint-disable-next-line stylistic/max-len
 // See https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl:
     "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
@@ -31,5 +31,5 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Microsoft.
-pack.addNetworkDomain("microsoft.com");
+// Allow the connector to make requests to Microsoft.
+connector.addNetworkDomain("microsoft.com");

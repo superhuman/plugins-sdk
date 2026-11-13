@@ -1,9 +1,9 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Asana API, using OAuth2.
 // See https://developers.asana.com/docs/oauth
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://app.asana.com/-/oauth_authorize",
   tokenUrl: "https://app.asana.com/-/oauth_token",
@@ -22,5 +22,5 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Asana.
-pack.addNetworkDomain("asana.com");
+// Allow the connector to make requests to Asana.
+connector.addNetworkDomain("asana.com");

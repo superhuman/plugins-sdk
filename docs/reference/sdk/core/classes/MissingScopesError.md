@@ -11,7 +11,7 @@ search:
 # Class: MissingScopesError
 
 Throw this error if the user needs to re-authenticate to gain OAuth scopes that have been added
-to the pack since their connection was created, or scopes that are specific to a certain formula.
+to the connector since their connection was created, or scopes that are specific to a certain formula.
 This is useful because the platform will always attempt to execute a formula even if a user has not yet
 re-authenticated with all relevant scopes.
 

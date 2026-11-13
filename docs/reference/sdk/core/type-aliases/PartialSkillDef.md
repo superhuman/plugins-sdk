@@ -13,8 +13,8 @@ search:
 
 > **PartialSkillDef** = `Partial`\<[`Skill`](../interfaces/Skill.md)\>
 
-Input type for defining the default chat skill via [PackDefinitionBuilder.setChatSkill](../classes/PackDefinitionBuilder.md#setchatskill)
-or bench initialization skill via [PackDefinitionBuilder.setBenchInitializationSkill](../classes/PackDefinitionBuilder.md#setbenchinitializationskill).
+Input type for defining the default chat skill via [ConnectorDefinitionBuilder.setChatSkill](../classes/ConnectorDefinitionBuilder.md#setchatskill)
+or bench initialization skill via [ConnectorDefinitionBuilder.setBenchInitializationSkill](../classes/ConnectorDefinitionBuilder.md#setbenchinitializationskill).
 
 All fields are optional, allowing you to override only the fields you care about.
 Fields that are not provided will use default values at runtime.
@@ -31,12 +31,12 @@ If you specify `tools`, the defaults above are replaced entirely with your list.
 
 ```ts
 // Override just the prompt — default tools are preserved
-pack.setChatSkill({
+connector.setChatSkill({
   prompt: "You are a helpful assistant.",
 });
 
 // Override tools — replaces the defaults entirely
-pack.setChatSkill({
+connector.setChatSkill({
   tools: [
     { type: sdk.ToolType.Pack },
     { type: sdk.ToolType.ContactResolution },

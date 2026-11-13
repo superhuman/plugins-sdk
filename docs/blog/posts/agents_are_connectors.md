@@ -25,7 +25,7 @@ You cannot chat directly with a connector, and therefore a number of SDK feature
 - [`setBenchInitializationSkill()`][set_bench_skill]
 - [`addSuggestedPrompt()`][add_suggested_prompt]
 
-[Skills][skills] are still supported, but the way they're used has changed. The LLM loads them as needed, using their descriptions to determine if they fit the task at hand. A skill's `tools` no longer limit what the LLM can call, but rather act as a suggestion of what to load. If a chat or bench initialization skill contained instructions still worth having, consider migrating them to [`addSkill()`][add_skill] instead.
+Skills are still supported, but the way they're used has changed. The LLM loads them as needed, using their descriptions to determine if they fit the task at hand. A skill's `tools` no longer limit what the LLM can call, but rather act as a suggestion of what to load. If a chat or bench initialization skill contained instructions still worth having, consider migrating them to [`addSkill()`][add_skill] instead.
 
 
 ## How to build agents now
@@ -45,9 +45,8 @@ We still want to enable developers to define agents via code, and over the comin
 
 [go_10]: https://blog.superhuman.com/go-1-0/
 [overview_connectors]: ../../guides/overview.md#connectors
-[set_chat_skill]: ../../reference/sdk/core/classes/PackDefinitionBuilder.md#setchatskill
-[set_bench_skill]: ../../reference/sdk/core/classes/PackDefinitionBuilder.md#setbenchinitializationskill
-[add_suggested_prompt]: ../../reference/sdk/core/classes/PackDefinitionBuilder.md#addsuggestedprompt
-[skills]: ../../guides/blocks/skills.md
-[add_skill]: ../../reference/sdk/core/classes/PackDefinitionBuilder.md#addskill
+[set_chat_skill]: ../../reference/sdk/core/classes/ConnectorDefinitionBuilder.md#setchatskill
+[set_bench_skill]: ../../reference/sdk/core/classes/ConnectorDefinitionBuilder.md#setbenchinitializationskill
+[add_suggested_prompt]: ../../reference/sdk/core/classes/ConnectorDefinitionBuilder.md#addsuggestedprompt
+[add_skill]: ../../reference/sdk/core/classes/ConnectorDefinitionBuilder.md#addskill
 [builder]: https://go.superhuman.com/builder

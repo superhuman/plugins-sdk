@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // When listing forms, the maximum to return.
 const MaxForms = 200;
@@ -8,7 +8,7 @@ const MaxForms = 200;
 const PageSize = 100;
 
 // Add a dynamic sync table for form responses.
-pack.addDynamicSyncTable({
+connector.addDynamicSyncTable({
   name: "FormResponses",
   description: "Responses to a form.",
   identityName: "FormResponse",
@@ -259,7 +259,7 @@ function getPropertyValue(answer) {
 }
 
 // Configure per-user authentication, using OAuth2.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   // See: https://developer.typeform.com/get-started/applications/
   authorizationUrl: "https://api.typeform.com/oauth/authorize",
@@ -280,4 +280,4 @@ pack.setUserAuthentication({
 });
 
 // Allow requests to the typeform.com domain.
-pack.addNetworkDomain("typeform.com");
+connector.addNetworkDomain("typeform.com");

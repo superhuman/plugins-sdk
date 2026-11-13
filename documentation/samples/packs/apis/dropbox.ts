@@ -1,9 +1,9 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Set per-user authentication using Dropbox's OAuth2.
 // See https://developers.dropbox.com/oauth-guide
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://www.dropbox.com/oauth2/authorize",
   tokenUrl: "https://api.dropbox.com/oauth2/token",
@@ -16,4 +16,4 @@ pack.setUserAuthentication({
 });
 
 // Allow access to the Dropbox domain.
-pack.addNetworkDomain("dropboxapi.com");
+connector.addNetworkDomain("dropboxapi.com");

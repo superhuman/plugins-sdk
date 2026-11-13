@@ -10,8 +10,8 @@ search:
 
 # Interface: Identity
 
-The runtime version of [IdentityDefinition](IdentityDefinition.md) with the current Pack ID injected if a different
-one isn't set by the maker.
+The runtime version of [IdentityDefinition](IdentityDefinition.md) with the current connector ID injected if a different
+one isn't set by the author.
 
 ## Extends
 
@@ -30,6 +30,18 @@ See [ObjectSchemaDefinition.attribution](ObjectSchemaDefinition.md#attribution)
 #### Inherited from
 
 [`IdentityDefinition`](IdentityDefinition.md).[`attribution`](IdentityDefinition.md#attribution)
+
+***
+
+### connectorId?
+
+> `optional` **connectorId**: `number`
+
+The ID of another connector when referencing its values. Takes precedence over [packId](#packid).
+
+#### Inherited from
+
+[`IdentityDefinition`](IdentityDefinition.md).[`connectorId`](IdentityDefinition.md#connectorid)
 
 ***
 
@@ -55,7 +67,7 @@ you wish to reference, again to distinguish which table instance you are trying 
 
 > **name**: `string`
 
-The name of this entity. This is an arbitrary name but should be unique within your pack.
+The name of this entity. This is an arbitrary name but should be unique within your connector.
 For example, if you are defining a schema that represents a user object, "User" would be a good identity name.
 
 #### Inherited from
@@ -64,11 +76,13 @@ For example, if you are defining a schema that represents a user object, "User" 
 
 ***
 
-### packId
+### ~~packId~~
 
 > **packId**: `number`
 
-The ID of another pack, if you are trying to reference a value from different pack.
+#### Deprecated
+
+Use [connectorId](#connectorid) instead.
 
 #### Overrides
 

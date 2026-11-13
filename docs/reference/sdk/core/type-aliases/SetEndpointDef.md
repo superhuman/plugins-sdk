@@ -12,8 +12,9 @@ search:
 
 > **SetEndpointDef** = `Omit`\<[`SetEndpoint`](../interfaces/SetEndpoint.md), `"getOptions"` \| `"getOptionsFormula"`\> & `object`
 
-Simplified configuration for [SetEndpoint](../interfaces/SetEndpoint.md) that a pack developer can specify when calling
-[PackDefinitionBuilder.setUserAuthentication](../classes/PackDefinitionBuilder.md#setuserauthentication) or [PackDefinitionBuilder.setSystemAuthentication](../classes/PackDefinitionBuilder.md#setsystemauthentication).
+Simplified configuration for [SetEndpoint](../interfaces/SetEndpoint.md) that a connector developer can specify when calling
+[ConnectorDefinitionBuilder.setUserAuthentication](../classes/ConnectorDefinitionBuilder.md#setuserauthentication) or
+[ConnectorDefinitionBuilder.setSystemAuthentication](../classes/ConnectorDefinitionBuilder.md#setsystemauthentication).
 
 ## Type Declaration
 

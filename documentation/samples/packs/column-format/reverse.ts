@@ -1,9 +1,9 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Adds a column format to the Pack, which will display the contents of the
 // column in reverse order.
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Reversed Text",
   instructions: "Whatever text you enter into this column will be reversed.",
   // The formula "Reverse()" (defined below) will be run on the content of the
@@ -13,7 +13,7 @@ pack.addColumnFormat({
 
 // Adds a formula to this Pack to reverse text. It is used by the column format
 // above, but can also be used on its own anywhere in the doc.
-pack.addFormula({
+connector.addFormula({
   resultType: sdk.ValueType.String,
   name: "Reverse",
   description: "Reverses text.",

@@ -19,7 +19,7 @@ A sync table that supports user edits via two-way sync. It uses the default beha
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A schema defining the data in the sync table, indicating which fields are
 // editable (mutable).
@@ -59,7 +59,7 @@ const TaskSchema = sdk.makeObjectSchema({
   featuredProperties: ["name", "description", "url", "completed"],
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   schema: TaskSchema,
   identityName: "Task",
@@ -120,11 +120,11 @@ pack.addSyncTable({
   },
 });
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 
 // Setup authentication using a Todoist API token.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });
@@ -136,7 +136,7 @@ A sync table that supports user edits via two-way sync, batch processing multipl
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A schema defining the data in the sync table, indicating which fields are
 // editable (mutable).
@@ -176,7 +176,7 @@ const TaskSchema = sdk.makeObjectSchema({
   featuredProperties: ["name", "description", "url", "completed"],
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   schema: TaskSchema,
   identityName: "Task",
@@ -255,11 +255,11 @@ async function updateTask(context: sdk.ExecutionContext,
   };
 }
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 
 // Setup authentication using a Todoist API token.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });
@@ -271,7 +271,7 @@ A sync table that supports user edits via two-way sync, batch processing multipl
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A schema defining the data in the sync table, indicating which fields are
 // editable (mutable).
@@ -311,7 +311,7 @@ const TaskSchema = sdk.makeObjectSchema({
   featuredProperties: ["name", "description", "url", "completed"],
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   schema: TaskSchema,
   identityName: "Task",
@@ -406,11 +406,11 @@ async function getTask(context: sdk.ExecutionContext, id: string) {
   };
 }
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 
 // Setup authentication using a Todoist API token.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });
@@ -422,7 +422,7 @@ A sync table that supports user edits via two-way sync, with a defined set of op
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 const CategorySchema = sdk.makeObjectSchema({
   properties: {
@@ -533,7 +533,7 @@ const ExpenseSchema = sdk.makeObjectSchema({
   ],
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Expenses",
   description: "Lists your expenses.",
   identityName: "Expense",
@@ -630,7 +630,7 @@ async function updateExpense(context: sdk.ExecutionContext,
   }
 }
 
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://secure.splitwise.com/oauth/authorize",
   tokenUrl: "https://secure.splitwise.com/oauth/token",
@@ -644,7 +644,7 @@ pack.setUserAuthentication({
   },
 });
 
-pack.addNetworkDomain("splitwise.com");
+connector.addNetworkDomain("splitwise.com");
 {% endraw %}
 ```
 

@@ -14,7 +14,7 @@ Many Packs use cases require fetching data from an outside source such as an API
 Before you can start making any requests using the fetcher, your Pack must declare which domain names it is going to communicate with. This can be done using the [`addNetworkDomain()`][addNetworkDomain] method of the pack:
 
 ```ts
-pack.addNetworkDomain("example.com");
+connector.addNetworkDomain("example.com");
 ```
 
 The fetcher can to communicate with URLs on that domain and all sub-domains. It's usually best select the root domain of the service you are working with. For example, if you want to make requests to `api.example.com`, add the network domain `example.com`, in case you later determine you need to access related content on `images.example.com`, etc.
@@ -35,7 +35,7 @@ The following domains don't need to be declared as a network domain in your Pack
 The fetcher is made available in the `execute` function of a formula through the [`context`][ExecutionContext] object. This object is the second parameter of the `execute` function, after the array of formula parameters set by the user:
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   execute: async function(args, context) {
     let fetcher = context.fetcher;
@@ -71,7 +71,7 @@ context.fetcher.fetch({
 By default the fetcher runs asynchronously, meaning that the code will continue on to the next line even if the server hasn't responded yet. You can get the fetcher to behave synchronously the using the [`async`/`await`][async_await] paradigm. Make sure the outer function is declared using the `async` keyword and then use the `await` keyword to tell your code to wait for the server's response before continuing on.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   execute: async function(args, context) {
     let response = await context.fetcher.fetch({
@@ -92,7 +92,7 @@ pack.addFormula({
 If you want to make multiple requests in parallel you can instead kick off all of your requests, wait for them all to finish, and then look at the results. This requires some understanding of [Promises][promises], but basically follows a pattern like:
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   execute: async function(args, context) {
     let urls = [
@@ -489,7 +489,7 @@ You can also identify HTTP requests originating from Packs by the `User-Agent` h
 
 [Fetcher]: ../../reference/sdk/core/interfaces/Fetcher.md
 [samples]: ../../samples/topic/fetcher.md
-[addNetworkDomain]: ../../reference/sdk/core/classes/PackDefinitionBuilder.md#addnetworkdomain
+[addNetworkDomain]: ../../reference/sdk/core/classes/ConnectorDefinitionBuilder.md#addnetworkdomain
 [support]: ../../support/index.md
 [support_network_domains]: ../../support/index.md#approvals
 [ExecutionContext]: ../../reference/sdk/core/interfaces/ExecutionContext.md

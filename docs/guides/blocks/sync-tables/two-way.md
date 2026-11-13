@@ -83,7 +83,7 @@ Only top-level properties in the schema are eligible to be editable, since they 
 Once the user has made their edits you'll need to figure out how to push them back to the external data source. This code is implemented in the `executeUpdate` function, which lives alongside the `execute` function in the sync formula.
 
 ```{.ts hl_lines="9-11"}
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   // ...
   formula: {
@@ -168,7 +168,7 @@ When possible, utilize the `fromKey` field of property schemas to allow the plat
       // ...
     });
 
-    pack.addSyncTable({
+    connector.addSyncTable({
       name: "Tasks",
       schema: TaskSchema,
       // ...
@@ -213,7 +213,7 @@ In cases where `fromKey` is not sufficient and you must manually transform API r
       // ...
     });
 
-    pack.addSyncTable({
+    connector.addSyncTable({
       name: "Tasks",
       schema: TaskSchema,
       // ...
@@ -272,7 +272,7 @@ The batch size can be adjusted by setting the `maxUpdateBatchSize` field of the 
     A single execution of the `executeUpdate` function can run for at most 60 seconds, after which it will be killed and the update will fail. To allow for variability in network and server conditions it's best to set a target of 30 seconds or less for each batch. How many rows that equates to depends heavily on the API being used and the number of requests it takes to update a row, and some experimentation may be required to find an ideal size.
 
 ```ts
-pack.addSyncTable({
+connector.addSyncTable({
   // ...
   formula: {
     // ...
@@ -363,7 +363,7 @@ For sync tables with dynamic schemas, you aren't able to define the options func
 === "Dynamic sync table"
 
     ```ts
-    pack.addDynamicSyncTable({
+    connector.addDynamicSyncTable({
       // ...
       getSchema: async function (context) {
         let attributes = await getCustomAttributes(context);
@@ -388,7 +388,7 @@ For sync tables with dynamic schemas, you aren't able to define the options func
 === "Regular sync table"
 
     ```ts
-    pack.addSyncTable({
+    connector.addSyncTable({
       // ...
       dynamicOptions: {
         getSchema: async function (context) {

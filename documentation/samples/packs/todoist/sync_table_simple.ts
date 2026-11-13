@@ -1,7 +1,7 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   schema: sdk.makeObjectSchema({
     properties: {
@@ -40,9 +40,9 @@ pack.addSyncTable({
   },
 });
 
-pack.addNetworkDomain("todoist.com");
+connector.addNetworkDomain("todoist.com");
 
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });

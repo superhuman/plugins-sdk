@@ -1,9 +1,9 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addNetworkDomain("boringavatars.com");
+connector.addNetworkDomain("boringavatars.com");
 
-pack.addFormula({
+connector.addFormula({
   name: "BoringAvatar",
   description: "Get a boring avatar image.",
   parameters: [

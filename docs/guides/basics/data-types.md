@@ -19,7 +19,7 @@ For a formula the value type is specified in the `resultType` property, and for 
 === "Formula"
 
     ```ts
-    pack.addFormula({
+    connector.addFormula({
       // ...
       resultType: sdk.ValueType.String,
       execute: async function ([], context) {
@@ -45,7 +45,7 @@ For a formula the value type is specified in the `resultType` property, and for 
 Text values can be returned as [JavaScript strings][mdn_string] using the [`String`][String] value type.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.String,
   execute: async function ([], context) {
@@ -60,7 +60,7 @@ pack.addFormula({
 Number values can be returned as [JavaScript numbers][mdn_number] using the [`Number`][Number] value type.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.Number,
   execute: async function ([], context) {
@@ -75,7 +75,7 @@ pack.addFormula({
 True or false values can be returned as [JavaScript booleans][mdn_boolean] using the [`Boolean`][Boolean] value type.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.Boolean,
   execute: async function ([], context) {
@@ -99,7 +99,7 @@ const MySchema = sdk.makeObjectSchema({
   // ...
 });
 
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.Object,
   schema: MySchema,
@@ -129,7 +129,7 @@ Lists of data can be returned as [JavaScript arrays][mdn_array] using the [`Arra
 You must also specify the [schema][schemas] of the items in the array, using the `items` property. For arrays of simple data you can define the schema inline, supplying only the `type` key.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.Array,
   items: { type: sdk.ValueType.String },
@@ -150,7 +150,7 @@ const MySchema = sdk.makeObjectSchema({
   // ...
 });
 
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.Array,
   items: MySchema,
@@ -171,7 +171,7 @@ A value hint tells the platform how to interpret a value beyond its basic type. 
 In :superhuman-docs: Docs a hint controls how the value is displayed, corresponding to the [column formats][column_formats] available.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   name: "HalfWayThere",
   // ...
   resultType: sdk.ValueType.Number,
@@ -195,7 +195,7 @@ pack.addFormula({
 The [`Markdown`][hint_markdown] value hint indicates that Superhuman Docs should parse the returned string as markdown and render it as rich text. The value can contain [basic markdown syntax][markdown], but extensions used by other applications (like tables, emoji, etc) are not supported.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.String,
   codaType: sdk.ValueHintType.Markdown,
@@ -214,7 +214,7 @@ pack.addFormula({
 The [`Html`][hint_html] value hint indicates that Superhuman Docs should parse the returned string as HTML and render it as rich text. Code only supports a small subset of HTML markup, limited to the basic formatting you can accomplish in [markdown](#markdown).
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.String,
   codaType: sdk.ValueHintType.Html,
@@ -239,7 +239,7 @@ When used with a number value, the number should contain the number of seconds s
 === "From String"
 
     ```ts
-    pack.addFormula({
+    connector.addFormula({
       // ...
       resultType: sdk.ValueType.String,
       codaType: sdk.ValueHintType.DateTime,
@@ -253,7 +253,7 @@ When used with a number value, the number should contain the number of seconds s
 === "From Number"
 
     ```ts
-    pack.addFormula({
+    connector.addFormula({
       // ...
       resultType: sdk.ValueType.Number,
       codaType: sdk.ValueHintType.DateTime,
@@ -283,7 +283,7 @@ The [`Duration`][Duration] value hint represents an amount of time, rather than 
  Any duration value your Pack returns will be automatically converted into its most user-friendly form by Superhuman Docs. For example, `3600 seconds` will be shown to the user as **1 hr**.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.String,
   codaType: sdk.ValueHintType.Duration,
@@ -298,7 +298,7 @@ pack.addFormula({
 Formulas that return a result as a percentage can use the value type `Number` and the value hint [`Percent`][Percent]. Return a fraction in your code and the doc will display the equivalent percentage.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.Number,
   codaType: sdk.ValueHintType.Percent,
@@ -316,7 +316,7 @@ There are two different value hints for image: [`ImageReference`][ImageReference
 Image attachments should be used in most cases. An image reference may make more sense if you expect the image to be updated often and want to ensure the doc is always using the latest copy, or when contractually obligated to hotlink to the image.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.String,
   codaType: sdk.ValueHintType.ImageReference,
@@ -401,7 +401,7 @@ See the [Two-way Sync guide][two_way_options] for more information about propert
 The [`Embed`][Embed] value hint can be used to embed external content in the doc. This value hint can be applied to `String` values, where the string contains the URL to the external content.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.String,
   codaType: sdk.ValueHintType.Embed,
@@ -488,7 +488,7 @@ Some value types and hints support additional formatting options. For example, `
 === "Formula"
 
     ```ts
-    pack.addFormula({
+    connector.addFormula({
       name: "GetPrice",
       // ...
       resultType: sdk.ValueType.Number,

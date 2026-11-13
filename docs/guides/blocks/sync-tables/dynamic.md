@@ -37,7 +37,7 @@ Creating a dynamic sync table can be a bit of an involved process, and it requir
 The dynamic sync table is defined using the [`addDynamicSyncTable()`][addDynamicSyncTable] method. The `name` is user visible and should follow the [naming conventions][sync_tables_naming] of regular sync tables. The `description` is not required but recommended. An `identityName` is required, and defines the [identity][sync_tables_identity] of the table.
 
 ```ts
-pack.addDynamicSyncTable({
+connector.addDynamicSyncTable({
   name: "Tasks",
   description: "The tasks in the selected project.",
   identityName: "Task",
@@ -74,7 +74,7 @@ The [`listDynamicUrls`][listDynamicUrls] function is responsible for generating 
 The function should return an array of [`MetadataFormulaObjectResultType`][MetadataFormulaObjectResultType] objects. The `display` field should be set to the user-facing name of the dataset, and the `value` field to its URL.
 
 ```ts
-pack.addDynamicSyncTable({
+connector.addDynamicSyncTable({
   // ...
   listDynamicUrls: async function (context) {
     let response = await context.fetcher.fetch({
@@ -105,7 +105,7 @@ The selected URL is made available to all further methods via [`context.sync.dyn
 The [`getName`][getName] function is responsible for generating the user-visible name of the sync table based on the dataset selected. The resulting value is used as the title shown above the sync table after it is added to the document.  This differs from the `name` field of the dynamic sync table definition, which is shown in the Pack side panel to identify the type of table.
 
 ```ts
-pack.addDynamicSyncTable({
+connector.addDynamicSyncTable({
   // ...
   getName: async function (context) {
     let projectUrl = context.sync.dynamicUrl;
@@ -130,7 +130,7 @@ pack.addDynamicSyncTable({
 The [`getDisplayUrl`][getDisplayUrl] function is responsible for generating the user-facing version of the dynamic URL. If the URL you selected to represent the dataset is already user friendly (it will open in their browser) then you can return it as-is. However if you chose to use an API-specific URL as the dynamic URL, this function should translate that into something more useful. This is typically done by making an API request to retrieve a user-facing URL.
 
 ```ts
-pack.addDynamicSyncTable({
+connector.addDynamicSyncTable({
   // ...
   getDisplayUrl: async function (context) {
     let projectUrl = context.sync.dynamicUrl;
@@ -153,7 +153,7 @@ The [`getSchema`][getSchema] function is responsible for generating the schema t
 In order to generate the schema you must have a way of determining the shape of the data for the selected dataset. Some APIs provide endpoints that allow you to query metadata about a dataset, such as which fields are available and what type of data they contain. Alternatively you can query the first row of data and infer this information based on the results.
 
 ```ts
-pack.addDynamicSyncTable({
+connector.addDynamicSyncTable({
   // ...
   getSchema: async function (context) {
     let projectUrl = context.sync.dynamicUrl;
@@ -208,7 +208,7 @@ The schema you generate must have all of the same fields as those used in a regu
 All of the code discussed in the previous steps are used to generate metadata about the sync table, but in order to populate it with data you must also include a sync formula. Like regular sync tables, this formula's `execute` function is responsible for fetching rows from the dataset and transforming them to match the schema.
 
 ```ts
-pack.addDynamicSyncTable({
+connector.addDynamicSyncTable({
   // ...
   formula: {
     name: "SyncTasks",
@@ -343,7 +343,7 @@ There currently isn't a good solution for dealing with datasets without stable, 
 The `getSchema` function can access the values of the parameters defined in the sync formula, making it possible to adjust the schema based on user input beyond the selection of the dynamic URL. This is done in a using the third parameter to the function, which is a key-value map of parameter names to values. This is similar to the pattern used by [autocomplete functions][autocomplete_parameter].
 
 ```ts
-pack.addDynamicSyncTable({
+connector.addDynamicSyncTable({
   // ...
   getSchema: async function (context, _, { query }) {
     // ...
@@ -380,7 +380,7 @@ Instead of returning a flat list of datasets in the `listDynamicUrls` function, 
 To create a folder, return a [`MetadataFormulaObjectResultType`][MetadataFormulaObjectResultType] with `hasChildren: true`. When a user clicks on a folder, the `listDynamicUrls` function will be re-run, passing in the URL of the parent folder as the second parameter.
 
 ```ts
-pack.addDynamicSyncTable({
+connector.addDynamicSyncTable({
   // ...
   listDynamicUrls: async function (context, folderUrl) {
     if (folderUrl) {
@@ -408,7 +408,7 @@ Finding the desired dataset, even when [organized into folders](#folders), can b
  To enable this search feature, add a `searchDynamicUrls` function to your sync table definition. This function works identically to `listDynamicUrls`, except that the 2nd parameter contains the user-entered search term instead of the folder URL.
 
 ```ts
-pack.addDynamicSyncTable({
+connector.addDynamicSyncTable({
   // ...
   searchDynamicUrls: async function (context, search) {
     let url = sdk.withQueryParams("https://api.example.com/projects", {
@@ -446,7 +446,7 @@ Dynamic sync tables are built around the idea that the external data source has 
 To implement this, create a regular sync table using `addSyncTable` and define the function `dynamicOptions.getSchema`. You'll still need to specify a static schema in the `schema` field of the sync table, but it will be overridden during the sync with the output of `getSchema`.
 
 ```ts
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   schema: TaskSchema,
   dynamicOptions: {
@@ -486,7 +486,7 @@ Dynamic sync tables include a lot of individual functions, but they are run at d
 [schemas_normalization]: ../../advanced/schemas.md#normalization
 [schemas_sync_table]: ../../advanced/schemas.md#schemas-in-sync-tables
 [fromKey]: ../../../reference/sdk/core/interfaces/ObjectSchemaProperty.md#fromkey
-[addDynamicSyncTable]: ../../../reference/sdk/core/classes/PackDefinitionBuilder.md#adddynamicsynctable
+[addDynamicSyncTable]: ../../../reference/sdk/core/classes/ConnectorDefinitionBuilder.md#adddynamicsynctable
 [listDynamicUrls]: ../../../reference/sdk/core/interfaces/DynamicSyncTableOptions.md#listdynamicurls
 [getName]: ../../../reference/sdk/core/interfaces/DynamicSyncTableOptions.md#getname
 [getDisplayUrl]: ../../../reference/sdk/core/interfaces/DynamicSyncTableOptions.md#getdisplayurl

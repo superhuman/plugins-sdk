@@ -9,6 +9,7 @@ import type { CustomHeaderTokenAuthentication } from './types';
 import type { DistributiveOmit } from './type_utils';
 import type { EntraCertificateAuthentication } from './types';
 import type { Format } from './types';
+import type { FormulaMetadata } from './api';
 import type { GoogleDomainWideDelegationAuthentication } from './types';
 import type { GoogleServiceAccountAuthentication } from './types';
 import type { HeaderBearerTokenAuthentication } from './types';
@@ -18,9 +19,8 @@ import type { MultiQueryParamTokenAuthentication } from './types';
 import type { NoAuthentication } from './types';
 import type { OAuth2Authentication } from './types';
 import type { OAuth2ClientCredentialsAuthentication } from './types';
-import type { ObjectPackFormulaMetadata } from './api';
+import type { ObjectFormulaMetadata } from './api';
 import type { PackDefinition } from './types';
-import type { PackFormulaMetadata } from './api';
 import type { PackVersionDefinition } from './types';
 import type { PostSetup } from './types';
 import type { QueryParamTokenAuthentication } from './types';
@@ -28,9 +28,14 @@ import type { Skill } from './types';
 import type { SyncTable } from './api';
 import type { VariousAuthentication } from './types';
 import type { WebBasicAuthentication } from './types';
+/**
+ * @hidden
+ * @deprecated Use {@link SyncTableMetadata}.
+ */
+export type PackSyncTable = SyncTableMetadata;
 /** @hidden */
-export type PackSyncTable = Omit<SyncTable, 'getter' | 'getName' | 'getSchema' | 'listDynamicUrls' | 'searchDynamicUrls' | 'getDisplayUrl'> & {
-    getter: PackFormulaMetadata;
+export type SyncTableMetadata = Omit<SyncTable, 'getter' | 'getName' | 'getSchema' | 'listDynamicUrls' | 'searchDynamicUrls' | 'getDisplayUrl'> & {
+    getter: FormulaMetadata;
     isDynamic?: boolean;
     hasDynamicSchema?: boolean;
     getSchema?: MetadataFormulaMetadata;
@@ -39,11 +44,20 @@ export type PackSyncTable = Omit<SyncTable, 'getter' | 'getName' | 'getSchema' |
     listDynamicUrls?: MetadataFormulaMetadata;
     searchDynamicUrls?: MetadataFormulaMetadata;
 };
-/** @hidden */
-export interface PackFormatMetadata extends Omit<Format, 'matchers'> {
-    matchers: string[];
+/**
+ * @hidden
+ * @deprecated Use {@link FormatMetadata}.
+ */
+export interface PackFormatMetadata extends FormatMetadata {
 }
 /** @hidden */
+export interface FormatMetadata extends Omit<Format, 'matchers'> {
+    matchers: string[];
+}
+/**
+ * @hidden
+ * @deprecated Skills are no longer used. Connectors should not set tools.
+ */
 export type SkillMetadata = Omit<Skill, 'prompt'>;
 /**
  * An agent definition without its instructions, for the browser-facing metadata.
@@ -89,58 +103,119 @@ export interface AuthenticationMetadataTypeMap {
     [AuthenticationType.EntraCertificate]: AuthenticationToMetadata<EntraCertificateAuthentication>;
 }
 /**
- * Resource descriptor carried in versioned Pack metadata.
+ * @hidden
+ * @deprecated Use {@link Resource}.
+ */
+export interface PackResource extends Resource {
+}
+/**
+ * Resource descriptor carried in versioned component metadata.
  * @hidden
  */
-export interface PackResource {
+export interface Resource {
     key: string;
     mimeType: 'text/html;profile=mcp-app';
+}
+/**
+ * @hidden
+ * @deprecated Use {@link ResourceArtifact}.
+ */
+export interface PackResourceArtifact extends ResourceArtifact {
 }
 /**
  * Resource body submitted separately from metadata.
  * @hidden
  */
-export interface PackResourceArtifact {
+export interface ResourceArtifact {
     resourceKey: string;
     content: string;
 }
+/**
+ * @hidden
+ * @deprecated Use {@link ComponentVersionMetadata}.
+ */
+export type PackVersionMetadata = ComponentVersionMetadata;
 /** @hidden */
-export type PackVersionMetadata = Omit<PackVersionDefinition, 'formulas' | 'formats' | 'defaultAuthentication' | 'syncTables'> & {
-    formulas: PackFormulaMetadata[];
+export type ComponentVersionMetadata = Omit<PackVersionDefinition, 'formulas' | 'formats' | 'defaultAuthentication' | 'syncTables'> & {
+    formulas: FormulaMetadata[];
     /**
      * Shared resources for top-level formula UIs.
      * @hidden
      */
     resources?: PackResource[];
     formats: PackFormatMetadata[];
-    syncTables: PackSyncTable[];
+    syncTables: SyncTableMetadata[];
     defaultAuthentication?: AuthenticationMetadata;
 };
+/**
+ * @hidden
+ * @deprecated Use {@link ComponentMetadata}.
+ */
+export type PackMetadata = ComponentMetadata;
 /** @hidden */
-export type PackMetadata = PackVersionMetadata & Pick<PackDefinition, 'id' | 'name' | 'shortDescription' | 'description' | 'permissionsDescription' | 'category' | 'logoPath' | 'exampleImages' | 'exampleVideoIds' | 'minimumFeatureSet' | 'quotas' | 'rateLimits' | 'isSystem'>;
+export type ComponentMetadata = ComponentVersionMetadata & Pick<PackDefinition, 'id' | 'name' | 'shortDescription' | 'description' | 'permissionsDescription' | 'category' | 'logoPath' | 'exampleImages' | 'exampleVideoIds' | 'minimumFeatureSet' | 'quotas' | 'rateLimits' | 'isSystem'>;
+/**
+ * @hidden
+ * @deprecated Use {@link ExternalAuthenticationType}.
+ */
+export type ExternalPackAuthenticationType = ExternalAuthenticationType;
 /** @hidden */
-export type ExternalPackAuthenticationType = AuthenticationType;
+export type ExternalAuthenticationType = AuthenticationType;
+/**
+ * @hidden
+ * @deprecated Use {@link ExternalFormulas}.
+ */
+export type ExternalPackFormulas = ExternalFormulas;
 /** @hidden */
-export type ExternalPackFormulas = PackFormulaMetadata[];
+export type ExternalFormulas = FormulaMetadata[];
+/**
+ * @hidden
+ * @deprecated Use {@link ExternalObjectFormula}.
+ */
+export type ExternalObjectPackFormula = ExternalObjectFormula;
 /** @hidden */
-export type ExternalObjectPackFormula = ObjectPackFormulaMetadata;
+export type ExternalObjectFormula = ObjectFormulaMetadata;
+/**
+ * @hidden
+ * @deprecated Use {@link ExternalFormula}.
+ */
+export type ExternalPackFormula = ExternalFormula;
 /** @hidden */
-export type ExternalPackFormula = PackFormulaMetadata;
+export type ExternalFormula = FormulaMetadata;
+/**
+ * @hidden
+ * @deprecated Use {@link ExternalFormat}.
+ */
+export type ExternalPackFormat = ExternalFormat;
 /** @hidden */
-export type ExternalPackFormat = Omit<Format, 'matchers'> & {
+export type ExternalFormat = Omit<Format, 'matchers'> & {
     matchers?: string[];
 };
+/**
+ * @hidden
+ * @deprecated Use {@link ExternalFormatMetadata}.
+ */
+export type ExternalPackFormatMetadata = ExternalFormatMetadata & PackFormatMetadata;
 /** @hidden */
-export type ExternalPackFormatMetadata = PackFormatMetadata;
+export type ExternalFormatMetadata = FormatMetadata;
 /** @hidden */
-export type ExternalSyncTable = PackSyncTable;
-/** @hidden */
+export type ExternalSyncTable = SyncTableMetadata;
+/**
+ * @hidden
+ * @deprecated Skills are no longer used. Connectors should not set tools.
+ */
 export type ExternalSkill = SkillMetadata;
-type BasePackVersionMetadata = Omit<PackVersionMetadata, 'defaultAuthentication' | 'systemConnectionAuthentication' | 'formulas' | 'formats' | 'syncTables' | 'skills' | 'agent' | 'defaultTriggers' | 'defaultRoutines'>;
+type BasePackVersionMetadata = Omit<ComponentVersionMetadata, 'defaultAuthentication' | 'systemConnectionAuthentication' | 'formulas' | 'formats' | 'syncTables' | 'skills' | 'agent' | 'defaultTriggers' | 'defaultRoutines'>;
+/**
+ * @hidden
+ * @deprecated Use {@link ExternalComponentVersionMetadata}.
+ */
+export interface ExternalPackVersionMetadata extends ExternalComponentVersionMetadata {
+}
 /** @hidden */
-export interface ExternalPackVersionMetadata extends BasePackVersionMetadata {
+export interface ExternalComponentVersionMetadata extends BasePackVersionMetadata {
     authentication: {
-        type: ExternalPackAuthenticationType;
+        type: ExternalAuthenticationType;
         params?: Array<{
             name: string;
             description: string;
@@ -158,17 +233,31 @@ export interface ExternalPackVersionMetadata extends BasePackVersionMetadata {
         endpointKey?: string;
     };
     instructionsUrl?: string;
-    formulas?: ExternalPackFormulas;
-    formats?: ExternalPackFormat[];
+    formulas?: ExternalFormulas;
+    formats?: ExternalFormat[];
     syncTables?: ExternalSyncTable[];
+    /**
+     * @deprecated Skills are no longer used. Connectors should not set tools.
+     */
     skills?: ExternalSkill[];
     agent?: AgentMetadata;
 }
+/**
+ * @hidden
+ * @deprecated Use {@link ExternalComponentMetadata}.
+ */
+export type ExternalPackMetadata = ExternalComponentMetadata;
 /** @hidden */
-export type ExternalPackMetadata = ExternalPackVersionMetadata & Pick<PackMetadata, 'id' | 'name' | 'shortDescription' | 'description' | 'permissionsDescription' | 'category' | 'logoPath' | 'exampleImages' | 'exampleVideoIds' | 'minimumFeatureSet' | 'quotas' | 'rateLimits' | 'isSystem'>;
+export type ExternalComponentMetadata = ExternalPackVersionMetadata & Pick<ComponentMetadata, 'id' | 'name' | 'shortDescription' | 'description' | 'permissionsDescription' | 'category' | 'logoPath' | 'exampleImages' | 'exampleVideoIds' | 'minimumFeatureSet' | 'quotas' | 'rateLimits' | 'isSystem'>;
+/**
+ * @hidden
+ * @deprecated Use {@link ComponentUpload}.
+ */
+export interface PackUpload extends ComponentUpload {
+}
 /** @hidden */
-export interface PackUpload {
-    metadata: PackVersionMetadata | PackMetadata;
+export interface ComponentUpload {
+    metadata: ComponentVersionMetadata | ComponentMetadata;
     /**
      * Resource bodies submitted separately from metadata.
      * @hidden

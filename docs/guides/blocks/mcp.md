@@ -33,7 +33,7 @@ This will create a new Pack, populated with generated code, released and ready t
 Adding an MCP server to a connector takes only a few lines of code: an internal name and the server's URL.
 
 ```ts
-pack.addMCPServer({
+connector.addMCPServer({
   name: "Icons8",
   endpointUrl: "https://mcp.icons8.com/mcp/",
 });
@@ -73,12 +73,12 @@ Additionally, not all MCP features are supported by the platform.
 As with all network traffic, MCP requests go through the [Fetcher][fetcher], and the domains used must be declared in advance. While MCP servers are often hosted on a subdomain, it's a best practice to declare the root domain to allow for future expansion to other endpoints.
 
 ```{.ts hl_lines="6"}
-pack.addMCPServer({
+connector.addMCPServer({
   name: "Icons8",
   endpointUrl: "https://mcp.icons8.com/mcp/",
 });
 
-pack.addNetworkDomain("icons8.com");
+connector.addNetworkDomain("icons8.com");
 ```
 
 
@@ -91,12 +91,12 @@ Requests to MCP servers use the same [authentication system][authentication] as 
     Many MCP servers use OAuth2 with [dynamic client registration (DCR)][oauth2_dcr].
 
     ```ts
-    pack.addMCPServer({
+    connector.addMCPServer({
       name: "Example",
       endpointUrl: "https://mcp.example.com/mcp",
     });
 
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.OAuth2,
       useDynamicClientRegistration: true,
       useProofKeyForCodeExchange: true,
@@ -109,12 +109,12 @@ Requests to MCP servers use the same [authentication system][authentication] as 
     For MCP servers that use OAuth2 but don't support DCR, you can manually specify the OAuth URLs in your code. You'll also need to manually register an application in their portal and upload client credentials on the **Settings** screen of the Pack Studio.
 
     ```ts
-    pack.addMCPServer({
+    connector.addMCPServer({
       name: "Example",
       endpointUrl: "https://mcp.example.com/mcp",
     });
 
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.OAuth2,
       authorizationUrl: "https://example.com/authorize",
       tokenUrl: "https://example.com/token",
@@ -126,12 +126,12 @@ Requests to MCP servers use the same [authentication system][authentication] as 
 === "Bearer token"
 
     ```ts
-    pack.addMCPServer({
+    connector.addMCPServer({
       name: "Example",
       endpointUrl: "https://mcp.example.com/mcp",
     });
 
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.HeaderBearerToken,
     });
     ```
@@ -139,12 +139,12 @@ Requests to MCP servers use the same [authentication system][authentication] as 
 === "Query parameter"
 
     ```ts
-    pack.addMCPServer({
+    connector.addMCPServer({
       name: "Example",
       endpointUrl: "https://mcp.example.com/mcp",
     });
 
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.QueryParamToken,
       paramName: "api_key",
     });
@@ -164,7 +164,7 @@ Requests to MCP servers use the same [authentication system][authentication] as 
 To allow :superhuman-go: Go's knowledge search feature to connect to an MCP server, list the server's search-related tools in the field `searchToolNames`. If the server has multiple tools that provide search, include all of them.
 
 ```ts
-pack.addMCPServer({
+connector.addMCPServer({
   name: "Example",
   endpointUrl: "https://mcp.example.com/mcp",
   searchToolNames: ["search_documents", "search_files"],

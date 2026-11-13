@@ -1,8 +1,8 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Returns the infamous YouTube video by Rick Astley as an embed.
-pack.addFormula({
+connector.addFormula({
   name: "Rickroll",
   description: "Embeds the video \"Never Gonna Give You Up\".",
   parameters: [],

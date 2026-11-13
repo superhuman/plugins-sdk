@@ -10,7 +10,7 @@ search:
 
 # Enumeration: InvocationSource
 
-The source applications that can invoke a Pack.
+The source applications that can invoke a connector.
 
 ## Enumeration Members
 

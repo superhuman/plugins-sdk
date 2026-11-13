@@ -1,8 +1,8 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A formula that generates an image using some input text.
-pack.addFormula({
+connector.addFormula({
   name: "TextToImage",
   description: "Generates an image using the text provided.",
   parameters: [

@@ -24,8 +24,40 @@ import {makeSyncTable} from '../api';
 import {newMockSyncExecutionContext} from '../development';
 import {normalizePropertyOptionsResults} from '../api';
 import * as schema from '../schema';
+import {wrapGetSchema} from '../api';
 
 describe('API test', () => {
+  it('mirrors identity aliases in sync and async dynamic object and array schemas', async () => {
+    const objectSchema = {
+      type: ValueType.Object,
+      identity: {name: 'Other', connectorId: 42, packId: 7},
+      properties: {
+        original_name: {type: ValueType.Object, identity: {name: 'Nested', packId: 8}, properties: {}},
+      },
+    } as const;
+    const before = JSON.stringify(objectSchema);
+    for (const result of [objectSchema, {type: ValueType.Array, items: objectSchema} as const]) {
+      for (const execute of [() => result, async () => result]) {
+        const formula = wrapGetSchema({...makeMetadataFormula(async () => result), execute});
+        const output = await formula!.execute([undefined, undefined], newMockSyncExecutionContext());
+        assert.deepEqual(output, {
+          type: ValueType.Array,
+          items: {
+            ...objectSchema,
+            identity: {name: 'Other', connectorId: 42, packId: 42},
+            properties: {
+              original_name: {
+                ...objectSchema.properties.original_name,
+                identity: {name: 'Nested', connectorId: 8, packId: 8},
+              },
+            },
+          },
+        });
+      }
+    }
+    assert.equal(JSON.stringify(objectSchema), before);
+  });
+
   describe('makeDynamicSyncTable', () => {
     it('connection overrides individual connection values', () => {
       const table = makeDynamicSyncTable({

@@ -1,3 +1,4 @@
+import {execFileSync} from 'child_process';
 import {execSync} from 'child_process';
 import path from 'path';
 
@@ -93,7 +94,7 @@ function getCommitSha(cwd: string): string | undefined {
  */
 export function createGitTag(tag: string, message: string, cwd: string): boolean {
   try {
-    execSync(`git tag -a "${tag}" -m "${message.replace(/"/g, '\\"')}"`, {cwd, stdio: 'pipe'});
+    execFileSync('git', ['tag', '-a', tag, '-m', message], {cwd, stdio: 'pipe'});
     return true;
   } catch {
     return false;
@@ -105,7 +106,7 @@ export function createGitTag(tag: string, message: string, cwd: string): boolean
  */
 export function gitTagExists(tag: string, cwd: string): boolean {
   try {
-    execSync(`git rev-parse "refs/tags/${tag}"`, {cwd, stdio: 'pipe'});
+    execFileSync('git', ['rev-parse', `refs/tags/${tag}`], {cwd, stdio: 'pipe'});
     return true;
   } catch {
     return false;

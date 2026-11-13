@@ -178,7 +178,7 @@ Must be a [ValueType.String](../enumerations/ValueType.md#string) property with 
 > `optional` **includeUnknownProperties**: `boolean`
 
 Specifies that object instances with this schema can contain additional properties not defined
-in the schema, and that the packs infrastructure should retain these unknown properties
+in the schema, and that the platform should retain these unknown properties
 rather than stripping them.
 
 Properties not declared in the schema will not work properly in Superhuman Docs: they cannot be

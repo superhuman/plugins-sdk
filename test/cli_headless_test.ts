@@ -29,6 +29,7 @@ import sinon from 'sinon';
 import * as testingHelpers from '../testing/helpers';
 import {tmpdir} from 'os';
 import {tryGetIvm} from '../testing/ivm_wrapper';
+import * as uploadValidation from '../testing/upload_validation';
 import yargs from 'yargs/yargs';
 
 describe('Headless CLI', () => {
@@ -1568,7 +1569,7 @@ describe('Headless CLI', () => {
       await validate({});
 
       assert.isFalse(listed);
-      assert.include(printedLines().join('\n'), 'Pack is valid.');
+      assert.match(printedLines().join('\n'), /^valid$/m);
     });
 
     it('skips listing requests when checkConnectors is false', async () => {
@@ -1581,7 +1582,7 @@ describe('Headless CLI', () => {
       await validate({checkConnectors: false, apiToken: 'test-token'});
 
       assert.isFalse(listed);
-      assert.include(printedLines().join('\n'), 'Pack is valid.');
+      assert.match(printedLines().join('\n'), /^valid$/m);
     });
 
     it('checks using the saved token when the flag is omitted', async () => {
@@ -1589,7 +1590,7 @@ describe('Headless CLI', () => {
       await validate({});
 
       assert.deepEqual(createdClientArgs, [{apiToken: 'saved-token', endpoint: 'https://coda.io'}]);
-      assert.include(printedLines().join('\n'), 'Pack is valid.');
+      assert.match(printedLines().join('\n'), /^valid$/m);
     });
 
     it('prefers an explicit apiToken over stored credentials', async () => {
@@ -1622,7 +1623,7 @@ describe('Headless CLI', () => {
       const lines = printedLines().join('\n');
       assert.include(lines, 'Connector pack 1234');
       assert.include(lines, 'superhuman.com/store/connectors');
-      assert.include(lines, 'Pack is valid.');
+      assert.match(lines, /^valid$/m);
     });
 
     it('warns instead of throwing when verification fails outright', async () => {
@@ -1634,7 +1635,74 @@ describe('Headless CLI', () => {
 
       const lines = printedLines().join('\n');
       assert.include(lines, 'Could not verify connector pack 1234');
-      assert.include(lines, 'Pack is valid.');
+      assert.match(lines, /^valid$/m);
+    });
+
+    function writeRequiringAgentPack() {
+      fsExtra.writeFileSync(
+        manifestFile,
+        [
+          "import * as sdk from '../../../index';",
+          'export const pack = sdk.newAgent();',
+          "pack.setInstructions('Hi.');",
+          'pack.setTools({',
+          '  connectors: [',
+          '    {packId: 1001, required: true},',
+          "    {packId: 2001, required: {groupName: 'email'}},",
+          "    {packId: 2002, required: {groupName: 'email'}},",
+          "    {packId: 2003, required: {groupName: 'emial'}},",
+          '  ],',
+          '});',
+          '',
+        ].join('\n'),
+      );
+    }
+
+    const loneGroupWarning =
+      'warning: Group "emial" has one connector, so it acts like required: true. Check the group name.';
+
+    it('reports a malformed required value as a validation error', async () => {
+      fsExtra.writeFileSync(
+        manifestFile,
+        [
+          "import * as sdk from '../../../index';",
+          "const builder = sdk.newAgent().setInstructions('Hi.');",
+          'const tools = [{type: sdk.ToolType.Pack, packId: 1234, required: null}];',
+          'export const agent = {...builder, agent: {...builder.agent, tools}};',
+          '',
+        ].join('\n'),
+      );
+      await rejects(validate({checkConnectors: false}));
+
+      assert.equal(exitCode, 1);
+      assert.include(exitMessage, 'agent.tools[0].required');
+    });
+
+    it('warns only about a group with one connector', async () => {
+      writeRequiringAgentPack();
+      await validate({checkConnectors: false});
+
+      const lines = printedLines();
+      assert.deepEqual(
+        lines.filter(line => line.startsWith('warning: Group')),
+        [loneGroupWarning],
+      );
+      assert.isBelow(lines.indexOf(loneGroupWarning), lines.indexOf('valid'));
+    });
+
+    it('still warns about a group when the pack has deprecation warnings', async () => {
+      writeRequiringAgentPack();
+      const validatePackVersionMetadata = uploadValidation.validatePackVersionMetadata;
+      sinon.stub(uploadValidation, 'validatePackVersionMetadata').callsFake(async (metadata, sdkVersion, options) => {
+        if (options?.warningMode) {
+          throw new uploadValidation.PackMetadataValidationError('Deprecated', undefined, [{message: 'Old field.'}]);
+        }
+        return validatePackVersionMetadata(metadata, sdkVersion);
+      });
+      await rejects(validate({checkConnectors: false, checkDeprecationWarnings: true}));
+
+      assert.equal(exitCode, 0);
+      assert.include(printedLines(), loneGroupWarning);
     });
   });
 });

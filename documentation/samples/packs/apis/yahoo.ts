@@ -1,10 +1,10 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Setup per-user authentication using Yahoo's OAuth2.
 // Remember to set your client ID and secret in the "Settings" tab.
 // See https://developer.yahoo.com/oauth2/guide/flows_authcode/
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://api.login.yahoo.com/oauth2/request_auth",
   tokenUrl: "https://api.login.yahoo.com/oauth2/get_token",
@@ -22,4 +22,4 @@ pack.setUserAuthentication({
 });
 
 // Allow the Pack to access the Yahoo domain.
-pack.addNetworkDomain("yahoo.com");
+connector.addNetworkDomain("yahoo.com");

@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isGitAvailable = exports.gitTagExists = exports.createGitTag = exports.getGitState = void 0;
 const child_process_1 = require("child_process");
+const child_process_2 = require("child_process");
 const path_1 = __importDefault(require("path"));
 /**
  * Gets the current git state for the given directory.
@@ -33,7 +34,7 @@ exports.getGitState = getGitState;
  */
 function isGitRepo(cwd) {
     try {
-        (0, child_process_1.execSync)('git rev-parse --is-inside-work-tree', { cwd, stdio: 'pipe' });
+        (0, child_process_2.execSync)('git rev-parse --is-inside-work-tree', { cwd, stdio: 'pipe' });
         return true;
     }
     catch {
@@ -45,7 +46,7 @@ function isGitRepo(cwd) {
  */
 function hasUncommittedChanges(cwd) {
     try {
-        const status = (0, child_process_1.execSync)('git status --porcelain', { cwd, encoding: 'utf-8' });
+        const status = (0, child_process_2.execSync)('git status --porcelain', { cwd, encoding: 'utf-8' });
         return status.trim().length > 0;
     }
     catch {
@@ -58,7 +59,7 @@ function hasUncommittedChanges(cwd) {
  */
 function getCurrentBranch(cwd) {
     try {
-        const branch = (0, child_process_1.execSync)('git branch --show-current', { cwd, encoding: 'utf-8' }).trim();
+        const branch = (0, child_process_2.execSync)('git branch --show-current', { cwd, encoding: 'utf-8' }).trim();
         return branch || undefined; // Empty string means detached HEAD
     }
     catch {
@@ -70,7 +71,7 @@ function getCurrentBranch(cwd) {
  */
 function getCommitSha(cwd) {
     try {
-        return (0, child_process_1.execSync)('git rev-parse HEAD', { cwd, encoding: 'utf-8' }).trim();
+        return (0, child_process_2.execSync)('git rev-parse HEAD', { cwd, encoding: 'utf-8' }).trim();
     }
     catch {
         return undefined;
@@ -82,7 +83,7 @@ function getCommitSha(cwd) {
  */
 function createGitTag(tag, message, cwd) {
     try {
-        (0, child_process_1.execSync)(`git tag -a "${tag}" -m "${message.replace(/"/g, '\\"')}"`, { cwd, stdio: 'pipe' });
+        (0, child_process_1.execFileSync)('git', ['tag', '-a', tag, '-m', message], { cwd, stdio: 'pipe' });
         return true;
     }
     catch {
@@ -95,7 +96,7 @@ exports.createGitTag = createGitTag;
  */
 function gitTagExists(tag, cwd) {
     try {
-        (0, child_process_1.execSync)(`git rev-parse "refs/tags/${tag}"`, { cwd, stdio: 'pipe' });
+        (0, child_process_1.execFileSync)('git', ['rev-parse', `refs/tags/${tag}`], { cwd, stdio: 'pipe' });
         return true;
     }
     catch {
@@ -108,7 +109,7 @@ exports.gitTagExists = gitTagExists;
  */
 function isGitAvailable() {
     try {
-        (0, child_process_1.execSync)('git --version', { stdio: 'pipe' });
+        (0, child_process_2.execSync)('git --version', { stdio: 'pipe' });
         return true;
     }
     catch {

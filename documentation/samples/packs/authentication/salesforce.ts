@@ -1,11 +1,11 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Salesforce API, using OAuth2 and an
 // automatically determined account-specific endpoint.
 // oxlint-disable-next-line stylistic/max-len
 // See https://help.salesforce.com/s/articleView?id=sf.remoteaccess_authenticate.htm&type=5
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://login.salesforce.com/services/oauth2/authorize",
   tokenUrl: "https://login.salesforce.com/services/oauth2/token",
@@ -32,5 +32,5 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Salesforce.
-pack.addNetworkDomain("salesforce.com");
+// Allow the connector to make requests to Salesforce.
+connector.addNetworkDomain("salesforce.com");

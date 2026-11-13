@@ -27,10 +27,10 @@ This Pack provides a `Daylight` formula that determines the daylight, sunrise,
     import * as sdk from "@superhuman/plugins-sdk";
 
     // This line creates the new Pack.
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
     // The domain that the Pack will match fetcher requests to.
-    pack.addNetworkDomain("sunrise-sunset.org");
+    connector.addNetworkDomain("sunrise-sunset.org");
 
     // Define a schema that will be used to bundle up the multiple pieces of data
     // our formula will return. In the doc this will be displayed as a chip.
@@ -59,7 +59,7 @@ This Pack provides a `Daylight` formula that determines the daylight, sunrise,
     });
 
     // Add a "Daylight" formula to the Pack.
-    pack.addFormula({
+    connector.addFormula({
       name: "Daylight",
       description: "Returns the sunrise and sunset for a given location.",
 

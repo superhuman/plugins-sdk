@@ -1,9 +1,9 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Slack API, using OAuth2.
 // See https://api.slack.com/authentication/oauth-v2
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://slack.com/oauth/v2/authorize",
   tokenUrl: "https://slack.com/api/oauth.v2.access",
@@ -31,5 +31,5 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Slack.
-pack.addNetworkDomain("slack.com");
+// Allow the connector to make requests to Slack.
+connector.addNetworkDomain("slack.com");

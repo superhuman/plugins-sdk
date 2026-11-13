@@ -20,7 +20,7 @@ The basic structure of a column format.
 
 ```ts
 {% raw %}
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "My Column Format",
   instructions: "My description.",
   formulaName: "MyFormula",
@@ -36,11 +36,11 @@ A column format that formats text. This sample displays the text in the cell in 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Adds a column format to the Pack, which will display the contents of the
 // column in reverse order.
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Reversed Text",
   instructions: "Whatever text you enter into this column will be reversed.",
   // The formula "Reverse()" (defined below) will be run on the content of the
@@ -50,7 +50,7 @@ pack.addColumnFormat({
 
 // Adds a formula to this Pack to reverse text. It is used by the column format
 // above, but can also be used on its own anywhere in the doc.
-pack.addFormula({
+connector.addFormula({
   resultType: sdk.ValueType.String,
   name: "Reverse",
   description: "Reverses text.",
@@ -86,11 +86,11 @@ A column format that formats a number as text. This sample displays the number i
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Adds a column format to the Pack, which will display the contents of the
 // column as Roman numerals.
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Roman Numeral",
   instructions: "Displays the number as a Roman numeral.",
   formulaName: "RomanNumeral",
@@ -99,7 +99,7 @@ pack.addColumnFormat({
 // Adds a formula to this Pack to convert a number to a Roman numeral. It is
 // used by the column format above, but can also be used on its own anywhere in
 // the doc.
-pack.addFormula({
+connector.addFormula({
   name: "RomanNumeral",
   description: "Converts a number to the equivalent Roman numeral.",
   parameters: [
@@ -137,11 +137,11 @@ A column format that formats a number as graphic. This sample displays the numbe
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Adds a column format to the Pack, which will display the contents of the
 // column as a progress bar.
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Progress Bar",
   instructions: "Draws a progress bar with the given percentage.",
   formulaName: "ProgressBar",
@@ -150,7 +150,7 @@ pack.addColumnFormat({
 // Adds a formula to this Pack to draw a number as a progress bar. It is used by
 // the column format above, but can also be used on its own anywhere in the
 // doc.
-pack.addFormula({
+connector.addFormula({
   name: "ProgressBar",
   description: "Draws a progress bar.",
   parameters: [
@@ -177,18 +177,18 @@ A column format that formats text as an image. This sample displays the text in 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Column format that displays the cell's value within a random cat image,
 // using the CatPhoto() formula defined above.
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Cat Photo",
   instructions: "Displays the text over the photo of a random cat.",
   formulaName: "CatPhoto",
 });
 
 // Formula that fetches a random cat photo, with various options.
-pack.addFormula({
+connector.addFormula({
   name: "CatPhoto",
   description: "Gets a random cat image.",
   parameters: [
@@ -215,8 +215,8 @@ pack.addFormula({
   },
 });
 
-// Allow the pack to make requests to Cat-as-a-service API.
-pack.addNetworkDomain("cataas.com");
+// Allow the connector to make requests to Cat-as-a-service API.
+connector.addNetworkDomain("cataas.com");
 {% endraw %}
 ```
 ## Rich data (Todoist)
@@ -237,10 +237,10 @@ const TaskUrlPatterns: RegExp[] = [
   new RegExp("^https://todoist.com/showTask\\?id=([0-9]+)"),
 ];
 
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Add a column format that displays a task URL as rich metadata.
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Task",
   // The formula "Task" below will get run on the cell value.
   formulaName: "Task",
@@ -279,7 +279,7 @@ const TaskSchema = sdk.makeObjectSchema({
 // Formula that looks up rich metadata about a task given its URL. This is used
 // by the "Task" column format above, but is also a regular formula that can be
 // used elsewhere.
-pack.addFormula({
+connector.addFormula({
   name: "Task",
   description: "Gets a Todoist task by URL",
   parameters: [
@@ -319,11 +319,11 @@ function extractTaskId(taskUrl: string) {
   throw new sdk.UserVisibleError("Invalid task URL: " + taskUrl);
 }
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 
 // Setup authentication using a Todoist API token.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });

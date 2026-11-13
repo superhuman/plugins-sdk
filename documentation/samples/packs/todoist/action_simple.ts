@@ -1,7 +1,7 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addFormula({
+connector.addFormula({
   name: "AddTask",
   description: "Add a new task.",
   parameters: [
@@ -25,9 +25,9 @@ pack.addFormula({
   },
 });
 
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });
 
-pack.addNetworkDomain("todoist.com");
+connector.addNetworkDomain("todoist.com");

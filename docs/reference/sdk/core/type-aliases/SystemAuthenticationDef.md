@@ -13,6 +13,7 @@ search:
 > **SystemAuthenticationDef** = `AsAuthDef`\<[`HeaderBearerTokenAuthentication`](../interfaces/HeaderBearerTokenAuthentication.md)\> \| `AsAuthDef`\<[`CustomHeaderTokenAuthentication`](../interfaces/CustomHeaderTokenAuthentication.md)\> \| `AsAuthDef`\<[`MultiHeaderTokenAuthentication`](../interfaces/MultiHeaderTokenAuthentication.md)\> \| `AsAuthDef`\<[`QueryParamTokenAuthentication`](../interfaces/QueryParamTokenAuthentication.md)\> \| `AsAuthDef`\<[`MultiQueryParamTokenAuthentication`](../interfaces/MultiQueryParamTokenAuthentication.md)\> \| `AsAuthDef`\<[`WebBasicAuthentication`](../interfaces/WebBasicAuthentication.md)\> \| `AsAuthDef`\<[`AWSAccessKeyAuthentication`](../interfaces/AWSAccessKeyAuthentication.md)\> \| `AsAuthDef`\<[`AWSAssumeRoleAuthentication`](../interfaces/AWSAssumeRoleAuthentication.md)\> \| `AsAuthDef`\<`GoogleServiceAccountAuthentication`\> \| `AsAuthDef`\<[`CustomAuthentication`](../interfaces/CustomAuthentication.md)\> \| `AsAuthDef`\<[`OAuth2ClientCredentialsAuthentication`](../interfaces/OAuth2ClientCredentialsAuthentication.md)\>
 
 The union of supported system authentication definitions. These represent simplified
-configurations a pack developer can specify when calling [PackDefinitionBuilder.setSystemAuthentication](../classes/PackDefinitionBuilder.md#setsystemauthentication)
-when using a pack definition builder. The builder massages these definitions into the form of
-an [SystemAuthentication](SystemAuthentication.md) value, which is the value the platform ultimately cares about.
+configurations a connector developer can specify when calling
+[ConnectorDefinitionBuilder.setSystemAuthentication](../classes/ConnectorDefinitionBuilder.md#setsystemauthentication) when using a connector definition builder. The builder
+massages these definitions into the form of an [SystemAuthentication](SystemAuthentication.md) value, which is the value the platform
+ultimately cares about.

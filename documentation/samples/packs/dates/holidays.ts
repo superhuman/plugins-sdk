@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A schema to represent a holiday.
 const HolidaySchema = sdk.makeObjectSchema({
@@ -16,7 +16,7 @@ const HolidaySchema = sdk.makeObjectSchema({
 });
 
 // Gets the holidays happening in the selected country on a given day.
-pack.addFormula({
+connector.addFormula({
   name: "Holidays",
   description: "Get the holidays (if any) on a given day.",
   parameters: [
@@ -82,9 +82,9 @@ pack.addFormula({
 });
 
 // Calendarific requires an API key as a query parameter.
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.QueryParamToken,
   paramName: "api_key",
 });
 
-pack.addNetworkDomain("calendarific.com");
+connector.addNetworkDomain("calendarific.com");

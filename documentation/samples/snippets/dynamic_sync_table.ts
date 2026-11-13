@@ -1,10 +1,10 @@
 import * as sdk from "@superhuman/plugins-sdk";
 
-const pack = sdk.newPack();
+const connector = sdk.newConnector();
 
 // BEGIN
 
-pack.addDynamicSyncTable({
+connector.addDynamicSyncTable({
   name: "${1:MyThings}",
   description: "${2:My description.}",
   identityName: "${1}",

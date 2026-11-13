@@ -46,13 +46,6 @@ The data in your sync tables won't be available in :superhuman-go: Go unless you
 See the [Indexing guide][indexing] for more information on adding indexing features to your sync table, and the [Testing and monitoring][indexing_monitoring] section to verify it worked.
 
 
-### Add skills where appropriate
-
-While :superhuman-go: can utilize your connector to answer a wide range of user questions and prompts, it may struggle with the more nuanced tasks. In those cases, you should add additional skills to your Pack, providing a custom prompt that better guides the LLM.
-
-See the [Skills guide][skills] for more information on how to add custom skills.
-
-
 ## Adding features for Superhuman Go only
 
 During this process, you may need to adjust your Pack to work better with the LLM. You'll want to avoid breaking the experience for existing users of your Pack, and there are tactics to do so.
@@ -181,7 +174,6 @@ Currently, some Pack features don't work in Superhuman Go.
 
 [indexing]: ../../guides/blocks/sync-tables/indexing/index.md
 [indexing_monitoring]: ../../guides/blocks/sync-tables/indexing/index.md#testing-and-monitoring
-[skills]: ../../guides/blocks/skills.md
 [vararg]: ../../guides/basics/parameters/index.md#vararg
 [two_way_sync]: ../../guides/blocks/sync-tables/two-way.md
 [actions]: ../../guides/blocks/actions.md

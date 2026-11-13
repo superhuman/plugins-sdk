@@ -1,7 +1,7 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addFormula({
+connector.addFormula({
   name: "Upload",
   description: "Uploads an image to Imgur.",
   parameters: [
@@ -36,9 +36,9 @@ pack.addFormula({
   },
 });
 
-pack.addNetworkDomain("imgur.com");
+connector.addNetworkDomain("imgur.com");
 
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.CustomHeaderToken,
   headerName: "Authentication",
   tokenPrefix: "Client-ID",

@@ -1,25 +1,19 @@
 ---
 nav: Overview
-description: A quick introduction to what Packs are and how they work.
+description: A connector is a Pack that brings another application's data and actions into Superhuman.
 cSpell:words: add-ons
 ---
 
-# What are Packs?
+# What are connectors?
 
-_A Pack is an extension that adds new powers to Superhuman._
+A connector is a Pack that extends Superhuman with new capabilities, most often by integrating with an external application or service.
 
-What other platforms call plugins, add-ons, or extensions, we call "Packs". A Pack is how you extend Superhuman with your own code, adding new features or integrating it with other applications.
+What other platforms call plugins, add-ons, or extensions, we call "Packs". A Pack is how you extend Superhuman with your own code. A Pack can also be an [agent][agents], which uses connectors to do work in :superhuman-go: Go. This guide covers connectors.
 
-Anyone can build a Pack, and you can use it yourself, share it with your team, or publish it to the world. Packs are built using our TypeScript SDK, uploaded to our servers, and run within Superhuman products.
+Anyone can build a connector, and you can use it yourself, share it with your team, or publish it to the world. Connectors are built using our TypeScript SDK, uploaded to our servers, and run within Superhuman products.
 
 
-## What can a Pack deliver?
-
-A Pack is a container for the things you want to add to Superhuman, and what your users get depends on what you put inside it. Today a Pack delivers one thing, a connector, and we'll be adding more over time.
-
-### Connectors
-
-A connector extends Superhuman with new capabilities, most often by integrating with an external application or service.
+## Where connectors run {: #connectors }
 
 The following Superhuman products support connectors today:
 
@@ -33,7 +27,6 @@ A connector is assembled from building blocks, which support different features 
 | Building block | What it does | :superhuman-go: Go | :superhuman-docs: Docs |
 | --- | --- | :-: | :-: |
 | [MCP][mcp] | Connect to a hosted MCP server and expose its tools | :material-check: | |
-| [Skills][skills] | Guide the LLM through a specific task or type of question | :material-check: | |
 | [Formulas][formulas] | Calculate a value or pull in data from an external source | :material-check: | :material-check: |
 | [Actions][actions] | Create, update, or delete data in an external application | :material-check: | :material-check: |
 | [Sync tables][sync_tables] | Pull in a large set of records and keep them up to date | :material-check: | :material-check: |
@@ -100,8 +93,8 @@ Either way, there's a library of [sample Packs][samples] covering every major pa
 [actions]: blocks/actions.md
 [column_formats]: blocks/column-formats.md
 [sync_tables]: blocks/sync-tables/index.md
-[skills]: blocks/skills.md
 [mcp]: blocks/mcp.md
 [cards]: blocks/cards.md
 [migration_go]: ../support/migration/superhuman-go.md
 [gallery_packs]: https://coda.io/gallery?filter=packs
+[agents]: ../agents/index.md

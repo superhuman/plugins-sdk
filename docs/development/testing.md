@@ -39,14 +39,14 @@ Here's a very simple example test, using Mocha, for a formula that doesn't make 
 
 ```ts
 import {assert} from 'chai';
+import {connector} from '../pack';
 import {describe} from 'mocha';
 import {executeFormulaFromPackDef} from '@superhuman/plugins-sdk/dist/development';
 import {it} from 'mocha';
-import {pack} from '../pack';
 
 describe('Simple Formula', () => {
   it('executes a formula', async () => {
-    const result = await executeFormulaFromPackDef(pack, 'MyFormula', ['my-param']);
+    const result = await executeFormulaFromPackDef(connector, 'MyFormula', ['my-param']);
     assert.equal(result, 'my-return-value');
   });
 });
@@ -59,12 +59,12 @@ A more interesting example is for a Pack that does make some kind of HTTP reques
 ```ts
 import type {MockExecutionContext} from '@superhuman/plugins-sdk/dist/development';
 import {assert} from 'chai';
+import {connector} from '../pack';
 import {describe} from 'mocha';
 import {executeFormulaFromPackDef} from '@superhuman/plugins-sdk/dist/development';
 import {it} from 'mocha';
 import {newJsonFetchResponse} from '@superhuman/plugins-sdk/dist/development';
 import {newMockExecutionContext} from '@superhuman/plugins-sdk/dist/development';
-import {pack} from '../pack';
 import sinon from 'sinon';
 
 describe('Formula with Fetcher', () => {
@@ -81,7 +81,7 @@ describe('Formula with Fetcher', () => {
     });
     context.fetcher.fetch.returns(fakeResponse);
 
-    const result = await executeFormulaFromPackDef(pack, 'MyFormula', ['my-param'], context);
+    const result = await executeFormulaFromPackDef(connector, 'MyFormula', ['my-param'], context);
 
     assert.equal(result.Name, 'Alice');
     sinon.assert.calledOnce(context.fetcher.fetch);
@@ -96,12 +96,12 @@ Testing a sync is very similar to testing a regular formula. However, you want t
 ```ts
 import type {MockSyncExecutionContext} from '@superhuman/plugins-sdk/dist/development';
 import {assert} from 'chai';
+import {connector} from '../pack';
 import {describe} from 'mocha';
 import {executeSyncFormula} from '@superhuman/plugins-sdk/dist/development';
 import {it} from 'mocha';
 import {newJsonFetchResponse} from '@superhuman/plugins-sdk/dist/development';
 import {newMockSyncExecutionContext} from '@superhuman/plugins-sdk/dist/development';
-import {pack} from '../pack';
 import sinon from 'sinon';
 
 describe('Sync Formula', () => {
@@ -126,7 +126,7 @@ describe('Sync Formula', () => {
       .withArgs(sinon.match({method: 'GET', url: '/api/users?page=2'}))
       .returns(page2Response);
 
-    const result = await executeSyncFormula(pack, 'MySync', [], syncContext);
+    const result = await executeSyncFormula(connector, 'MySync', [], syncContext);
 
     assert.equal(result.result.length, 2);
     assert.equal(result.result[0].Id, 123);
@@ -142,14 +142,14 @@ If you wish to write an end-to-end integration test that actually hits the third
 
 ```ts
 import {assert} from 'chai';
+import {connector} from '../pack';
 import {describe} from 'mocha';
 import {executeFormulaFromPackDef} from '@superhuman/plugins-sdk/dist/development';
 import {it} from 'mocha';
-import {pack} from '../pack';
 
 describe('Formula integration test', () => {
   it('executes the formula', async () => {
-    const result = await executeFormulaFromPackDef(pack, 'MyFormula', ['my-param'], undefined, undefined, {
+    const result = await executeFormulaFromPackDef(connector, 'MyFormula', ['my-param'], undefined, undefined, {
       useRealFetcher: true,
       manifestPath: require.resolve('../pack'),
     });

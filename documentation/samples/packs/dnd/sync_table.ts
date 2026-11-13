@@ -1,11 +1,11 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // How many spells to fetch in each sync formula execution.
 const BATCH_SIZE = 20;
 
 // Allow requests to the DND API.
-pack.addNetworkDomain("dnd5eapi.co");
+connector.addNetworkDomain("dnd5eapi.co");
 
 // Schema that defines the metadata to return for each spell. Shared by the
 // formula, column format, and sync table.
@@ -78,7 +78,7 @@ function formatSpell(spell) {
 }
 
 // A sync table that displays all spells available in the API.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Spells",
   identityName: "Spell",
   schema: SpellSchema,

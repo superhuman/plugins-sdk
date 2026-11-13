@@ -1,6 +1,6 @@
 import * as sdk from "@superhuman/plugins-sdk";
 
-const pack = sdk.newPack();
+const connector = sdk.newConnector();
 
 // BEGIN
-pack.addNetworkDomain("${1:example.com}");
+connector.addNetworkDomain("${1:example.com}");

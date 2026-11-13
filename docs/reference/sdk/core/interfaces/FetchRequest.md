@@ -32,7 +32,7 @@ If you are sending a JSON payload, make sure to call `JSON.stringify()` on the o
 
 A time in seconds that the platform should cache the result of this HTTP request.
 
-Any time that this pack makes the same FetchRequest, a cached value can be returned
+Any time that this connector makes the same FetchRequest, a cached value can be returned
 instead of making the HTTP request. If left unspecified, the platform will automatically
 cache all GET requests for approximately 5 minutes. To disable the default caching,
 set this value to `0`.
@@ -46,7 +46,7 @@ set [FetchRequest.forceCache](#forcecache) to true.
 
 > `optional` **disableAuthentication**: `boolean`
 
-If true, the platform will not apply authentication credentials even if this pack is
+If true, the platform will not apply authentication credentials even if this connector is
 configured to use authentication. This is very rare, but sometimes you may
 wish to make an unauthenticated supporting request as part of a formula implementation.
 
@@ -122,6 +122,6 @@ The HTTP method/verb (e.g. GET or POST).
 > **url**: `string`
 
 The URL to connect to. This is typically an absolute URL, but if your
-pack uses authentication and [BaseAuthentication.requiresEndpointUrl](BaseAuthentication.md#requiresendpointurl) and so has a unique
+connector uses authentication and [BaseAuthentication.requiresEndpointUrl](BaseAuthentication.md#requiresendpointurl) and so has a unique
 endpoint per user account, you may also use a relative URL and the platform will
 apply the user's endpoint automatically.

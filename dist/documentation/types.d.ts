@@ -25,6 +25,7 @@ export interface Example {
     description: string;
     icon?: string;
     category: ExampleCategory;
+    component: ExampleComponent;
     triggerTokens: string[];
     linkData: LinkData;
     contentFile: string;
@@ -36,6 +37,7 @@ export interface CompiledExample {
     description: string;
     icon?: string;
     category: ExampleCategory;
+    component: ExampleComponent;
     triggerTokens: string[];
     exampleFooterLink: string;
     learnMoreLink?: string;
@@ -55,6 +57,10 @@ export declare enum UrlType {
 export declare enum ExampleCategory {
     Topic = "Topic",
     Full = "Full"
+}
+export declare enum ExampleComponent {
+    Connector = "Connector",
+    Agent = "Agent"
 }
 export declare enum ExampleStatus {
     Beta = "Beta"

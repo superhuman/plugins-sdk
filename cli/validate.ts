@@ -80,7 +80,8 @@ export async function handleValidate({
   }
 
   const metadata = compilePackMetadata(manifest);
-  return validateMetadata(metadata, {checkDeprecationWarnings});
+  await validateMetadata(metadata, {checkDeprecationWarnings});
+  print('valid');
 }
 
 export function getConnectorPackIds(tools: AgentTool[]): number[] {
@@ -131,8 +132,20 @@ export async function validateMetadata(
     printAndExit(`${e.message}: \n${validationErrors}`);
   }
 
+  // Runs before the deprecation check, which exits when it finds anything.
+  const groupSizes = new Map<string, number>();
+  for (const tool of metadata.agent?.tools ?? []) {
+    if (tool.type === ToolType.Pack && typeof tool.required === 'object') {
+      groupSizes.set(tool.required.groupName, (groupSizes.get(tool.required.groupName) ?? 0) + 1);
+    }
+  }
+  for (const [groupName, size] of groupSizes) {
+    if (size === 1) {
+      print(`warning: Group "${groupName}" has one connector, so it acts like required: true. Check the group name.`);
+    }
+  }
+
   if (!checkDeprecationWarnings) {
-    print('Pack is valid.');
     return;
   }
 
@@ -143,8 +156,6 @@ export async function validateMetadata(
     const deprecationWarnings = packMetadataValidationError.validationErrors?.map(makeWarningMessage).join('\n');
     printAndExit(`Your Pack is using deprecated properties or features: \n${deprecationWarnings}`, 0);
   }
-
-  print('Pack is valid.');
 }
 
 function makeErrorMessage({path, message}: ValidationError): string {

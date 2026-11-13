@@ -211,7 +211,7 @@ Even if a schema is only used in one formula, declare it separately.
 ```{.ts .yes}
 // Yes
 const MySchema = sdk.makeObjectSchema({ ... });
-pack.addFormula({
+connector.addFormula({
   // ...
   schema: MySchema,
 });
@@ -219,7 +219,7 @@ pack.addFormula({
 
 ```{.ts .no}
 // No
-pack.addFormula({
+connector.addFormula({
   // ...
   schema: sdk.makeObjectSchema({ ... });
 });
@@ -251,7 +251,7 @@ Define functions using the `function` keyword in most cases.
 
 ```{.ts .yes}
 // Yes
-pack.addFormula({
+connector.addFormula({
   // ...
   execute: function([a, b], context) {
     // ...
@@ -261,7 +261,7 @@ pack.addFormula({
 
 ```{.ts .no}
 // No
-pack.addFormula({
+connector.addFormula({
   // ...
   execute: ([a, b], context) => {
     // ...
@@ -269,7 +269,7 @@ pack.addFormula({
 });
 
 // Also no
-pack.addFormula({
+connector.addFormula({
   // ...
   execute([a, b], context) {
     // ...
@@ -291,7 +291,7 @@ The `function` keyword makes it very clear to readers that you are defining a fu
 The order of keys in the formula declaration should be:
 
 ```ts no_lint
-pack.addFormula({
+connector.addFormula({
   name: ...,
   description: ...,
   parameters: ...,

@@ -1,7 +1,7 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addNetworkDomain("gutendex.com");
+connector.addNetworkDomain("gutendex.com");
 
 const AuthorSchema = sdk.makeObjectSchema({
   properties: {
@@ -46,7 +46,7 @@ const BookSchema = sdk.makeObjectSchema({
   ],
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Books",
   description: "Lists books in the collection.",
   identityName: "Book",

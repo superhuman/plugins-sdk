@@ -18,7 +18,7 @@ Dynamic sync tables typically provide a list all of the datasets that the user h
 
 ```ts
 {% raw %}
-pack.addDynamicSyncTable({
+connector.addDynamicSyncTable({
   name: "MyThings",
   description: "My description.",
   identityName: "${1}",
@@ -78,7 +78,7 @@ A sync table that presents a list of URLs to select from. This sample shows resp
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // When listing forms, the maximum to return.
 const MaxForms = 200;
@@ -87,7 +87,7 @@ const MaxForms = 200;
 const PageSize = 100;
 
 // Add a dynamic sync table for form responses.
-pack.addDynamicSyncTable({
+connector.addDynamicSyncTable({
   name: "FormResponses",
   description: "Responses to a form.",
   identityName: "FormResponse",
@@ -338,7 +338,7 @@ function getPropertyValue(answer) {
 }
 
 // Configure per-user authentication, using OAuth2.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   // See: https://developer.typeform.com/get-started/applications/
   authorizationUrl: "https://api.typeform.com/oauth/authorize",
@@ -359,7 +359,7 @@ pack.setUserAuthentication({
 });
 
 // Allow requests to the typeform.com domain.
-pack.addNetworkDomain("typeform.com");
+connector.addNetworkDomain("typeform.com");
 {% endraw %}
 ```
 ## With grouped URL list
@@ -368,7 +368,7 @@ A sync table that presents a list of URLs to select from, grouped into folders. 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // The domain to connect to. Can be swapped for other domains hosting Socrata.
 const Domain = "data.ny.gov";
@@ -438,17 +438,17 @@ const BaseRowSchema = sdk.makeObjectSchema({
 
 
 // Allow requests to the domain.
-pack.addNetworkDomain(Domain);
+connector.addNetworkDomain(Domain);
 
 // Use a system-wide application token to get additional quota.
 // https://dev.socrata.com/docs/app-tokens.html
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.CustomHeaderToken,
   headerName: "X-App-Token",
 });
 
 // A dynamic sync table for the rows of a dataset.
-pack.addDynamicSyncTable({
+connector.addDynamicSyncTable({
   name: "PublicDataset",
   identityName: "DatasetRow",
   entityName: "Row",

@@ -1,12 +1,12 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // When using the fetcher, this is the domain of the API that your pack makes
 // fetcher requests to.
-pack.addNetworkDomain("baconipsum.com");
+connector.addNetworkDomain("baconipsum.com");
 
 // This line adds a new formula to this Pack.
-pack.addFormula({
+connector.addFormula({
   name: "BaconIpsum",
   description: "Returns meat-themed lorem ipsum copy.",
   parameters: [], // No parameters required.

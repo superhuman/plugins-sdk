@@ -18,20 +18,20 @@ image that can only be downloaded with the user's authentication credentials. No
 you can just return an image or file URL from a formula invocation, and if the schema
 indicates that the value represents an attachment, Superhuman Docs will ingest the data at that URL
 and host it from Superhuman Docs. However, if the URL requires authentication, Superhuman Docs will be unable
-to download the data since this ingestion does not happen within the packs execution
+to download the data since this ingestion does not happen within the connector execution
 environment.
 
-The solution is for your pack code to fetch the data at the URL, since the pack
+The solution is for your connector code to fetch the data at the URL, since the connector
 execution environment will apply the user's authentication, and then you can
 stash the downloaded value in `TemporaryBlobStorage`, which will return a temporary
-URL that you can return from the pack. Superhuman Docs will be able to ingest the data from
+URL that you can return from the connector. Superhuman Docs will be able to ingest the data from
 that temporary URL.
 
 Similarly, suppose your formula generates a very large value like a dynamically-generated
-image that you wish to return and have Superhuman Docs render. Pack return values are meant to be
+image that you wish to return and have Superhuman Docs render. Connector return values are meant to be
 fairly small, representing human-readable data. Large values like images are meant to
 be returned as URLs referencing that data. So rather than return the raw image data,
-your pack should use [storeBlob](#storeblob) to upload that large data to temporary storage.
+your connector should use [storeBlob](#storeblob) to upload that large data to temporary storage.
 You will be returned a URL that you can then return with your formula response, and
 Superhuman Docs will ingest the data from that URL into permanent storage.
 

@@ -81,9 +81,9 @@ Now that we've got our API selected and formula designed we're ready to dive int
 
     ```ts
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addFormula({
+    connector.addFormula({
       name: "ToUSD",
       description: "Convert a currency to US dollars.",
       parameters: [
@@ -203,7 +203,7 @@ Now that we've got our API selected and formula designed we're ready to dive int
 
     For security and transparency reasons, the platform requires that all Packs declare which domains they make requests to. Before your Pack will function property you must add that declaration to your code.
 
-    The function `pack.addNetworkDomain` adds a domain to the Pack's declaration. This line can be added anywhere in your code after the boilerplate, but it's usually done at the top of the file.
+    The function `connector.addNetworkDomain` adds a domain to the Pack's declaration. This line can be added anywhere in your code after the boilerplate, but it's usually done at the top of the file.
 
     Your Pack is allowed to access any sub-domains off of this domain, so it's best to select the root domain of the URLs you are making requests to. In this case, use the root domain `er-api.com` instead of narrower API-specific domain of `open.er-api.com`.
 
@@ -212,11 +212,11 @@ Now that we've got our API selected and formula designed we're ready to dive int
 
     ```{.ts hl_lines="4"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addNetworkDomain("er-api.com");
+    connector.addNetworkDomain("er-api.com");
 
-    pack.addFormula({
+    connector.addFormula({
       // ...
     });
     ```
@@ -251,11 +251,11 @@ If everything is working correctly you should get back the currency value conver
 ??? example "View the full code"
     ```ts
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addNetworkDomain("er-api.com");
+    connector.addNetworkDomain("er-api.com");
 
-    pack.addFormula({
+    connector.addFormula({
       name: "ToUSD",
       description: "Convert a currency to US dollars.",
       parameters: [

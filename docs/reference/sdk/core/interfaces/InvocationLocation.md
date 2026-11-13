@@ -36,4 +36,5 @@ The base URL of the platform environment executing this formula. Only for intern
 
 > `optional` **source**: [`InvocationSource`](../enumerations/InvocationSource.md)
 
-The source application that invoked the Pack. Allows the Pack to adjust its functionality based on the context.
+The source application that invoked the connector. Allows the connector to adjust its functionality based on the
+context.

@@ -16,7 +16,7 @@ The basic structure of a formula. This sample takes in a single string parameter
 
 ```ts
 {% raw %}
-pack.addFormula({
+connector.addFormula({
   name: "MyFormula",
   description: "My description.",
   parameters: [
@@ -38,10 +38,10 @@ A formula that returns an image. This sample gets a random cat image with an opt
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Formula that fetches a random cat photo, with various options.
-pack.addFormula({
+connector.addFormula({
   name: "CatPhoto",
   description: "Gets a random cat image.",
   parameters: [
@@ -80,8 +80,8 @@ pack.addFormula({
   },
 });
 
-// Allow the pack to make requests to Cat-as-a-service API.
-pack.addNetworkDomain("cataas.com");
+// Allow the connector to make requests to Cat-as-a-service API.
+connector.addNetworkDomain("cataas.com");
 {% endraw %}
 ```
 ## Rich data result
@@ -90,7 +90,7 @@ A formula that returns rich data (a schema). This sample gets information about 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A schema defining the rich metadata to be returned about each task.
 const TaskSchema = sdk.makeObjectSchema({
@@ -120,7 +120,7 @@ const TaskSchema = sdk.makeObjectSchema({
 });
 
 // Formula that looks up rich metadata about a task given its ID.
-pack.addFormula({
+connector.addFormula({
   name: "Task",
   description: "Gets a Todoist task by ID",
   parameters: [
@@ -148,11 +148,11 @@ pack.addFormula({
   },
 });
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 
 // Setup authentication using a Todoist API token.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });
@@ -164,10 +164,10 @@ A formula that includes examples of how to use it. This sample formats text to l
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Formats text to look like screaming. For example, "Hello" => "HELLO!!!".
-pack.addFormula({
+connector.addFormula({
   name: "Scream",
   description: "Make text uppercase and add exclamation points.",
   parameters: [

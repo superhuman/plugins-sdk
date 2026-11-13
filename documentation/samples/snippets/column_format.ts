@@ -1,10 +1,10 @@
 import * as sdk from "@superhuman/plugins-sdk";
 
-const pack = sdk.newPack();
+const connector = sdk.newConnector();
 
 // BEGIN
 
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "${1:My Column Format}",
   instructions: "${2:My description.}",
   formulaName: "${3:MyFormula}",

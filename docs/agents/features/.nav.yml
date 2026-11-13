@@ -1,0 +1,9 @@
+title: Features
+append_unmatched: true
+nav:
+  - tools.md
+  - triggers.md
+  - screen-annotations.md
+  - knowledge.md
+  - context.md
+  - chat.md

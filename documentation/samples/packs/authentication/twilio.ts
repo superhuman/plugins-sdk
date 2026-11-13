@@ -1,10 +1,10 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Twilio API, using an Account SID and token in
 // an "Authorization: Basic ..." header.
 // See https://www.twilio.com/docs/usage/requests-to-twilio
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.WebBasic,
   instructionsUrl: "https://www.twilio.com/docs/sms/api#sms-api-authentication",
 
@@ -25,5 +25,5 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Twilio.
-pack.addNetworkDomain("twilio.com");
+// Allow the connector to make requests to Twilio.
+connector.addNetworkDomain("twilio.com");

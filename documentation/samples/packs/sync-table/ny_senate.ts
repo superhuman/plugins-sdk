@@ -1,6 +1,6 @@
 import * as sdk from "@superhuman/plugins-sdk";
 
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // How many members to sync in a single execution.
 const MembersPageSize = 1000;
@@ -13,10 +13,10 @@ const OneHourSecs = 60 * 60;
 
 // Allow requests to NY's Open Legislation API.
 // https://legislation.nysenate.gov/static/docs/html/index.html
-pack.addNetworkDomain("nysenate.gov");
+connector.addNetworkDomain("nysenate.gov");
 
 // The API uses an API key in the query parameters.
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.QueryParamToken,
   paramName: "key",
 });
@@ -142,7 +142,7 @@ const DocumentSchema = sdk.makeObjectSchema({
 });
 
 // A sync table of members.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Members",
   description: "Lists the current members of the senate.",
   identityName: "Member",
@@ -196,7 +196,7 @@ pack.addSyncTable({
 });
 
 // A sync table of laws.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Laws",
   description: "Lists the laws on the books.",
   instructions: `
@@ -229,7 +229,7 @@ pack.addSyncTable({
 });
 
 // A sync table of documents.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Documents",
   description: "Lists the documents with a section of the law.",
   identityName: "Document",

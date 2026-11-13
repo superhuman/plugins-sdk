@@ -15,10 +15,10 @@ into the request (the body, URL, headers, or form data) using template replaceme
 required.
 
 Some APIs use non-standard authentication schemes which often require secret credentials to be put in specific places
-in the request URL or request body. Custom authentication supports many of these cases by allowing you as the pack
-author to define one or more secret values that the user or you as the pack author must provide (depending on
-user or system authentication). When constructing a network request, you may indicate where these values should
-be inserted by our fetcher service using the syntax described below (similar to templating engines).
+in the request URL or request body. Custom authentication supports many of these cases by allowing you as the
+connector author to define one or more secret values that the user or you as the connector author must provide
+(depending on user or system authentication). When constructing a network request, you may indicate where these
+values should be inserted by our fetcher service using the syntax described below (similar to templating engines).
 
 {% raw %}
 To insert the credentials, simply put `{{<paramName>-<invocationToken>}}` as a string anywhere in your request,
@@ -36,7 +36,7 @@ token is required for security reasons.
 // authentication configuration with two params:
 // params: [{name: "secretId", description: "Secret id"},
 //          {name: "secretValue", description: "Secret value"}])
-// The user or the pack author will be prompted to specify a value for each
+// The user or the connector author will be prompted to specify a value for each
 // of these when setting up an account.
 // In the `execute` body of your formula, you can specify where those values
 // are inserted in the request using the template replacement syntax shown
@@ -87,8 +87,8 @@ execute: async function([], context) {
 When requiresEndpointUrl is set to true, this should be the root domain that all endpoints share.
 For example, this value would be "example.com" if specific endpoints looked like {custom-subdomain}.example.com.
 
-For packs that make requests to multiple domains (uncommon), this should be the domain within
-[PackVersionDefinition.networkDomains](PackVersionDefinition.md#networkdomains) that this configuration applies to.
+For connectors that make requests to multiple domains (uncommon), this should be the domain within
+[ComponentVersionDefinition.networkDomains](ComponentVersionDefinition.md#networkdomains) that this configuration applies to.
 
 #### Inherited from
 
@@ -118,7 +118,7 @@ with the creating user's Superhuman username.
 
 > `optional` **instructionsUrl**: `string`
 
-A link to a help article or other page with more instructions about how to set up an account for this pack.
+A link to a help article or other page with more instructions about how to set up an account for this connector.
 
 #### Inherited from
 
@@ -130,8 +130,8 @@ A link to a help article or other page with more instructions about how to set u
 
 > `optional` **networkDomain**: `string` \| `string`[]
 
-Which domain(s) should get auth credentials, when a pack is configured with multiple domains.
-Packs configured with only one domain or with requiresEndpointUrl set to true can omit this.
+Which domain(s) should get auth credentials, when a connector is configured with multiple domains.
+Connectors configured with only one domain or with requiresEndpointUrl set to true can omit this.
 
 Using multiple authenticated network domains is uncommon and requires Superhuman approval.
 
@@ -145,7 +145,7 @@ Using multiple authenticated network domains is uncommon and requires Superhuman
 
 > **params**: [`CustomAuthParameter`](CustomAuthParameter.md)[]
 
-An array of parameters that must be provided for new connection accounts to authenticate this pack.
+An array of parameters that must be provided for new connection accounts to authenticate this connector.
 These parameters can then be referenced via the [CustomAuthParameter.name](CustomAuthParameter.md#name) property for template
 replacement inside the constructed network request.
 
@@ -155,8 +155,8 @@ replacement inside the constructed network request.
 
 > `optional` **postSetup**: [`SetEndpoint`](SetEndpoint.md)[]
 
-One or more setup steps to run after the user has set up the account, before completing installation of the pack.
-This is not common.
+One or more setup steps to run after the user has set up the account, before completing installation of the
+connector. This is not common.
 
 #### Inherited from
 
@@ -168,7 +168,7 @@ This is not common.
 
 > `optional` **requiresEndpointUrl**: `boolean`
 
-If true, indicates this pack has a specific endpoint domain for each account, that is used
+If true, indicates this connector has a specific endpoint domain for each account, that is used
 as the basis of HTTP requests. For example, API requests are made to <custom-subdomain>.example.com
 rather than example.com. If true, the user will be prompted to provide their specific endpoint domain
 when creating a new account.

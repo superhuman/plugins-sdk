@@ -1,16 +1,16 @@
 import * as coda from "@superhuman/plugins-sdk";
 
-export const pack = coda.newPack();
+export const connector = coda.newConnector();
 
-pack.addMCPServer({
+connector.addMCPServer({
   name: "Ref_tools",
   endpointUrl: "https://api.ref.tools/mcp",
 });
 
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: coda.AuthenticationType.CustomHeaderToken,
   headerName: "x-ref-api-key",
   instructionsUrl: "https://ref.tools/keys",
 });
 
-pack.addNetworkDomain("ref.tools");
+connector.addNetworkDomain("ref.tools");

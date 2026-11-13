@@ -80,7 +80,8 @@ async function handleValidate({ manifestFile, checkDeprecationWarnings, checkCon
         }
     }
     const metadata = (0, metadata_1.compilePackMetadata)(manifest);
-    return validateMetadata(metadata, { checkDeprecationWarnings });
+    await validateMetadata(metadata, { checkDeprecationWarnings });
+    (0, helpers_6.print)('valid');
 }
 exports.handleValidate = handleValidate;
 function getConnectorPackIds(tools) {
@@ -112,7 +113,7 @@ async function checkAgentConnectorListings(client, packIds) {
 }
 exports.checkAgentConnectorListings = checkAgentConnectorListings;
 async function validateMetadata(metadata, { checkDeprecationWarnings = true } = {}) {
-    var _a, _b;
+    var _a, _b, _c, _d, _e;
     // Since package.json isn't in dist, we grab it from the root directory instead.
     const packageJson = await Promise.resolve(`${(0, helpers_4.isTestCommand)() ? '../package.json' : '../../package.json'}`).then(s => __importStar(require(s)));
     const codaPacksSDKVersion = packageJson.version;
@@ -124,8 +125,19 @@ async function validateMetadata(metadata, { checkDeprecationWarnings = true } = 
         const validationErrors = (_a = packMetadataValidationError.validationErrors) === null || _a === void 0 ? void 0 : _a.map(makeErrorMessage).join('\n');
         (0, helpers_7.printAndExit)(`${e.message}: \n${validationErrors}`);
     }
+    // Runs before the deprecation check, which exits when it finds anything.
+    const groupSizes = new Map();
+    for (const tool of (_c = (_b = metadata.agent) === null || _b === void 0 ? void 0 : _b.tools) !== null && _c !== void 0 ? _c : []) {
+        if (tool.type === types_1.ToolType.Pack && typeof tool.required === 'object') {
+            groupSizes.set(tool.required.groupName, ((_d = groupSizes.get(tool.required.groupName)) !== null && _d !== void 0 ? _d : 0) + 1);
+        }
+    }
+    for (const [groupName, size] of groupSizes) {
+        if (size === 1) {
+            (0, helpers_6.print)(`warning: Group "${groupName}" has one connector, so it acts like required: true. Check the group name.`);
+        }
+    }
     if (!checkDeprecationWarnings) {
-        (0, helpers_6.print)('Pack is valid.');
         return;
     }
     try {
@@ -133,10 +145,9 @@ async function validateMetadata(metadata, { checkDeprecationWarnings = true } = 
     }
     catch (e) {
         const packMetadataValidationError = e;
-        const deprecationWarnings = (_b = packMetadataValidationError.validationErrors) === null || _b === void 0 ? void 0 : _b.map(makeWarningMessage).join('\n');
+        const deprecationWarnings = (_e = packMetadataValidationError.validationErrors) === null || _e === void 0 ? void 0 : _e.map(makeWarningMessage).join('\n');
         (0, helpers_7.printAndExit)(`Your Pack is using deprecated properties or features: \n${deprecationWarnings}`, 0);
     }
-    (0, helpers_6.print)('Pack is valid.');
 }
 exports.validateMetadata = validateMetadata;
 function makeErrorMessage({ path, message }) {

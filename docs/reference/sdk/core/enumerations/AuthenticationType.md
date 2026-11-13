@@ -10,7 +10,7 @@ search:
 
 # Enumeration: AuthenticationType
 
-Authentication types supported by Packs.
+Authentication types supported by Connectors.
 
 ## See
 
@@ -121,7 +121,7 @@ Authenticate using multiple tokens, each passed as a different URL parameter, e.
 
 > **None**: `"None"`
 
-Indicates this pack does not use authentication. You may also omit an authentication declaration entirely.
+Indicates this connector does not use authentication. You may also omit an authentication declaration entirely.
 
 ***
 

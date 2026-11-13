@@ -1,6 +1,7 @@
 import type {AutocompleteSnippet} from '../types';
 import type {Example} from '../types';
 import {ExampleCategory} from '../types';
+import {ExampleComponent} from '../types';
 import {UrlType} from '../types';
 
 export const Snippets: AutocompleteSnippet[] = [
@@ -265,11 +266,6 @@ export const Snippets: AutocompleteSnippet[] = [
     codeFile: './samples/snippets/fetcher/post.ts',
   },
   {
-    triggerTokens: ['addSkill', 'Skill'],
-    content: 'Adds a skill to guide the LLM.',
-    codeFile: './samples/snippets/skill/add_skill.ts',
-  },
-  {
     triggerTokens: ['addMcpServer', 'McpServer', 'MCP'],
     content: 'Adds an MCP server.',
     codeFile: './samples/snippets/mcp/add_mcp_server.ts',
@@ -282,6 +278,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to create a column format.',
     icon: 'material/table-column',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: ['addColumnFormat'],
     contentFile: './samples/packs/column-format/README.md',
     linkData: {
@@ -330,6 +327,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to authenticate with an API.',
     icon: 'material/account-key',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: ['setSystemAuthentication', 'setUserAuthentication'],
     contentFile: './samples/packs/authentication/README.md',
     linkData: {
@@ -421,6 +419,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to create a dynamic sync table.',
     icon: 'material/cloud-sync-outline',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: ['addDynamicSyncTable'],
     contentFile: './samples/packs/dynamic-sync-table/README.md',
     linkData: {
@@ -452,6 +451,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to create a formula.',
     icon: 'material/function',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: ['addFormula'],
     contentFile: './samples/packs/formula/README.md',
     linkData: {
@@ -490,6 +490,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to create an action formula, for use in a button or automation.',
     icon: 'material/cursor-default-click-outline',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: ['isAction'],
     contentFile: './samples/packs/action/README.md',
     linkData: {
@@ -526,6 +527,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to accept parameters from the user.',
     icon: 'material/format-textbox',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: ['makeParameter'],
     contentFile: './samples/packs/parameter/README.md',
     linkData: {
@@ -614,6 +616,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to provide autocomplete options for a parameter.',
     icon: 'material/form-dropdown',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: ['autocomplete'],
     contentFile: './samples/packs/autocomplete/README.md',
     linkData: {
@@ -652,6 +655,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to create a sync table.',
     icon: 'material/table-sync',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: ['addSyncTable'],
     contentFile: './samples/packs/sync-table/README.md',
     linkData: {
@@ -700,6 +704,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to fetch data from an external source.',
     icon: 'fontawesome/solid/cloud-arrow-down',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: ['fetch'],
     contentFile: './samples/packs/fetcher/README.md',
     linkData: {
@@ -746,6 +751,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to return values of various data types.',
     icon: 'material/order-alphabetical-ascending',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: ['resultType', 'type'],
     contentFile: './samples/packs/data-type/README.md',
     linkData: {
@@ -826,6 +832,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to define a schema, to represent rich objects.',
     icon: 'material/format-list-group',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: ['makeSchema', 'makeObjectSchema'],
     contentFile: './samples/packs/schema/README.md',
     linkData: {
@@ -863,6 +870,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to work with dates and times.',
     icon: 'material/calendar-clock',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: ['Date', 'Time', 'DateTime'],
     contentFile: './samples/packs/dates/README.md',
     linkData: {
@@ -906,6 +914,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to work with images and files.',
     icon: 'material/image',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: ['ImageReference', 'ImageAttachment', 'Image', 'ImageArray', 'File', 'Attachment'],
     contentFile: './samples/packs/image/README.md',
     linkData: {
@@ -971,6 +980,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to configure a Pack to connect to various popular APIs.',
     icon: 'material/api',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: [],
     contentFile: './samples/packs/apis/README.md',
     linkData: {
@@ -1099,6 +1109,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to create cards to preview content.',
     icon: 'material/card-text',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: [],
     contentFile: './samples/packs/card/README.md',
     linkData: {
@@ -1136,6 +1147,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to create sync tables with editable values.',
     icon: 'material/card-text',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: [],
     contentFile: './samples/packs/two-way/README.md',
     linkData: {
@@ -1174,6 +1186,7 @@ export const Examples: Example[] = [
     description: 'Samples that show how to incorporate tools from an MCP server.',
     icon: 'material/connection',
     category: ExampleCategory.Topic,
+    component: ExampleComponent.Connector,
     triggerTokens: [],
     contentFile: './samples/packs/mcp/README.md',
     linkData: {
@@ -1215,39 +1228,11 @@ export const Examples: Example[] = [
     ],
   },
   {
-    name: 'Skills',
-    description: 'Samples that show how to define a skill.',
-    icon: 'material/school-outline',
-    category: ExampleCategory.Topic,
-    triggerTokens: [],
-    contentFile: './samples/packs/skill/README.md',
-    linkData: {
-      type: UrlType.SdkReferencePath,
-      url: '/guides/blocks/skills',
-    },
-    exampleSnippets: [
-      {
-        name: 'Template',
-        content: 'The basic structure of a skill.',
-        codeFile: './samples/snippets/skill/add_skill.ts',
-      },
-      {
-        name: 'With MCP tools',
-        content: 'A skill that orchestrates several MCP tools to perform a task. This sample uses the Alpha Vantage MCP server.',
-        codeFile: './samples/packs/skill/alpha_vantage.ts',
-      },
-      {
-        name: 'With Pack tools',
-        content: 'A skill that uses Pack tools to perform a task. This sample uses the ExchangeRate-API and the screen annotation tool.',
-        codeFile: './samples/packs/skill/currency.ts',
-      },
-    ],
-  },
-  {
     name: 'Hello World',
     description: 'A simple "Hello World" Pack.',
     icon: 'material/hand-wave-outline',
     category: ExampleCategory.Full,
+    component: ExampleComponent.Connector,
     triggerTokens: [],
     contentFile: './samples/packs/hello_world/README.md',
     linkData: {
@@ -1266,6 +1251,7 @@ export const Examples: Example[] = [
     description: 'A Pack that fetches data about the expected hours of daylight at a location.',
     icon: 'fontawesome/regular/sun',
     category: ExampleCategory.Full,
+    component: ExampleComponent.Connector,
     triggerTokens: [],
     contentFile: './samples/packs/daylight/README.md',
     linkData: {
@@ -1284,6 +1270,7 @@ export const Examples: Example[] = [
     description: 'A Pack that provides various math operations.',
     icon: 'material/calculator-variant',
     category: ExampleCategory.Full,
+    component: ExampleComponent.Connector,
     triggerTokens: [],
     contentFile: './samples/packs/math/README.md',
     linkData: {
@@ -1302,6 +1289,7 @@ export const Examples: Example[] = [
     description: 'A Pack that integrates with the application Todoist.',
     icon: 'octicons/tasklist-16',
     category: ExampleCategory.Full,
+    component: ExampleComponent.Connector,
     triggerTokens: [],
     contentFile: './samples/packs/todoist/README.md',
     linkData: {
@@ -1320,6 +1308,7 @@ export const Examples: Example[] = [
     description: 'A Pack that generates images of cats.',
     icon: 'fontawesome/solid/cat',
     category: ExampleCategory.Full,
+    component: ExampleComponent.Connector,
     triggerTokens: [],
     contentFile: './samples/packs/cats/README.md',
     linkData: {
@@ -1338,6 +1327,7 @@ export const Examples: Example[] = [
     description: 'A Pack that uses an API to retrieve information about the game Dungeons & Dragons.',
     icon: 'fontawesome/solid/dragon',
     category: ExampleCategory.Full,
+    component: ExampleComponent.Connector,
     triggerTokens: [],
     contentFile: './samples/packs/dnd/README.md',
     linkData: {
@@ -1356,6 +1346,7 @@ export const Examples: Example[] = [
     description: 'A Pack that integrates with GitHub.',
     icon: 'fontawesome/brands/github',
     category: ExampleCategory.Full,
+    component: ExampleComponent.Connector,
     triggerTokens: [],
     contentFile: './samples/packs/github/README.md',
     linkData: {
@@ -1366,6 +1357,50 @@ export const Examples: Example[] = [
         name: 'pack.ts',
         content: '',
         codeFile: './samples/packs/github/full.ts',
+      },
+    ],
+  },
+  {
+    name: 'Decision log',
+    description: 'An agent that logs team decisions in a doc.',
+    icon: 'material/notebook-outline',
+    category: ExampleCategory.Full,
+    component: ExampleComponent.Agent,
+    triggerTokens: [],
+    contentFile: './samples/packs/agents/decision_log/README.md',
+    linkData: {
+      type: UrlType.SamplePage,
+    },
+    exampleSnippets: [
+      {
+        name: 'pack.ts',
+        content: '',
+        codeFile: './samples/packs/agents/decision_log/decision_log.ts',
+      },
+    ],
+  },
+  {
+    name: 'Routines',
+    description: 'Allow an agent to run automatically as the user works.',
+    icon: 'material/repeat',
+    category: ExampleCategory.Topic,
+    component: ExampleComponent.Agent,
+    triggerTokens: ['addDefaultRoutine'],
+    contentFile: './samples/packs/agents/routines/README.md',
+    linkData: {
+      type: UrlType.SdkReferencePath,
+      url: '/agents/features/triggers',
+    },
+    exampleSnippets: [
+      {
+        name: 'While writing',
+        content: 'A while-writing routine that comments when a proposed date falls on a holiday.',
+        codeFile: './samples/packs/agents/routines/holiday_conflicts.ts',
+      },
+      {
+        name: 'Schedule',
+        content: 'A schedule routine that summarizes the past week from GitHub and Jira.',
+        codeFile: './samples/packs/agents/routines/monday_standup.ts',
       },
     ],
   },

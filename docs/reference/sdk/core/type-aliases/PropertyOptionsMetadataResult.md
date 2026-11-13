@@ -20,4 +20,4 @@ is about 5 minutes, if unspecified.
 
 | Type Parameter |
 | ------ |
-| `ResultT` *extends* [`PackFormulaResult`](PackFormulaResult.md)[] |
+| `ResultT` *extends* [`FormulaResult`](FormulaResult.md)[] |

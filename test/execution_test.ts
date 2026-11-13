@@ -1,9 +1,11 @@
 import {testHelper} from './test_helper';
+import type {ArraySchema} from '../schema';
 import {AuthenticationType} from '../types';
 import type {ExecutionContext} from '../api';
 import type {Formula} from '../api';
 import {FormulaType} from '../runtime/types';
 import type {GenericExecuteGetPermissionsRequest} from '../api';
+import type {GenericObjectSchema} from '../schema';
 import type {GenericSyncUpdate} from '../api';
 import {MetadataFormulaType} from '../runtime/types';
 import type {PackDefinitionBuilder} from '../builder';
@@ -23,6 +25,7 @@ import {executeFormulaOrSyncWithVM} from '../testing/execution';
 import {executeMetadataFormula} from '../testing/execution';
 import {executeSyncFormula} from '../testing/execution';
 import {manifest as fakePack} from './packs/fake';
+import {findAndExecutePackFunction} from '../runtime/thunk/thunk';
 import * as helpers from '../testing/helpers';
 import {makeBooleanParameter} from '../api';
 import {makeFormulaSpec} from '../testing/execution';
@@ -121,6 +124,101 @@ describe('Execution', () => {
       bundlePath,
     });
     assert.equal(result, 25);
+  });
+
+  it('hydrates legacy sync schema identities before connector code executes in the VM', async () => {
+    const schema = {
+      type: ValueType.Object,
+      identity: {name: 'Root', packId: 42},
+      properties: {
+        original_name: {
+          type: ValueType.Array,
+          items: {type: ValueType.Object, identity: {name: 'Nested', packId: 7}, properties: {}},
+        },
+      },
+    } as Schema;
+    const before = JSON.stringify(schema);
+    const result = await executeFormulaOrSyncWithVM({
+      formulaName: 'SyncSchema',
+      params: [],
+      bundlePath,
+      executionContext: newMockSyncExecutionContext({
+        sync: {schema: {type: ValueType.Array, items: schema}, dynamicUrl: 'url'},
+      }),
+    });
+    assert.deepEqual(JSON.parse(result), {
+      dynamicUrl: 'url',
+      schema: {
+        type: ValueType.Array,
+        items: {
+          ...schema,
+          identity: {name: 'Root', packId: 42, connectorId: 42},
+          properties: {
+            original_name: {
+              type: ValueType.Array,
+              items: {type: ValueType.Object, identity: {name: 'Nested', packId: 7, connectorId: 7}, properties: {}},
+            },
+          },
+        },
+      },
+    });
+    assert.equal(JSON.stringify(schema), before);
+  });
+
+  it('mirrors identity aliases from raw SyncGetSchema callbacks', async () => {
+    const schema = {
+      type: ValueType.Object,
+      identity: {name: 'Other', connectorId: 42, packId: 'ignored'},
+      properties: {},
+    };
+    for (const output of [schema, {type: ValueType.Array, items: schema}]) {
+      const result = await findAndExecutePackFunction({
+        shouldWrapError: false,
+        params: [undefined, undefined],
+        formulaSpec: {
+          type: FormulaType.Metadata,
+          metadataFormulaType: MetadataFormulaType.SyncGetSchema,
+          syncTableName: 'Students',
+        },
+        manifest: createFakePack({
+          syncTables: [
+            {
+              ...fakePack.syncTables![0],
+              getSchema: makeMetadataFormula(async () => output as unknown as GenericObjectSchema | ArraySchema),
+            },
+          ],
+        }),
+        executionContext: newMockSyncExecutionContext(),
+      });
+      const expectedSchema = {...schema, identity: {name: 'Other', connectorId: 42, packId: 42}};
+      assert.deepEqual(
+        result,
+        output.type === ValueType.Array ? {type: ValueType.Array, items: expectedSchema} : expectedSchema,
+      );
+    }
+    assert.equal(schema.identity.packId, 'ignored');
+  });
+
+  it('returns an empty schema instead of throwing when a raw SyncGetSchema callback returns null', async () => {
+    const result = await findAndExecutePackFunction({
+      shouldWrapError: false,
+      params: [undefined, undefined],
+      formulaSpec: {
+        type: FormulaType.Metadata,
+        metadataFormulaType: MetadataFormulaType.SyncGetSchema,
+        syncTableName: 'Students',
+      },
+      manifest: createFakePack({
+        syncTables: [
+          {
+            ...fakePack.syncTables![0],
+            getSchema: makeMetadataFormula(async () => null as unknown as ArraySchema),
+          },
+        ],
+      }),
+      executionContext: newMockSyncExecutionContext(),
+    });
+    assert.deepEqual(result, {});
   });
 
   it('executes a sync formula by name with VM', async () => {

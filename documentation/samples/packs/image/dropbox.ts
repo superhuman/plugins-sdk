@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Schema defining the fields to sync for each file.
 const FileSchema = sdk.makeObjectSchema({
@@ -25,7 +25,7 @@ const FileSchema = sdk.makeObjectSchema({
 });
 
 // Sync table for files.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Files",
   identityName: "File",
   schema: FileSchema,
@@ -182,7 +182,7 @@ async function getFileUrls(fileIds, context: sdk.ExecutionContext):
 }
 
 // Set per-user authentication using Dropbox's OAuth2.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://www.dropbox.com/oauth2/authorize",
   tokenUrl: "https://api.dropbox.com/oauth2/token",
@@ -193,4 +193,4 @@ pack.setUserAuthentication({
 });
 
 // Allow access to the Dropbox domain.
-pack.addNetworkDomain("dropboxapi.com");
+connector.addNetworkDomain("dropboxapi.com");

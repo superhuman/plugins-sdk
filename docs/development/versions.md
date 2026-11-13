@@ -27,8 +27,8 @@ By default version numbers are automatically generated for you, as a set of incr
 It is possible to manually set the version numbers, by calling the `setVersion()` method in your code:
 
 ```ts
-export const pack = sdk.newPack();
-pack.setVersion("1.0.5");
+export const connector = sdk.newConnector();
+connector.setVersion("1.0.5");
 ```
 
 There are some restrictions to the version numbers you can select however:

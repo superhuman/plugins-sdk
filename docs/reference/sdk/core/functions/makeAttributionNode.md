@@ -12,7 +12,7 @@ search:
 
 > **makeAttributionNode**\<`T`\>(`node`): `T`
 
-A helper for constructing attribution text, links, or images that render along with a Pack value.
+A helper for constructing attribution text, links, or images that render along with a connector value.
 
 Many APIs have licensing requirements that ask for specific attribution to be included
 when using their data. For example, a stock photo API may require attribution text

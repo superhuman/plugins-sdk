@@ -37,7 +37,7 @@ How long formulas running with the same values should cache their results for.
 
 #### Inherited from
 
-[`SyncFormulaDef`](SyncFormulaDef.md).[`cacheTtlSecs`](SyncFormulaDef.md#cachettlsecs)
+[`BaseFormulaDef`](BaseFormulaDef.md).[`cacheTtlSecs`](BaseFormulaDef.md#cachettlsecs)
 
 ***
 
@@ -49,7 +49,7 @@ Does this formula require a connection (aka an account)?
 
 #### Inherited from
 
-[`SyncFormulaDef`](SyncFormulaDef.md).[`connectionRequirement`](SyncFormulaDef.md#connectionrequirement)
+[`BaseFormulaDef`](BaseFormulaDef.md).[`connectionRequirement`](BaseFormulaDef.md#connectionrequirement)
 
 ***
 
@@ -61,7 +61,7 @@ A brief description of what the formula does.
 
 #### Inherited from
 
-[`SyncFormulaDef`](SyncFormulaDef.md).[`description`](SyncFormulaDef.md#description)
+[`BaseFormulaDef`](BaseFormulaDef.md).[`description`](BaseFormulaDef.md#description)
 
 ***
 
@@ -73,11 +73,11 @@ Sample inputs and outputs demonstrating usage of this formula.
 
 #### params
 
-> **params**: ([`PackFormulaValue`](../type-aliases/PackFormulaValue.md) \| `undefined`)[]
+> **params**: ([`FormulaValue`](../type-aliases/FormulaValue.md) \| `undefined`)[]
 
 #### result
 
-> **result**: [`PackFormulaResult`](../type-aliases/PackFormulaResult.md)
+> **result**: [`FormulaResult`](../type-aliases/FormulaResult.md)
 
 #### Inherited from
 
@@ -89,16 +89,16 @@ Sample inputs and outputs demonstrating usage of this formula.
 
 > `readonly` `optional` **extraOAuthScopes**: `string`[]
 
-OAuth scopes that the formula needs that weren't requested in the pack's overall authentication
-config. For example, a Slack pack can have one formula that needs admin privileges, but non-admins
-can use the bulk of the pack without those privileges. The platform will give users help in understanding
+OAuth scopes that the formula needs that weren't requested in the connector's overall authentication
+config. For example, a Slack connector can have one formula that needs admin privileges, but non-admins
+can use the bulk of the connector without those privileges. The platform will give users help in understanding
 that they need additional authentication to use a formula with extra OAuth scopes. Note that
-these scopes will always be requested in addition to the default scopes for the pack,
+these scopes will always be requested in addition to the default scopes for the connector,
 so an end user must have both sets of permissions.
 
 #### Inherited from
 
-[`SyncFormulaDef`](SyncFormulaDef.md).[`extraOAuthScopes`](SyncFormulaDef.md#extraoauthscopes)
+[`BaseFormulaDef`](BaseFormulaDef.md).[`extraOAuthScopes`](BaseFormulaDef.md#extraoauthscopes)
 
 ***
 
@@ -110,7 +110,7 @@ Instructions for LLMs to use the formula, overrides the description for LLMs if 
 
 #### Inherited from
 
-[`SyncFormulaDef`](SyncFormulaDef.md).[`instructions`](SyncFormulaDef.md#instructions)
+[`BaseFormulaDef`](BaseFormulaDef.md).[`instructions`](BaseFormulaDef.md#instructions)
 
 ***
 
@@ -123,7 +123,7 @@ Actions are presented as buttons in the Superhuman Docs UI.
 
 #### Inherited from
 
-[`SyncFormulaDef`](SyncFormulaDef.md).[`isAction`](SyncFormulaDef.md#isaction)
+[`BaseFormulaDef`](BaseFormulaDef.md).[`isAction`](BaseFormulaDef.md#isaction)
 
 ***
 
@@ -136,7 +136,7 @@ The formula can still be invoked by manually typing its full name.
 
 #### Inherited from
 
-[`SyncFormulaDef`](SyncFormulaDef.md).[`isExperimental`](SyncFormulaDef.md#isexperimental)
+[`BaseFormulaDef`](BaseFormulaDef.md).[`isExperimental`](BaseFormulaDef.md#isexperimental)
 
 ***
 
@@ -145,11 +145,11 @@ The formula can still be invoked by manually typing its full name.
 > `readonly` `optional` **isSystem**: `boolean`
 
 Whether this is a formula that will be used internally and not exposed directly to users.
-Not for use by packs that are not Superhuman-authored.
+Not for use by connectors that are not Superhuman-authored.
 
 #### Inherited from
 
-[`SyncFormulaDef`](SyncFormulaDef.md).[`isSystem`](SyncFormulaDef.md#issystem)
+[`BaseFormulaDef`](BaseFormulaDef.md).[`isSystem`](BaseFormulaDef.md#issystem)
 
 ***
 
@@ -161,7 +161,7 @@ The name of the formula, used to invoke it.
 
 #### Inherited from
 
-[`SyncFormulaDef`](SyncFormulaDef.md).[`name`](SyncFormulaDef.md#name)
+[`BaseFormulaDef`](BaseFormulaDef.md).[`name`](BaseFormulaDef.md#name)
 
 ***
 
@@ -175,7 +175,7 @@ use `isAction` and `connectionRequirement` instead
 
 #### Inherited from
 
-[`SyncFormulaDef`](SyncFormulaDef.md).[`network`](SyncFormulaDef.md#network)
+[`BaseFormulaDef`](BaseFormulaDef.md).[`network`](BaseFormulaDef.md#network)
 
 ***
 

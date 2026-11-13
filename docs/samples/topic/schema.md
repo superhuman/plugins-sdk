@@ -33,7 +33,7 @@ An object schema used by a formula. This sample defines the schema for informati
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Define a schema for the information about the daylight at a given location.
 const SunSchema = sdk.makeObjectSchema({
@@ -65,7 +65,7 @@ An object schema used by a sync table. This sample defines the schema for the in
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Schema that defines a spell object.
 let SpellSchema = sdk.makeObjectSchema({
@@ -132,7 +132,7 @@ An object schema used by a sync table, that includes a row reference to itself. 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A reference to a synced Task. Usually you can use
 // `sdk.makeReferenceSchemaFromObjectSchema` to generate these from the primary

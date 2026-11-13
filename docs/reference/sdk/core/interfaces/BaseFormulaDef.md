@@ -69,11 +69,11 @@ Sample inputs and outputs demonstrating usage of this formula.
 
 #### params
 
-> **params**: ([`PackFormulaValue`](../type-aliases/PackFormulaValue.md) \| `undefined`)[]
+> **params**: ([`FormulaValue`](../type-aliases/FormulaValue.md) \| `undefined`)[]
 
 #### result
 
-> **result**: [`PackFormulaResult`](../type-aliases/PackFormulaResult.md)
+> **result**: [`FormulaResult`](../type-aliases/FormulaResult.md)
 
 #### Inherited from
 
@@ -85,11 +85,11 @@ Sample inputs and outputs demonstrating usage of this formula.
 
 > `readonly` `optional` **extraOAuthScopes**: `string`[]
 
-OAuth scopes that the formula needs that weren't requested in the pack's overall authentication
-config. For example, a Slack pack can have one formula that needs admin privileges, but non-admins
-can use the bulk of the pack without those privileges. The platform will give users help in understanding
+OAuth scopes that the formula needs that weren't requested in the connector's overall authentication
+config. For example, a Slack connector can have one formula that needs admin privileges, but non-admins
+can use the bulk of the connector without those privileges. The platform will give users help in understanding
 that they need additional authentication to use a formula with extra OAuth scopes. Note that
-these scopes will always be requested in addition to the default scopes for the pack,
+these scopes will always be requested in addition to the default scopes for the connector,
 so an end user must have both sets of permissions.
 
 #### Inherited from
@@ -141,7 +141,7 @@ The formula can still be invoked by manually typing its full name.
 > `readonly` `optional` **isSystem**: `boolean`
 
 Whether this is a formula that will be used internally and not exposed directly to users.
-Not for use by packs that are not Superhuman-authored.
+Not for use by connectors that are not Superhuman-authored.
 
 #### Inherited from
 

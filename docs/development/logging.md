@@ -1,10 +1,10 @@
 ---
-description: How to view and use logs to monitor and debug your connectors.
+description: How to view and use logs to monitor and debug your connectors and agents.
 ---
 
 # Logging
 
-Logs are the primary way to debug and troubleshoot your connectors once they are running. Depending on what you're building and where it runs, there are a few different kinds of logs available.
+Logs are the primary way to debug and troubleshoot your connectors and agents once they are running. Depending on what you're building and where it runs, there are a few different kinds of logs available.
 
 Viewing any of these logs requires **Pack admin** or **Can test** privileges on the underlying Pack. The entries you can see are scoped to a container.
 
@@ -12,6 +12,31 @@ Viewing any of these logs requires **Pack admin** or **Can test** privileges on 
 - **:superhuman-docs: Docs** - The container is the document, so you'll see entries from activity in a document you have access to, even if someone else triggered it.
 
 Log entries are kept for approximately two weeks, after which they are no longer available.
+
+
+## Agent logs
+
+Agent logs contain information about each time the agent ran, but only for your own sessions (not other users). They include the context given to the model, the actions it took, and the responses it produced. 
+
+To open the agent logs:
+
+1.  Open the [agent's settings][navigation_agent_go]{ data-preview }.
+1.  Click **Session logs**.
+
+The drawer lists recent runs. Expand an **Agent Execution** entry and click **Show agent runtime details** to inspect that run.
+
+{{screenshot("images/agent_session_logs.png", "Session logs listing recent agent runs")}}
+
+These logs can also be accessed using the CLI:
+
+```sh
+npx packs agent logs pack.ts
+```
+
+The agent logs include tool calls, but only the inputs and outputs. For more detailed logs about those tool calls, including the requests they made, check the [connector logs](#connector-logs) for those connectors.
+
+!!! warning "While-writing checks are quiet until they match"
+    A [while-writing trigger][while_writing_trigger] evaluates its `condition` as the user types. Checks that don't match are not logged. Once the condition matches and the agent runs, that run appears in the logs.
 
 
 ## Connector logs
@@ -152,6 +177,8 @@ Search results are no longer grouped by invocation, but instead a flat list of e
 [cli_logging]: cli.md#debugging-locally
 [fetcher_headers]: ../guides/basics/fetcher.md#headers
 [indexing]: ../guides/blocks/sync-tables/indexing/index.md
+[while_writing_trigger]: ../agents/features/triggers.md#while-writing
+[navigation_agent_go]: ../support/navigation.md#agent-go
 [navigation_connector_go]: ../support/navigation.md#connector-go
 [navigation_connector_maker_tools]: ../support/navigation.md#connector-maker-tools
 [navigation_connector_panel]: ../support/navigation.md#connector-panel

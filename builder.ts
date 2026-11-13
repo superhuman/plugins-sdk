@@ -8,7 +8,7 @@ import type {AllowedAuthentication} from './types';
 import type {AllowedAuthenticationDef} from './types';
 import type {Authentication} from './types';
 import {AuthenticationType} from './types';
-import type {BasicPackDefinition} from './types';
+import type {BasicComponentDefinition} from './types';
 import {ConnectionRequirement} from './api_types';
 import type {DeepReadonly} from './type_utils';
 import type {DefaultTriggerDefinition} from './types';
@@ -59,6 +59,7 @@ import {wrapMetadataFunction} from './api';
 
 /**
  * Creates a new skeleton connector definition that can be added to.
+ * Returns a {@link PackDefinitionBuilder} for compatibility. Use as a {@link ConnectorDefinitionBuilder}.
  *
  * @example
  * ```
@@ -98,8 +99,8 @@ export function newPack(
  *
  * @example
  * ```
- * export const pack = newAgent();
- * pack.setInstructions('You help a team run async standups. Keep replies short.');
+ * export const agent = newAgent();
+ * agent.setInstructions('You help a team run async standups. Keep replies short.');
  * ```
  *
  * @internal
@@ -110,19 +111,19 @@ export function newAgent(): AgentDefinitionBuilder {
 }
 
 /**
- * Fields and methods shared by {@link PackDefinitionBuilder} and {@link AgentDefinitionBuilder}.
+ * Fields and methods shared by {@link ConnectorDefinitionBuilder} and {@link AgentDefinitionBuilder}.
  *
  * @internal
  * @hidden
  */
 export class BaseDefinitionBuilder {
   /**
-   * See {@link PackVersionDefinition.version}.
+   * See {@link ComponentVersionDefinition.version}.
    */
   version?: string;
 
   /**
-   * Sets the semantic version of this pack version, e.g. `'1.2.3'`.
+   * Sets the semantic version of this definition version, e.g. `'1.2.3'`.
    *
    * This is optional, and you only need to provide a version if you are manually doing
    * semantic versioning, or using the CLI. If using the web editor, you can omit this
@@ -131,7 +132,7 @@ export class BaseDefinitionBuilder {
    *
    * @example
    * ```
-   * pack.setVersion('1.2.3');
+   * connector.setVersion('1.2.3');
    * ```
    */
   setVersion(version: string): this {
@@ -140,55 +141,55 @@ export class BaseDefinitionBuilder {
   }
 }
 
-/**
- * A class that assists in constructing a pack definition. Use {@link newConnector} to create one.
- */
-export class PackDefinitionBuilder extends BaseDefinitionBuilder implements BasicPackDefinition {
+/** A class that assists in constructing a connector definition. Use {@link newConnector} to create one. */
+export class ConnectorDefinitionBuilder extends BaseDefinitionBuilder implements BasicComponentDefinition {
   /**
-   * See {@link PackVersionDefinition.formulas}.
+   * See {@link ComponentVersionDefinition.formulas}.
    */
   formulas: Formula[];
   /**
-   * See {@link PackVersionDefinition.formats}.
+   * See {@link ComponentVersionDefinition.formats}.
    */
   formats: Format[];
   /**
-   * See {@link PackVersionDefinition.syncTables}.
+   * See {@link ComponentVersionDefinition.syncTables}.
    */
   syncTables: SyncTable[];
   /**
-   * See {@link PackVersionDefinition.skills}.
+   * See {@link ComponentVersionDefinition.skills}.
+   *
+   * @deprecated Skills are no longer used. Connectors should not set tools.
    */
   skills: Skill[];
   /**
-   * See {@link PackVersionDefinition.skillEntrypoints}.
+   * See {@link ComponentVersionDefinition.skillEntrypoints}.
    * @deprecated No longer used, now that agents are connectors.
    */
   skillEntrypoints?: SkillEntrypoints;
   /**
-   * See {@link PackVersionDefinition.chatSkill}.
+   * See {@link ComponentVersionDefinition.chatSkill}.
    * @hidden
    * @deprecated No longer used, now that agents are connectors.
    */
   chatSkill?: PartialSkillDef;
   /**
-   * See {@link PackVersionDefinition.benchInitializationSkill}.
+   * See {@link ComponentVersionDefinition.benchInitializationSkill}.
    * @hidden
    * @deprecated No longer used, now that agents are connectors.
    */
   benchInitializationSkill?: PartialSkillDef;
   /**
-   * See {@link PackVersionDefinition.suggestedPrompts}.
+   * See {@link ComponentVersionDefinition.suggestedPrompts}.
    * @hidden
    * @deprecated No longer used, now that agents are connectors.
    */
   suggestedPrompts: SuggestedPrompt[];
   /**
-   * See {@link PackVersionDefinition.networkDomains}.
+   * See {@link ComponentVersionDefinition.networkDomains}.
    */
   networkDomains: string[];
   /**
-   * See {@link PackVersionDefinition.mcpServers}.
+   * See {@link ComponentVersionDefinition.mcpServers}.
    * @hidden
    */
   mcpServers: MCPServer[];
@@ -199,16 +200,16 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
   suggestionProviders?: SuggestionProvider[];
 
   /**
-   * See {@link PackVersionDefinition.defaultAuthentication}.
+   * See {@link ComponentVersionDefinition.defaultAuthentication}.
    */
   defaultAuthentication?: Authentication;
   /**
-   * See {@link PackVersionDefinition.systemConnectionAuthentication}.
+   * See {@link ComponentVersionDefinition.systemConnectionAuthentication}.
    */
   systemConnectionAuthentication?: SystemAuthentication;
 
   /**
-   * See {@link PackVersionDefinition.adminAuthentications}.
+   * See {@link ComponentVersionDefinition.adminAuthentications}.
    * @hidden
    */
   adminAuthentications?: AdminAuthentication[];
@@ -219,7 +220,7 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
   private _defaultConnectionRequirement: ConnectionRequirement | undefined;
 
   /**
-   * Constructs a {@link PackDefinitionBuilder}. However, `sdk.newConnector()` should be used instead
+   * Constructs a {@link ConnectorDefinitionBuilder}. However, `sdk.newConnector()` should be used instead
    * rather than constructing a builder directly.
    */
   constructor(definition?: Partial<Omit<PackVersionDefinition, 'agent' | 'defaultTriggers' | 'defaultRoutines'>>) {
@@ -261,26 +262,26 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
   }
 
   /**
-   * Adds a formula definition to this pack.
+   * Adds a formula definition to this connector.
    *
    * In the web editor, the `/Formula` shortcut will insert a snippet of a skeleton formula.
    *
    * @example
    * ```
-   * pack.addFormula({
+   * connector.addFormula({
    *   resultType: ValueType.String,
-   *    name: 'MyFormula',
-   *    description: 'My description.',
-   *    parameters: [
-   *      makeParameter({
-   *        type: ParameterType.String,
-   *        name: 'myParam',
-   *        description: 'My param description.',
-   *      }),
-   *    ],
-   *    execute: async ([param]) => {
-   *      return `Hello ${param}`;
-   *    },
+   *   name: 'MyFormula',
+   *   description: 'My description.',
+   *   parameters: [
+   *     makeParameter({
+   *       type: ParameterType.String,
+   *       name: 'myParam',
+   *       description: 'My param description.',
+   *     }),
+   *   ],
+   *   execute: async ([param]) => {
+   *     return `Hello ${param}`;
+   *   },
    * });
    * ```
    */
@@ -296,13 +297,13 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
   }
 
   /**
-   * Adds a sync table definition to this pack.
+   * Adds a sync table definition to this connector.
    *
    * In the web editor, the `/SyncTable` shortcut will insert a snippet of a skeleton sync table.
    *
    * @example
    * ```
-   * pack.addSyncTable({
+   * connector.addSyncTable({
    *   name: 'MySyncTable',
    *   identityName: 'EntityName',
    *   schema: sdk.makeObjectSchema({
@@ -332,13 +333,13 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
   }
 
   /**
-   * Adds a dynamic sync table definition to this pack.
+   * Adds a dynamic sync table definition to this connector.
    *
    * In the web editor, the `/DynamicSyncTable` shortcut will insert a snippet of a skeleton sync table.
    *
    * @example
    * ```
-   * pack.addDynamicSyncTable({
+   * connector.addDynamicSyncTable({
    *   name: "MySyncTable",
    *   getName: async funciton (context) => {
    *     const response = await context.fetcher.fetch({method: "GET", url: context.sync.dynamicUrl});
@@ -369,13 +370,13 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
   }
 
   /**
-   * Adds a column format definition to this pack.
+   * Adds a column format definition to this connector.
    *
    * In the web editor, the `/ColumnFormat` shortcut will insert a snippet of a skeleton format.
    *
    * @example
    * ```
-   * pack.addColumnFormat({
+   * connector.addColumnFormat({
    *   name: 'MyColumn',
    *   formulaName: 'MyFormula',
    * });
@@ -389,13 +390,13 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
   }
 
   /**
-   * Adds a skill definition to this pack.
+   * Adds a skill definition to this connector.
    *
    * In the web editor, the `/Skill` shortcut will insert a snippet of a skeleton skill.
    *
    * @example
    * ```
-   * pack.addSkill({
+   * connector.addSkill({
    *   name: "MySkill",
    *   displayName: "My Display Name",
    *   description: "My description.",
@@ -405,6 +406,8 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
    *   ],
    * });
    * ```
+   *
+   * @deprecated Skills are no longer used. Connectors should not set tools.
    */
   addSkill(skill: Skill): this {
     this.skills.push(skill);
@@ -421,11 +424,11 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
   }
 
   /**
-   * Adds an MCP server to this pack.
+   * Adds an MCP server to this connector.
    *
    * @example
    * ```
-   * pack.addMCPServer({name: 'MyMCPServer', endpointUrl: 'https://my-mcp-server.com'});
+   * connector.addMCPServer({name: 'MyMCPServer', endpointUrl: 'https://my-mcp-server.com'});
    * ```
    *
    * Only supported in Superhuman Go.
@@ -443,20 +446,20 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
    * All fields are optional — omitted fields use defaults at runtime. When `tools` is omitted,
    * the agent automatically gets:
    *
-   * - {@link ToolType.Pack} — the pack's own formulas
-   * - {@link ToolType.Knowledge} — search over the pack's sync table data (when sync tables exist)
+   * - {@link ToolType.Pack} — the connector's own formulas
+   * - {@link ToolType.Knowledge} — search over the connector's sync table data (when sync tables exist)
    *
    * Specifying `tools` replaces these defaults entirely.
    *
    * @example
    * ```ts
    * // Override just the prompt — default tools are preserved
-   * pack.setChatSkill({
+   * connector.setChatSkill({
    *   prompt: "End every reply with 'Moo!'",
    * });
    *
    * // Override tools — replaces the defaults
-   * pack.setChatSkill({
+   * connector.setChatSkill({
    *   tools: [
    *     { type: sdk.ToolType.Pack },
    *     { type: sdk.ToolType.ContactResolution },
@@ -477,7 +480,7 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
    *
    * @example
    * ```ts
-   * pack.setBenchInitializationSkill({
+   * connector.setBenchInitializationSkill({
    *   prompt: `
    *     Say hello to the user, referencing the time of day and a friendly nickname.
    *     For example: 10AM, Kramer => "Good morning K-man!"
@@ -494,11 +497,11 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
   }
 
   /**
-   * Maps entrypoints to skills in the Pack.
+   * Maps entrypoints to skills in the connector.
    *
    * @example
    * ```
-   * pack.setSkillEntrypoints({
+   * connector.setSkillEntrypoints({
    *   defaultChat: { skillName: "MySkill" },
    * });
    * ```
@@ -515,7 +518,7 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
    *
    * @example
    * ```
-   * pack.addSuggestedPrompt({
+   * connector.addSuggestedPrompt({
    *   name: "TicketStatus",
    *   displayName: "Check ticket status",
    *   prompt: `
@@ -549,22 +552,22 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
   }
 
   /**
-   * Sets this pack to use authentication for individual users, using the
+   * Sets this connector to use authentication for individual users, using the
    * authentication method is the given definition.
    *
-   * Each user will need to register an account in order to use this pack.
+   * Each user will need to register an account in order to use this connector.
    *
    * In the web editor, the `/UserAuthentication` shortcut will insert a snippet of a skeleton
    * authentication definition.
    *
    * By default, this will set a default connection (account) requirement, making a user account
-   * required to invoke all formulas in this pack unless you specify differently on a particular
+   * required to invoke all formulas in this connector unless you specify differently on a particular
    * formula. To change the default, you can pass a `defaultConnectionRequirement` option into
    * this method.
    *
    * @example
    * ```
-   * pack.setUserAuthentication({
+   * connector.setUserAuthentication({
    *   type: AuthenticationType.HeaderBearerToken,
    * });
    * ```
@@ -585,10 +588,10 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
   }
 
   /**
-   * Sets this pack to use authentication provided by you as the maker of this pack.
+   * Sets this connector to use authentication provided by you as the maker of this connector.
    *
-   * You will need to register credentials to use with this pack. When users use the
-   * pack, their requests will be authenticated with those system credentials, they need
+   * You will need to register credentials to use with this connector. When users use the
+   * connector, their requests will be authenticated with those system credentials, they need
    * not register their own account.
    *
    * In the web editor, the `/SystemAuthentication` shortcut will insert a snippet of a skeleton
@@ -596,7 +599,7 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
    *
    * @example
    * ```
-   * pack.setSystemAuthentication({
+   * connector.setSystemAuthentication({
    *   type: AuthenticationType.HeaderBearerToken,
    * });
    * ```
@@ -625,20 +628,20 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
   }
 
   /**
-   * Adds the domain that this pack makes HTTP requests to.
-   * For example, if your pack makes HTTP requests to "api.example.com",
+   * Adds the domain that this connector makes HTTP requests to.
+   * For example, if your connector makes HTTP requests to "api.example.com",
    * use "example.com" as your network domain.
    *
-   * If your pack make HTTP requests, it must declare a network domain,
-   * for security purposes. The platform enforces that your pack cannot make requests to
+   * If your connector makes HTTP requests, it must declare a network domain,
+   * for security purposes. The platform enforces that your connector cannot make requests to
    * any undeclared domains.
    *
-   * You are allowed one network domain per pack by default. If your pack needs
+   * You are allowed one network domain per connector by default. If your connector needs
    * to connect to multiple domains, contact Superhuman for approval.
    *
    * @example
    * ```
-   * pack.addNetworkDomain('example.com');
+   * connector.addNetworkDomain('example.com');
    * ```
    */
   addNetworkDomain(...domain: string[]): this {
@@ -699,6 +702,9 @@ export class PackDefinitionBuilder extends BaseDefinitionBuilder implements Basi
   }
 }
 
+/** @deprecated Use {@link ConnectorDefinitionBuilder}. */
+export class PackDefinitionBuilder extends ConnectorDefinitionBuilder {}
+
 // Copies before freezing so the caller's own arrays (connector formulas, trigger filters) stay theirs.
 function frozenCopy<T extends {}>(value: T): T {
   return deepFreeze(deepCopy(value)) as T;
@@ -726,20 +732,20 @@ function stateOf(builder: AgentDefinitionBuilder): AgentBuilderState {
  */
 export class AgentDefinitionBuilder extends BaseDefinitionBuilder {
   /**
-   * See {@link PackVersionDefinition.agent}. Set via {@link setInstructions} and {@link setTools}.
+   * See {@link ComponentVersionDefinition.agent}. Set via {@link setInstructions} and {@link setTools}.
    */
   declare readonly agent: DeepReadonly<Partial<AgentDefinition>>;
   /**
-   * See {@link PackVersionDefinition.defaultTriggers}. Set via {@link setDefaultWhileWritingTrigger},
+   * See {@link ComponentVersionDefinition.defaultTriggers}. Set via {@link setDefaultWhileWritingTrigger},
    * {@link addDefaultMailEventTrigger}, {@link addDefaultSlackEventTrigger},
    * {@link addDefaultNotetakerEventTrigger}, and {@link setDefaultScheduleTrigger}.
    */
   declare readonly defaultTriggers?: DeepReadonly<DefaultTriggerDefinition[]>;
   /**
-   * See {@link PackVersionDefinition.suggestedPrompts}. Set via {@link addSuggestedPrompt}.
+   * See {@link ComponentVersionDefinition.suggestedPrompts}. Set via {@link addSuggestedPrompt}.
    */
   declare readonly suggestedPrompts?: DeepReadonly<SuggestedPrompt[]>;
-  /** See {@link PackVersionDefinition.defaultRoutines}. Set via {@link addDefaultRoutine}. */
+  /** See {@link ComponentVersionDefinition.defaultRoutines}. Set via {@link addDefaultRoutine}. */
   declare readonly defaultRoutines?: DeepReadonly<AgentRoutineDefinition[]>;
 
   constructor() {
@@ -758,7 +764,7 @@ export class AgentDefinitionBuilder extends BaseDefinitionBuilder {
    *
    * @example
    * ```
-   * pack.addDefaultRoutine({
+   * agent.addDefaultRoutine({
    *   name: 'Daily brief',
    *   instructions: 'Summarize overnight changes. Include source links.',
    *   trigger: {
@@ -788,7 +794,7 @@ export class AgentDefinitionBuilder extends BaseDefinitionBuilder {
    *
    * @example
    * ```
-   * pack.setInstructions('You help a team run async standups. Keep replies short.');
+   * agent.setInstructions('You help a team run async standups. Keep replies short.');
    * ```
    */
   setInstructions(instructions: string): this {
@@ -802,9 +808,17 @@ export class AgentDefinitionBuilder extends BaseDefinitionBuilder {
    *
    * @example
    * ```
-   * pack.setTools({docs: true, mail: true, webSearch: {allowedDomains: ['docs.example.com']}});
-   * pack.setTools({connectors: [{packId: 1234, formulas: [{formulaName: 'CreateTask'}]}]});
-   * pack.setTools({connectors: [{packId: 5678, mcpTools: [{toolName: 'search_issues'}]}]});
+   * agent.setTools({docs: true, mail: true, webSearch: {allowedDomains: ['docs.example.com']}});
+   * agent.setTools({connectors: [{connectorId: 1234, formulas: [{formulaName: 'CreateTask'}]}]});
+   * agent.setTools({connectors: [{connectorId: 5678, mcpTools: [{toolName: 'search_issues'}]}]});
+   * // Needs 1001, and either 2001 or 2002.
+   * agent.setTools({
+   *   connectors: [
+   *     {connectorId: 1001, required: true},
+   *     {connectorId: 2001, required: {groupName: 'email'}},
+   *     {connectorId: 2002, required: {groupName: 'email'}},
+   *   ],
+   * });
    * ```
    */
   setTools({docs, mail, webSearch, connectors}: AgentToolsDef): this {
@@ -820,12 +834,18 @@ export class AgentDefinitionBuilder extends BaseDefinitionBuilder {
       tools.push({type: ToolType.MailAndCalendar});
     }
     for (const connector of connectors || []) {
+      const {required} = connector;
+      if (required && typeof required === 'object' && !required.groupName?.trim()) {
+        throw new Error('A required connector group needs a name containing non-whitespace text.');
+      }
       tools.push({
         type: ToolType.Pack,
-        packId: connector.packId,
+        // The upload format keeps `packId` until hosts read `connectorId`.
+        packId: connector.connectorId ?? connector.packId,
         ...(connector.formulas ? {formulas: connector.formulas} : {}),
         ...(connector.useSuggestions !== undefined ? {useSuggestions: connector.useSuggestions} : {}),
         ...(connector.mcpTools ? {mcpTools: connector.mcpTools} : {}),
+        ...(required ? {required} : {}),
       });
     }
     const state = stateOf(this);
@@ -838,7 +858,7 @@ export class AgentDefinitionBuilder extends BaseDefinitionBuilder {
    *
    * @example
    * ```
-   * pack.addSuggestedPrompt({
+   * agent.addSuggestedPrompt({
    *   name: 'ticketStatus',
    *   displayName: 'Check ticket status',
    *   prompt: 'Show me the status of all open support tickets',
@@ -856,7 +876,7 @@ export class AgentDefinitionBuilder extends BaseDefinitionBuilder {
    *
    * @example
    * ```
-   * pack.setDefaultWhileWritingTrigger({
+   * agent.setDefaultWhileWritingTrigger({
    *   condition: 'Offer a citation when the user asserts a statistic',
    *   surfaces: [sdk.ContextualTriggerSurface.Docs, sdk.ContextualTriggerSurface.Email],
    * });
@@ -879,7 +899,7 @@ export class AgentDefinitionBuilder extends BaseDefinitionBuilder {
    *
    * @example
    * ```
-   * pack.addDefaultMailEventTrigger({
+   * agent.addDefaultMailEventTrigger({
    *   mailEventType: sdk.MailEventType.MessageReceived,
    *   filters: {
    *     conditions: [
@@ -902,7 +922,7 @@ export class AgentDefinitionBuilder extends BaseDefinitionBuilder {
    *
    * @example
    * ```
-   * pack.addDefaultSlackEventTrigger({
+   * agent.addDefaultSlackEventTrigger({
    *   eventType: sdk.SlackEventType.MessageKeyword,
    *   keywords: ['deploy', 'rollback'],
    * });
@@ -919,7 +939,7 @@ export class AgentDefinitionBuilder extends BaseDefinitionBuilder {
    *
    * @example
    * ```
-   * pack.addDefaultNotetakerEventTrigger({
+   * agent.addDefaultNotetakerEventTrigger({
    *   eventType: sdk.NotetakerEventType.MeetingSummaryCompleted,
    *   filters: {
    *     conditions: [
@@ -952,7 +972,7 @@ export class AgentDefinitionBuilder extends BaseDefinitionBuilder {
    *
    * @example
    * ```
-   * pack.setDefaultScheduleTrigger({
+   * agent.setDefaultScheduleTrigger({
    *   rruleString: 'DTSTART:20260101T090000\nRRULE:FREQ=WEEKLY;BYDAY=MO',
    * });
    * ```

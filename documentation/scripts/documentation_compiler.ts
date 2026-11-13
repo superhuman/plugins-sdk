@@ -3,6 +3,7 @@ import type {CompiledExample} from '../types';
 import type {CompiledExampleSnippet} from '../types';
 import type {Example} from '../types';
 import {ExampleCategory} from '../types';
+import {ExampleComponent} from '../types';
 import {ExampleStatus} from '../types';
 import {Examples} from './documentation_config';
 import * as Handlebars from 'handlebars';
@@ -18,15 +19,48 @@ const CodeEnd = '// END\n';
 const BaseDir = path.join(__dirname, '../../');
 const DocumentationRoot = path.join(BaseDir, 'documentation');
 const TypeDocsRoot = path.join(BaseDir, 'docs');
-const ExampleDirName = 'samples';
-const ExamplePagesRoot = path.join(TypeDocsRoot, ExampleDirName);
 const ExamplePageTemplate = Handlebars.compile(
   fs.readFileSync(path.join(DocumentationRoot, 'example_page_template.md'), 'utf8'),
 );
 const SdkReferenceLink = 'https://docs.superhuman.com/packs/build/latest';
-const SamplePageLink = `${SdkReferenceLink}/${ExampleDirName}`;
 const PageFileExtension = 'md';
 const IndexPageFilename = 'index.md';
+
+interface ComponentLayout {
+  // Directory under docs/, and a path segment in the SDK reference URL.
+  root: string;
+  // Subdirectory for each example category.
+  categoryDir: Record<ExampleCategory, string>;
+  // Phrase after the example name in the generated page title.
+  // Topic pages with more than one snippet pluralize it by appending "s".
+  titleSuffix: Record<ExampleCategory, string>;
+}
+
+// Publish location for each component. A new component needs an entry here.
+const ComponentLayouts: Record<ExampleComponent, ComponentLayout> = {
+  [ExampleComponent.Connector]: {
+    root: 'samples',
+    categoryDir: {
+      [ExampleCategory.Topic]: 'topic',
+      [ExampleCategory.Full]: 'full',
+    },
+    titleSuffix: {
+      [ExampleCategory.Topic]: 'sample',
+      [ExampleCategory.Full]: 'sample',
+    },
+  },
+  [ExampleComponent.Agent]: {
+    root: 'agents/examples',
+    categoryDir: {
+      [ExampleCategory.Topic]: 'feature',
+      [ExampleCategory.Full]: 'complete',
+    },
+    titleSuffix: {
+      [ExampleCategory.Topic]: 'example',
+      [ExampleCategory.Full]: 'sample agent',
+    },
+  },
+};
 
 function main() {
   compileAutocompleteSnippets();
@@ -75,9 +109,9 @@ function compileExamples() {
       exampleFooterLink = `${SdkReferenceLink}${exampleFooterLink}`;
       learnMoreLink = example.linkData.url;
     } else if (example.linkData.type === UrlType.SamplePage) {
-      const pagePath = getExamplePagePath(example);
+      const {urlPath} = getExamplePageLocation(example);
       const pageName = getExamplePageName(example).split('.')[0];
-      exampleFooterLink = `${SamplePageLink}/${pagePath}/${pageName}`;
+      exampleFooterLink = `${SdkReferenceLink}/${urlPath}/${pageName}`;
     }
     if (!exampleFooterLink) {
       throw new Error(`Missing link for example "${example.name}".`);
@@ -87,6 +121,7 @@ function compileExamples() {
       description: example.description,
       icon: example.icon,
       category: example.category,
+      component: example.component,
       triggerTokens: example.triggerTokens,
       linkData: example.linkData,
       status: example.status,
@@ -171,12 +206,15 @@ function formatCodeSnippet(code: string, removePlaceholders=false) {
 function compileExamplePage(example: Example, compiledExample: CompiledExample) {
 
   const pageFileName = getExamplePageName(example);
-  const pagePath = path.join(ExamplePagesRoot, getExamplePagePath(example));
+  const {rootDir, categoryDir} = getExamplePageLocation(example);
+  const pagePath = path.join(rootDir, categoryDir);
   const pageData = {...compiledExample};
   if (pageData.learnMoreLink) {
     const learnMorePath = getReferencePath(pageData.learnMoreLink);
     if (learnMorePath) {
-      pageData.learnMoreLink = path.relative(pagePath, learnMorePath);
+      const hashIndex = pageData.learnMoreLink.indexOf('#');
+      const hash = hashIndex >= 0 ? pageData.learnMoreLink.slice(hashIndex) : '';
+      pageData.learnMoreLink = path.relative(pagePath, learnMorePath) + hash;
     }
   }
   const examplePageContent = ExamplePageTemplate(pageData);
@@ -188,8 +226,14 @@ function compileExamplePage(example: Example, compiledExample: CompiledExample) 
   fs.writeFileSync(path.join(pagePath, pageFileName), examplePageContent);
 }
 
-function getExamplePagePath(example: Example) {
-  return example.category.toString().toLowerCase();
+function getExamplePageLocation(example: Example) {
+  const layout = ComponentLayouts[example.component];
+  const categoryDir = layout.categoryDir[example.category];
+  return {
+    rootDir: path.join(TypeDocsRoot, layout.root),
+    categoryDir,
+    urlPath: `${layout.root}/${categoryDir}`,
+  };
 }
 
 function getExamplePageName(example: Example) {
@@ -255,13 +299,14 @@ Handlebars.registerHelper('isBeta', (example: CompiledExample|CompiledExampleSni
 });
 
 Handlebars.registerHelper('pageTitle', (example: CompiledExample) => {
+  const layout = ComponentLayouts[example.component];
   let name = example.name;
-  let suffix = 'sample';
+  let suffix = layout.titleSuffix[example.category];
   if (example.category === ExampleCategory.Topic) {
     // Use singular version of the name.
     name = name.replace(/s$/, '');
     if (example.exampleSnippets.length > 1) {
-      // Use the suffix "samples" if there are more than one.
+      // Pluralize the suffix when there is more than one snippet.
       suffix += 's';
     }
   }

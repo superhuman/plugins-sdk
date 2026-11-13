@@ -1,10 +1,10 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Vonage API, using an API key and secret
 // in the request body.
 // See https://developer.vonage.com/en/api/sms
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.Custom,
   params: [
     { name: "api_key", description: "API key." },
@@ -12,7 +12,7 @@ pack.setUserAuthentication({
   ],
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "SendSMS",
   description: "Sends an SMS message.",
   parameters: [
@@ -68,5 +68,5 @@ pack.addFormula({
   },
 });
 
-// Allow the pack to make requests to Vonage (former Nexmo).
-pack.addNetworkDomain("nexmo.com");
+// Allow the connector to make requests to Vonage (former Nexmo).
+connector.addNetworkDomain("nexmo.com");

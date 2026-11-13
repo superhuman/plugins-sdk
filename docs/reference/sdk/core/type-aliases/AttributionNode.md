@@ -12,4 +12,4 @@ search:
 
 > **AttributionNode** = [`TextAttributionNode`](../interfaces/TextAttributionNode.md) \| [`LinkAttributionNode`](../interfaces/LinkAttributionNode.md) \| [`ImageAttributionNode`](../interfaces/ImageAttributionNode.md)
 
-Union of attribution node types for rendering attribution for a pack value. See [makeAttributionNode](../functions/makeAttributionNode.md).
+Union of attribution node types for rendering attribution for a connector value. See [makeAttributionNode](../functions/makeAttributionNode.md).

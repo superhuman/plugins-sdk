@@ -47,7 +47,7 @@ Indicates a parameter that is a list of date values (which includes time and dat
 
 Currently, when such a parameter is used with a sync table formula or an action formula
 ([BaseFormulaDef.isAction](../interfaces/BaseFormulaDef.md#isaction)), which will generate a builder UI for selecting parameters, a date array
-parameter will always render as a date range selector. A date range will always be passed to a pack formula
+parameter will always render as a date range selector. A date range will always be passed to a formula
 as a list of two elements, the beginning of the range and the end of the range.
 
 ***
@@ -72,7 +72,7 @@ Indicates a parameter that is a list of email values.
 
 > **File**: `"file"`
 
-Indicates a parameter that is a file. The pack is passed a file URL.
+Indicates a parameter that is a file. The connector is passed a file URL.
 
 ***
 
@@ -80,7 +80,7 @@ Indicates a parameter that is a file. The pack is passed a file URL.
 
 > **FileArray**: `"fileArray"`
 
-Indicates a parameter that is a list of file values. The pack is passed a list of file URLs.
+Indicates a parameter that is a list of file values. The connector is passed a list of file URLs.
 
 ***
 
@@ -88,7 +88,7 @@ Indicates a parameter that is a list of file values. The pack is passed a list o
 
 > **Html**: `"html"`
 
-Indicates a parameter that is a rich text value that should be passed to the pack as HTML.
+Indicates a parameter that is a rich text value that should be passed to the connector as HTML.
 
 ***
 
@@ -96,7 +96,7 @@ Indicates a parameter that is a rich text value that should be passed to the pac
 
 > **HtmlArray**: `` "htmlArray`" ``
 
-Indicates a parameter that is a list of rich text values that should be passed to the pack as HTML.
+Indicates a parameter that is a list of rich text values that should be passed to the connector as HTML.
 
 ***
 
@@ -104,7 +104,7 @@ Indicates a parameter that is a list of rich text values that should be passed t
 
 > **Image**: `"image"`
 
-Indicates a parameter that is an image. The pack is passed an image URL.
+Indicates a parameter that is an image. The connector is passed an image URL.
 
 ***
 
@@ -112,7 +112,7 @@ Indicates a parameter that is an image. The pack is passed an image URL.
 
 > **ImageArray**: `"imageArray"`
 
-Indicates a parameter that is a list of image values. The pack is passed a list of image URLs.
+Indicates a parameter that is a list of image values. The connector is passed a list of image URLs.
 
 ***
 
@@ -120,7 +120,7 @@ Indicates a parameter that is a list of image values. The pack is passed a list 
 
 > **Markdown**: `"markdown"`
 
-Indicates a parameter that is a rich text value that should be passed to the pack as Markdown.
+Indicates a parameter that is a rich text value that should be passed to the connector as Markdown.
 
 ***
 
@@ -129,7 +129,7 @@ Indicates a parameter that is a rich text value that should be passed to the pac
 > **MarkdownArray**: `` "markdownArray`" ``
 
 Indicates a parameter that is a list of rich text values that should be passed to the
-pack as Markdown.
+connector as Markdown.
 
 ***
 

@@ -205,11 +205,11 @@ Now that we've got the OAuth2 URLs, scopes, client ID and secret we're ready to 
 
     ```ts
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addNetworkDomain("todoist.com");
+    connector.addNetworkDomain("todoist.com");
 
-    pack.addFormula({
+    connector.addFormula({
       name: "Tasks",
       description: "A list of your current tasks.",
       parameters: [],
@@ -240,11 +240,11 @@ Now that we've got the OAuth2 URLs, scopes, client ID and secret we're ready to 
 
     ```{.ts hl_lines="9-18"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addNetworkDomain("todoist.com");
+    connector.addNetworkDomain("todoist.com");
 
-    pack.addFormula({
+    connector.addFormula({
       // ..
       execute: async function ([], context) {
         let response = await context.fetcher.fetch({
@@ -279,13 +279,13 @@ Now that we've got the OAuth2 URLs, scopes, client ID and secret we're ready to 
 
     ```{.ts hl_lines="4-6"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.OAuth2,
     });
 
-    pack.addFormula({
+    connector.addFormula({
       // ...
     });
     ```
@@ -308,15 +308,15 @@ Now that we've got the OAuth2 URLs, scopes, client ID and secret we're ready to 
 
     ```{.ts hl_lines="6-7"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.OAuth2,
       authorizationUrl: "https://app.todoist.com/oauth/authorize",
       tokenUrl: "https://api.todoist.com/oauth/access_token",
     });
 
-    pack.addFormula({
+    connector.addFormula({
       // ...
     });
     ```
@@ -339,9 +339,9 @@ Now that we've got the OAuth2 URLs, scopes, client ID and secret we're ready to 
 
     ```{.ts hl_lines="8-9"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.OAuth2,
       authorizationUrl: "https://app.todoist.com/oauth/authorize",
       tokenUrl: "https://api.todoist.com/oauth/access_token",
@@ -349,7 +349,7 @@ Now that we've got the OAuth2 URLs, scopes, client ID and secret we're ready to 
       scopeDelimiter: ",",
     });
 
-    pack.addFormula({
+    connector.addFormula({
       // ...
     });
     ```
@@ -366,11 +366,11 @@ All the code is written, but we're not ready to start using the Pack just yet. B
 ??? example "View the full code"
     ```ts
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addNetworkDomain("todoist.com");
+    connector.addNetworkDomain("todoist.com");
 
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.OAuth2,
       authorizationUrl: "https://app.todoist.com/oauth/authorize",
       tokenUrl: "https://api.todoist.com/oauth/access_token",
@@ -378,7 +378,7 @@ All the code is written, but we're not ready to start using the Pack just yet. B
       scopeDelimiter: ",",
     });
 
-    pack.addFormula({
+    connector.addFormula({
       name: "Tasks",
       description: "A list of your current tasks.",
       parameters: [],

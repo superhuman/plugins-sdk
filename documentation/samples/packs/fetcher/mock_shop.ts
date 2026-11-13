@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 const PageSize = 20;
 const OneDaySecs = 24 * 60 * 60;
@@ -27,9 +27,9 @@ const ProductSchema = sdk.makeObjectSchema({
   featuredProperties: ["description", "image", "link"],
 });
 
-pack.addNetworkDomain("mock.shop");
+connector.addNetworkDomain("mock.shop");
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Products",
   description: "Lists the products available in the store.",
   identityName: "Product",

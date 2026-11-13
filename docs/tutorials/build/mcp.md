@@ -14,15 +14,11 @@ If an app already hosts an MCP server, you can easily create a connector for it 
 !!! abstract "Goal"
     Package the Todoist MCP server as a connector, and use its tools in :superhuman-go: Go.
 
-No previous tutorial is required, but you will need a Superhuman account with:
+No previous tutorial is required.
 
-- A [Pro plan][pricing] or higher, to install and use the connector in :superhuman-go: Go.
-- [Doc Maker access][hc_doc_maker] in your :superhuman-docs: Docs workspace, to create the Pack.
-
-There are two options for how to build the Pack in this tutorial, with a tab for each:
-
-- **:octicons-terminal-16: CLI** — Work locally with the `packs` command line tool. Assumes you're comfortable in a terminal with `npm`.
-- **:octicons-browser-16: Pack Studio** — Work entirely in the browser, with nothing to install.
+{% with kind="connector" %}
+{% include ".snippets/tutorial-intro.md" %}
+{% endwith %}
 
 !!! tip "Generate the connector"
     This tutorial walks through writing the connector code manually. However, you can save time by generating the code automatically using a button in the UI. See [Generate a connector][mcp_generate] in the MCP guide for more information.
@@ -32,9 +28,9 @@ There are two options for how to build the Pack in this tutorial, with a tab for
 
 A connector is a thin wrapper around the MCP server, so start by pinning down what the server offers and what it requires. Before writing any code, gather three things:
 
-- **Endpoint URL** — The URL of the server's [Streamable HTTP][mcp_transport] endpoint. Todoist publishes theirs [in their developer docs][todoist_mcp] as `https://ai.todoist.net/mcp`.
-- **Authentication** — How the server identifies the user. Todoist uses OAuth2 with [dynamic client registration (DCR)][oauth2_dcr], which is common for MCP servers and means you don't have to register an application or manage client credentials yourself.
-- **Tools** — The tools the server exposes. The connector passes them through as-is, so this list is effectively the feature set of your connector.
+- **Endpoint URL** - The URL of the server's [Streamable HTTP][mcp_transport] endpoint. Todoist publishes theirs [in their developer docs][todoist_mcp] as `https://ai.todoist.net/mcp`.
+- **Authentication** - How the server identifies the user. Todoist uses OAuth2 with [dynamic client registration (DCR)][oauth2_dcr], which is common for MCP servers and means you don't have to register an application or manage client credentials yourself.
+- **Tools** - The tools the server exposes. The connector passes them through as-is, so this list is effectively the feature set of your connector.
 
 !!! tip "Manually testing a server"
 
@@ -49,54 +45,9 @@ A connector is a thin wrapper around the MCP server, so start by pinning down wh
 
 ## :material-crane: Set up the project
 
-=== ":octicons-terminal-16: CLI"
-
-    Building with the CLI requires `node`, `npm`, and `git`.
-
-    1.  Create a directory for the connector and initialize the project.
-
-        ```sh
-        mkdir todoist-connector
-        cd todoist-connector
-        npm init --yes
-        npm install --save @superhuman/plugins-sdk
-        ```
-
-        The SDK bundles the `packs` CLI along with the libraries used to build a Pack.
-
-    1.  Scaffold the files for a new Pack.
-
-        ```sh
-        npx packs init
-        ```
-
-        This creates a `pack.ts` with some starter code, which you'll replace in the next section.
-
-    1.  Register an API token, which the CLI uses to talk to the platform.
-
-        ```sh
-        npx packs register
-        ```
-
-        You'll be prompted to generate a token in your browser and paste it back into the terminal. The token is saved to `.coda.json`, and only needs to be done once per directory.
-
-    1.  Create the empty Pack that will hold the connector.
-
-        ```sh
-        npx packs create pack.ts --name "Todoist Tutorial"
-        ```
-
-        This prints the Pack Studio URL and writes the new Pack's ID to `.coda-pack.json`.
-
-=== ":octicons-browser-16: Pack Studio"
-
-    The Pack Studio is the code editor built into Superhuman Docs, and there's nothing to install.
-
-    1.  [Create a new Pack][navigation_create_pack]{ data-preview }.
-
-    1.  Choose to start from scratch rather than from one of the examples.
-
-    1.  Click the Pack name **Untitled Pack** in the upper left and change it to "Todoist Tutorial".
+{% with directory="todoist-connector", pack_name="Todoist Tutorial", kind="connector" %}
+{% include ".snippets/setup.md" %}
+{% endwith %}
 
 
 ## :fontawesome-solid-laptop-code: Write the code
@@ -115,7 +66,7 @@ The code is the same either way. In the CLI replace the contents of `pack.ts`, a
 
     ```ts
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
     ```
 
     </div>
@@ -138,9 +89,9 @@ The code is the same either way. In the CLI replace the contents of `pack.ts`, a
 
     ```{.ts hl_lines="4-7"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addMCPServer({
+    connector.addMCPServer({
       name: "Todoist",
       endpointUrl: "https://ai.todoist.net/mcp",
     });
@@ -155,7 +106,7 @@ The code is the same either way. In the CLI replace the contents of `pack.ts`, a
     <section class="tutorial-row" markdown>
     <div markdown>
 
-    Declare that the server uses OAuth2 with DCR. Because the platform registers the client and discovers the authorization and token endpoints on its own, there's nothing else to configure — no client ID, no secret, and no URLs.
+    Declare that the server uses OAuth2 with DCR. Because the platform registers the client and discovers the authorization and token endpoints on its own, there's nothing else to configure: no client ID, no secret, and no URLs.
 
     `useProofKeyForCodeExchange` enables [PKCE][oauth2_pkce], which modern OAuth2 providers generally require.
 
@@ -166,14 +117,14 @@ The code is the same either way. In the CLI replace the contents of `pack.ts`, a
 
     ```{.ts hl_lines="9-13"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addMCPServer({
+    connector.addMCPServer({
       name: "Todoist",
       endpointUrl: "https://ai.todoist.net/mcp",
     });
 
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.OAuth2,
       useDynamicClientRegistration: true,
       useProofKeyForCodeExchange: true,
@@ -198,20 +149,20 @@ The code is the same either way. In the CLI replace the contents of `pack.ts`, a
 
     ```{.ts hl_lines="15"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addMCPServer({
+    connector.addMCPServer({
       name: "Todoist",
       endpointUrl: "https://ai.todoist.net/mcp",
     });
 
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.OAuth2,
       useDynamicClientRegistration: true,
       useProofKeyForCodeExchange: true,
     });
 
-    pack.addNetworkDomain("todoist.net");
+    connector.addNetworkDomain("todoist.net");
     ```
 
     </div>
@@ -224,37 +175,13 @@ The code is the same either way. In the CLI replace the contents of `pack.ts`, a
     The CLI's `packs execute` command can be used to run a Pack locally, but it currently doesn't support MCP servers or DCR. Currently the only way to test the code is to upload it and run it in :superhuman-go: Go.
 
 
-## :material-cloud-upload: Upload & release
+## :material-cloud-upload: Upload
 
-The code needs to be uploaded and released before it can be installed, which takes two steps: creating a version from your code, and then releasing that version.
+The code needs to be uploaded to Superhuman's servers before the connector can be installed.
 
-=== ":octicons-terminal-16: CLI"
-
-    1.  Upload a version containing your code.
-
-        ```sh
-        npx packs upload pack.ts
-        ```
-
-    1.  Release that version.
-
-        ```sh
-        npx packs release pack.ts --notes "Initial version."
-        ```
-
-=== ":octicons-browser-16: Pack Studio"
-
-    1.  Click the **Build** button in the bottom left.
-
-        This checks your code for errors and creates a new version. It can take a few seconds to complete.
-
-    1.  Click the **Release** button to release the version you just built.
-
-!!! info "Making further changes"
-
-    By default, an installed connector will use the latest release of your code. That means every code change needs a new version *and* a new release before you'll see it in :superhuman-go: Go.
-
-    That can feel tedious when iterating early on, so you can instead switch the connector to use the latest **version**, which picks up each new build without a release. See the [versioning guide][versions_in_use] for instructions on how to change that setting.
+{% with kind="connector" %}
+{% include ".snippets/upload-install.md" %}
+{% endwith %}
 
 
 ## :superhuman-go: Try it in Go
@@ -370,7 +297,6 @@ Now that you have an MCP server running as a connector, here are some more resou
 
 - [MCP guide][mcp_guide] - The supported transports, features, and authentication options in more detail.
 - [Sample code][samples_mcp] - See more examples of working MCP connectors.
-- [Skills guide][skills] - How to add a prompt that tells Go when to reach for your connector's tools, and how the app's concepts map to what users ask for.
 - [Publishing guide][publishing] - How to list your connector in the Superhuman Store so others can install it.
 
 
@@ -379,9 +305,6 @@ Now that you have an MCP server running as a connector, here are some more resou
 [oauth2_dcr]: ../../guides/basics/authentication/oauth2.md#dcr
 [oauth2_pkce]: ../../guides/basics/authentication/oauth2.md#proof-key-for-code-exchange-pkce
 [mcp_inspector]: https://github.com/modelcontextprotocol/inspector
-[hc_doc_maker]: https://help.coda.io/hc/en-us/articles/39556004184077-Roles-in-Coda-Doc-Makers-Admins-and-Editors
-[navigation_create_pack]: ../../support/navigation.md#create-pack
-[pricing]: https://superhuman.com/pricing
 [mcp_generate]: ../../guides/blocks/mcp.md#generate
 [mcp_compatibility]: ../../guides/blocks/mcp.md#compatibility
 [mcp_auth]: ../../guides/blocks/mcp.md#authentication
@@ -390,7 +313,6 @@ Now that you have an MCP server running as a connector, here are some more resou
 [navigation_connector_go]: ../../support/navigation.md#connector-go
 [versions_in_use]: ../../development/versions.md#which-version-is-in-use
 [logging_connector]: ../../development/logging.md#connector-logs
-[skills]: ../../guides/blocks/skills.md
 [mcp_guide]: ../../guides/blocks/mcp.md
 [samples_mcp]: ../../samples/topic/mcp.md
 [publishing]: ../../development/publishing.md

@@ -20,7 +20,7 @@ When building a Pack there are a few times when you need to specify a schema.
 Formulas that return an `Object` value must specify an object schema that defines the properties of the object. It is specified in the `schema` field of the formula definition.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.Object,
   schema: MySchema,
@@ -36,7 +36,7 @@ See the [Data types guide][data_types_objects] for more information on object va
 Formulas that return an `Array` value must specify a schema that defines the items in the array. It is specified in the `items` field of the formula definition.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.Array,
   items: MySchema,
@@ -68,7 +68,7 @@ let MySchema = sdk.makeObjectSchema({
 Schemas can also be declared inline in the formula or sync table where they are used.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.Array,
   items: sdk.makeSchema({
@@ -228,7 +228,7 @@ let LocationSchema = sdk.makeObjectSchema({
   // ...
 });
 
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.Object,
   schema: LocationSchema,
@@ -252,7 +252,7 @@ let LocationSchema = sdk.makeObjectSchema({
   // ...
 });
 
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.Object,
   schema: LocationSchema,
@@ -296,7 +296,7 @@ let LocationSchema = sdk.makeObjectSchema({
   // ...
 });
 
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.Object,
   schema: LocationSchema,
@@ -344,7 +344,7 @@ let LocationSchema = sdk.makeObjectSchema({
   // ...
 });
 
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.Object,
   schema: LocationSchema,
@@ -464,7 +464,7 @@ let MovieSchema = sdk.makeObjectSchema({
   // ...
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "UpdateMovie",
   description: "Update the movie details.",
   resultType: sdk.ValueType.Object,

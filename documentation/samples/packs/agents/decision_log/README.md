@@ -1,0 +1,1 @@
+An agent that keeps a decision log in a Docs document. In Slack it recalls past decisions and offers to log new ones. While you write, it checks claims about past decisions against the log, and on Fridays it summarizes the week's decisions.

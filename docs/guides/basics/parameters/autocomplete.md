@@ -136,7 +136,7 @@ Users are not forced to select one of the provided autocomplete options and may 
 ```ts
 const AnimalOptions = ["cow", "pig", "sheep"];
 
-pack.addFormula({
+connector.addFormula({
   // ...
   parameters: [
     sdk.makeParameter({

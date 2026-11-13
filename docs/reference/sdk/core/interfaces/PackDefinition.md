@@ -13,7 +13,7 @@ search:
 
 ## Deprecated
 
-use `#PackVersionDefinition`
+Use [ComponentVersionDefinition](ComponentVersionDefinition.md).
 
 The legacy complete definition of a Pack including un-versioned metadata.
 This should only be used by legacy pack implementations.
@@ -58,14 +58,14 @@ All fields are optional - omitted fields will use defaults at runtime.
 
 ```ts
 // Override just the tools
-pack.setChatSkill({
+connector.setChatSkill({
   tools: [
     { type: sdk.ToolType.Pack },
   ],
 });
 
 // Override just the prompt
-pack.setChatSkill({
+connector.setChatSkill({
   prompt: "You are an expert in this pack.",
 });
 ```
@@ -257,6 +257,10 @@ No longer used, now that agents are connectors.
 
 Definitions of skills that can be executed within this pack.
 
+#### Deprecated
+
+Skills are no longer used. Connectors should not set tools.
+
 #### Inherited from
 
 [`PackVersionDefinition`](PackVersionDefinition.md).[`skills`](PackVersionDefinition.md#skills)
@@ -268,7 +272,7 @@ Definitions of skills that can be executed within this pack.
 > `optional` **suggestedPrompts**: [`SuggestedPrompt`](SuggestedPrompt.md)[]
 
 Static suggested prompts that appear when the agent is opened in chat. Set them with
-`addSuggestedPrompt()` on an agent. Connector packs no longer use this field.
+`addSuggestedPrompt()` on an agent. Connectors no longer use this field.
 
 #### Inherited from
 

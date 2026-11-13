@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 /*
 --8<-- [start:json]
@@ -70,7 +70,7 @@ const TaskSchema = sdk.makeObjectSchema({
 // --8<-- [end:schema]
 
 // --8<-- [start:sync]
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   schema: TaskSchema,
   identityName: "Task",
@@ -123,7 +123,7 @@ GET https://api.todoist.com/api/v1/tasks/<taskId>
 */
 
 // --8<-- [start:getter]
-pack.addFormula({
+connector.addFormula({
   name: "Task",
   description: "Gets a Todoist task by URL",
   parameters: [
@@ -171,7 +171,7 @@ function extractTaskId(taskUrl: string) {
 // --8<-- [end:getter]
 
 // --8<-- [start:format]
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Task",
   formulaName: "Task",
   // If the first values entered into a new column match these patterns then
@@ -181,7 +181,7 @@ pack.addColumnFormat({
 // --8<-- [end:format]
 
 // --8<-- [start:action]
-pack.addFormula({
+connector.addFormula({
   name: "AddTask",
   description: "Add a new task.",
   parameters: [
@@ -212,11 +212,11 @@ pack.addFormula({
 });
 // --8<-- [end:action]
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 
 // Setup authentication using a Todoist API token.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });

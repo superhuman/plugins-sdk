@@ -12,5 +12,6 @@ search:
 
 > **PostSetupDef** = [`SetEndpointDef`](SetEndpointDef.md)
 
-Simplified configuration for [PostSetup](PostSetup.md) that a pack developer can specify when calling
-[PackDefinitionBuilder.setUserAuthentication](../classes/PackDefinitionBuilder.md#setuserauthentication) or [PackDefinitionBuilder.setSystemAuthentication](../classes/PackDefinitionBuilder.md#setsystemauthentication).
+Simplified configuration for [PostSetup](PostSetup.md) that a connector developer can specify when calling
+[ConnectorDefinitionBuilder.setUserAuthentication](../classes/ConnectorDefinitionBuilder.md#setuserauthentication) or
+[ConnectorDefinitionBuilder.setSystemAuthentication](../classes/ConnectorDefinitionBuilder.md#setsystemauthentication).

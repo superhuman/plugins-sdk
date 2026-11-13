@@ -84,19 +84,19 @@ var ParameterType;
      */
     ParameterType["Date"] = "date";
     /**
-     * Indicates a parameter that is a rich text value that should be passed to the pack as HTML.
+     * Indicates a parameter that is a rich text value that should be passed to the connector as HTML.
      */
     ParameterType["Html"] = "html";
     /**
-     * Indicates a parameter that is an image. The pack is passed an image URL.
+     * Indicates a parameter that is an image. The connector is passed an image URL.
      */
     ParameterType["Image"] = "image";
     /**
-     * Indicates a parameter that is a file. The pack is passed a file URL.
+     * Indicates a parameter that is a file. The connector is passed a file URL.
      */
     ParameterType["File"] = "file";
     /**
-     * Indicates a parameter that is a rich text value that should be passed to the pack as Markdown.
+     * Indicates a parameter that is a rich text value that should be passed to the connector as Markdown.
      */
     ParameterType["Markdown"] = "markdown";
     /**
@@ -140,7 +140,7 @@ var ParameterType;
      *
      * Currently, when such a parameter is used with a sync table formula or an action formula
      * ({@link BaseFormulaDef.isAction}), which will generate a builder UI for selecting parameters, a date array
-     * parameter will always render as a date range selector. A date range will always be passed to a pack formula
+     * parameter will always render as a date range selector. A date range will always be passed to a formula
      * as a list of two elements, the beginning of the range and the end of the range.
      */
     ParameterType["DateArray"] = "dateArray";
@@ -149,7 +149,7 @@ var ParameterType;
      */
     ParameterType["SparseDateArray"] = "sparseDateArray";
     /**
-     * Indicates a parameter that is a list of rich text values that should be passed to the pack as HTML.
+     * Indicates a parameter that is a list of rich text values that should be passed to the connector as HTML.
      */
     ParameterType["HtmlArray"] = "htmlArray`";
     /**
@@ -157,7 +157,7 @@ var ParameterType;
      */
     ParameterType["SparseHtmlArray"] = "sparseHtmlArray";
     /**
-     * Indicates a parameter that is a list of image values. The pack is passed a list of image URLs.
+     * Indicates a parameter that is a list of image values. The connector is passed a list of image URLs.
      */
     ParameterType["ImageArray"] = "imageArray";
     /**
@@ -165,7 +165,7 @@ var ParameterType;
      */
     ParameterType["SparseImageArray"] = "sparseImageArray";
     /**
-     * Indicates a parameter that is a list of file values. The pack is passed a list of file URLs.
+     * Indicates a parameter that is a list of file values. The connector is passed a list of file URLs.
      */
     ParameterType["FileArray"] = "fileArray";
     /**
@@ -174,7 +174,7 @@ var ParameterType;
     ParameterType["SparseFileArray"] = "sparseFileArray";
     /**
      * Indicates a parameter that is a list of rich text values that should be passed to the
-     * pack as Markdown.
+     * connector as Markdown.
      */
     ParameterType["MarkdownArray"] = "markdownArray`";
     /**
@@ -299,7 +299,7 @@ var InvocationErrorType;
     InvocationErrorType["Unknown"] = "Unknown";
 })(InvocationErrorType || (exports.InvocationErrorType = InvocationErrorType = {}));
 /**
- * The source applications that can invoke a Pack.
+ * The source applications that can invoke a connector.
  */
 var InvocationSource;
 (function (InvocationSource) {
@@ -339,10 +339,10 @@ exports.isSyncExecutionContext = isSyncExecutionContext;
  * be a fixed range, e.g. April 1, 2020 - May 15, 2020, or it can be a "live"
  * range, like "last 30 days".
  *
- * At execution time, a date range will always be passed to a pack as an
+ * At execution time, a date range will always be passed to a connector as an
  * array of two specific dates, but for many use cases, it is necessary
  * to provide a default value that is a "live" range rather than hardcoded
- * one. For example, if your pack has a table that syncs recent emails,
+ * one. For example, if your connector has a table that syncs recent emails,
  * you might want to have a date range parameter that default to
  * "last 7 days". Defaulting to a hardcoded date range would not be useful
  * and requiring the user to always specify a date range may be inconvenient.

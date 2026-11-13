@@ -27,7 +27,7 @@ The iframe containing the embed is sandboxed by default has limited permissions 
 Pack formulas can generate an embed by returning a URL with the `Embed` value hint.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.String,
   codaType: sdk.ValueHintType.Embed,
@@ -43,7 +43,7 @@ pack.addFormula({
 You may still be able to embed URLs that aren't supported by Iframely by using the `force` option.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   resultType: sdk.ValueType.String,
   schema: {

@@ -1,7 +1,7 @@
 import type {ArraySchema} from '../schema';
 import type {BaseStringSchema} from '../schema';
 import type {GenericObjectSchema} from '../schema';
-import type {ObjectPackFormulaMetadata} from '../api';
+import type {ObjectFormulaMetadata} from '../api';
 import type {ObjectSchemaProperty} from '../schema';
 import type {ParamDefs} from '../api_types';
 import type {ParamValues} from '../api_types';
@@ -24,7 +24,7 @@ import {isArray} from '../schema';
 import {isDefined} from '../helpers/object_utils';
 import {isEmail} from '../helpers/string';
 import {isObject} from '../schema';
-import {isObjectPackFormula} from '../api';
+import {isObjectFormula} from '../api';
 import {objectSchemaHelper} from '../helpers/migration';
 import * as objectUtils from '../helpers/object_utils';
 import urlParse from 'url-parse';
@@ -67,7 +67,7 @@ export function validateResult<ResultT extends any>(formula: TypedPackFormula, r
     throw ResultValidationException.fromErrors(formula.name, [maybeError]);
   }
 
-  if (isObjectPackFormula(formula)) {
+  if (isObjectFormula(formula)) {
     // We've already validated that the result type is valid by this point.
     validateObjectResult(formula, result as Record<string, unknown>);
   }
@@ -307,7 +307,7 @@ function checkType<ResultT extends any>(
 }
 
 function validateObjectResult<ResultT extends Record<string, unknown>>(
-  formula: ObjectPackFormulaMetadata,
+  formula: ObjectFormulaMetadata,
   result: ResultT,
 ): void {
   const {schema} = formula;

@@ -20,7 +20,7 @@ The basic structure of an MCP server integration.
 
 ```ts
 {% raw %}
-pack.addMCPServer({
+connector.addMCPServer({
   name: "MyMCPServer",
   endpointUrl: "https://my-mcp-server.com/mcp",
 });
@@ -33,14 +33,14 @@ An MCP integration that does not require authentication. This sample connects to
 {% raw %}
 import * as coda from "@superhuman/plugins-sdk";
 
-export const pack = coda.newPack();
+export const connector = coda.newConnector();
 
-pack.addMCPServer({
+connector.addMCPServer({
   name: "Icons8",
   endpointUrl: "https://mcp.icons8.com/mcp/",
 });
 
-pack.addNetworkDomain("icons8.com");
+connector.addNetworkDomain("icons8.com");
 {% endraw %}
 ```
 ## Token auth
@@ -50,20 +50,20 @@ An MCP integration that authenticates using a static token. This sample connects
 {% raw %}
 import * as coda from "@superhuman/plugins-sdk";
 
-export const pack = coda.newPack();
+export const connector = coda.newConnector();
 
-pack.addMCPServer({
+connector.addMCPServer({
   name: "Ref_tools",
   endpointUrl: "https://api.ref.tools/mcp",
 });
 
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: coda.AuthenticationType.CustomHeaderToken,
   headerName: "x-ref-api-key",
   instructionsUrl: "https://ref.tools/keys",
 });
 
-pack.addNetworkDomain("ref.tools");
+connector.addNetworkDomain("ref.tools");
 {% endraw %}
 ```
 ## Static OAuth client
@@ -73,14 +73,14 @@ An MCP integration that authenticates using OAuth, with a static client. This sa
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
 
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addMCPServer({
+connector.addMCPServer({
   name: "GoogleCalendar",
   endpointUrl: "https://calendarmcp.googleapis.com/mcp/v1",
 });
 
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
   tokenUrl: "https://oauth2.googleapis.com/token",
@@ -94,7 +94,7 @@ pack.setUserAuthentication({
   },
 });
 
-pack.addNetworkDomain("googleapis.com");
+connector.addNetworkDomain("googleapis.com");
 {% endraw %}
 ```
 ## Dynamic OAuth client
@@ -104,21 +104,21 @@ An MCP integration that authenticates using OAuth, with a dynamically registered
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
 
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addMCPServer({
+connector.addMCPServer({
   name: "Miro",
   endpointUrl: "https://mcp.miro.com/",
 });
 
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   useDynamicClientRegistration: true,
   useProofKeyForCodeExchange: true,
   scopes: ["boards:read", "boards:write"],
 });
 
-pack.addNetworkDomain("miro.com");
+connector.addNetworkDomain("miro.com");
 {% endraw %}
 ```
 ## With other building blocks
@@ -127,15 +127,15 @@ A Pack that uses an MCP for most tools, but includes a sync table for indexing. 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // The REST API and MCP server are hosted on different domains.
 // Note: Connecting to multiple domains requires approval.
-pack.addNetworkDomain("todoist.com");
-pack.addNetworkDomain("todoist.net");
+connector.addNetworkDomain("todoist.com");
+connector.addNetworkDomain("todoist.net");
 
 // The REST API and MCP server use the same OAuth credentials.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   useDynamicClientRegistration: true,
 
@@ -152,7 +152,7 @@ pack.setUserAuthentication({
   },
 });
 
-pack.addMCPServer({
+connector.addMCPServer({
   name: "Todoist",
   endpointUrl: "https://ai.todoist.net/mcp",
 });
@@ -205,7 +205,7 @@ const TaskSchema = sdk.makeObjectSchema({
 });
 
 // Index tasks into the knowledge layer.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   schema: TaskSchema,
   identityName: "Task",

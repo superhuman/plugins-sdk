@@ -20,7 +20,7 @@ To instruct the platform to fetch a subsequent result page, return a `Continuati
 describes which page of results to fetch next. The continuation will be passed verbatim
 as an input to the subsequent invocation of the sync formula.
 
-The contents of this object are entirely up to the pack author.
+The contents of this object are entirely up to the connector author.
 
 Examples:
 

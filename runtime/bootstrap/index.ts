@@ -18,6 +18,7 @@ import {ensureNever} from '../../helpers/ensure';
 import fs from 'fs';
 import {getIvm} from '../../testing/ivm_wrapper';
 import {marshalValue} from '../common/marshaling';
+import {normalizeSchemaIdentities} from '../../schema';
 import path from 'path';
 import {translateErrorStackFromVM} from '../common/source_map';
 import {unmarshalValue} from '../common/marshaling';
@@ -306,7 +307,7 @@ export async function injectExecutionContext({
     invocationLocation,
     timezone,
     invocationToken,
-    sync,
+    sync: sync && {...sync, ...(sync.schema && {schema: normalizeSchemaIdentities(sync.schema)})},
     executionId,
     authenticationName,
     previousAttemptError,

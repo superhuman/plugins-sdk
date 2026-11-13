@@ -10,8 +10,12 @@ docs_dir: docs
 
 validation:
   omitted_files: warn
-  absolute_links: warn
   unrecognized_links: warn
+  # A leading / is a path from docs/, rewritten to a relative URL for the current page.
+  links:
+    absolute_links: relative_to_docs
+  nav:
+    absolute_links: warn
 
 # Run Python scripts during the MkDocs generation process.
 hooks:
@@ -32,7 +36,8 @@ markdown_extensions:
         custom_icons:
           - documentation/theme/.icons
   - pymdownx.escapeall
-  - pymdownx.highlight
+  - pymdownx.highlight:
+      pygments_lang_class: true
   - pymdownx.keys
   # Snippets inclusion.
   # See: https://facelessuser.github.io/pymdown-extensions/extensions/snippets/
@@ -125,7 +130,7 @@ plugins:
 
           # 2025-11-11: Updated typedoc-plugin-markdown.
           "reference/sdk/classes/core.MissingScopesError.md": "reference/sdk/core/classes/MissingScopesError.md"
-          "reference/sdk/classes/core.PackDefinitionBuilder.md": "reference/sdk/core/classes/PackDefinitionBuilder.md"
+          "reference/sdk/classes/core.PackDefinitionBuilder.md": "reference/sdk/core/classes/ConnectorDefinitionBuilder.md"
           "reference/sdk/classes/core.StatusCodeError.md": "reference/sdk/core/classes/StatusCodeError.md"
           "reference/sdk/classes/core.UserVisibleError.md": "reference/sdk/core/classes/UserVisibleError.md"
           "reference/sdk/enums/core.AttributionNodeType.md": "reference/sdk/core/enumerations/AttributionNodeType.md"
@@ -368,7 +373,6 @@ plugins:
 
           # 2026-07-16: Remove the agent developing & troubleshooting guides.
           "agents/development.md": "support/migration/superhuman-go.md"
-          "agents/troubleshooting.md": "development/logging.md"
 
           # 2026-07-17: Move MCP and indexing from agents to connector building blocks.
           "agents/features/mcp.md": "guides/blocks/mcp.md"
@@ -378,18 +382,17 @@ plugins:
           "agents/indexing/incremental.md": "guides/blocks/sync-tables/indexing/incremental.md"
 
           # 2026-08-06: Remove agents section.
-          "agents/features/skills.md": "guides/blocks/skills.md"
-          "agents/features/tools.md": "guides/blocks/skills.md"
+          "agents/features/skills.md": "support/migration/superhuman-go.md"
           "agents/upgrade.md": "support/migration/superhuman-go.md"
-          "agents/index.md": "support/migration/superhuman-go.md"
-          "agents/quickstart.md": "support/migration/superhuman-go.md"
-          "agents/examples.md": "support/migration/superhuman-go.md"
-          "agents/features/chat.md": "support/migration/superhuman-go.md"
-          "agents/features/context.md": "support/migration/superhuman-go.md"
+          "agents/quickstart.md": "agents/tutorials/quickstart.md"
 
           # 2026-08-19: Delete the GitHub Codespaces and Replit tutorials.
           "tutorials/get-started/github.md": "tutorials/get-started/cli.md"
           "tutorials/get-started/replit.md": "tutorials/get-started/cli.md"
+
+          # 2026-11-09: Delete the connector skills guide and samples.
+          "guides/blocks/skills.md": "support/migration/superhuman-go.md"
+          "samples/topic/skill.md": "support/migration/superhuman-go.md"
 
     # Generate an RSS feed for the blog.
     # See: https://guts.github.io/mkdocs-rss-plugin/
@@ -422,6 +425,12 @@ plugins:
           color: "#FFFFFF"
 
 extra:
+  # Customize the annotations feature.
+  annotate:
+    # Allow adding them to template literals.
+    # Specified using Pygments' String.Backtick token.
+    ts: [.sb]
+
   # Social icons for the footer.
   social:
     - icon: fontawesome/brands/linkedin
@@ -454,10 +463,10 @@ theme:
   features:
     - announce.dismiss
     - content.action.edit
+    - content.code.annotate
     - content.code.copy
     - content.tabs.link
     - navigation.path
-    - navigation.prune
     - navigation.sections
     - navigation.tabs
     - navigation.tabs.sticky

@@ -1,12 +1,12 @@
 import * as sdk from "@superhuman/plugins-sdk";
 
-const pack = sdk.newPack();
+const connector = sdk.newConnector();
 
 const $3$Thing$Schema = undefined;
 
 // BEGIN
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "${1:MyThings}",
   description: "${2:Table description.}",
   identityName: "${3:Thing}",

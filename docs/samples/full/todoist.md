@@ -48,11 +48,11 @@ The Pack uses OAuth2 to connect to a user's Todoist account, which you can creat
 
     // #region Pack setup
 
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addNetworkDomain("todoist.com");
+    connector.addNetworkDomain("todoist.com");
 
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.OAuth2,
       // OAuth2 URLs and scopes are found in the Todoist OAuth guide:
       // https://developer.todoist.com/guides/#oauth
@@ -294,7 +294,7 @@ The Pack uses OAuth2 to connect to a user's Todoist account, which you can creat
 
     // #region Formulas
 
-    pack.addFormula({
+    connector.addFormula({
       name: "Project",
       description: "Gets a Todoist project by URL",
       parameters: [
@@ -316,7 +316,7 @@ The Pack uses OAuth2 to connect to a user's Todoist account, which you can creat
       },
     });
 
-    pack.addFormula({
+    connector.addFormula({
       name: "Task",
       description: "Gets a Todoist task by URL",
       parameters: [
@@ -343,13 +343,13 @@ The Pack uses OAuth2 to connect to a user's Todoist account, which you can creat
 
     // #region Column Formats
 
-    pack.addColumnFormat({
+    connector.addColumnFormat({
       name: "Project",
       formulaName: "Project",
       matchers: ProjectUrlPatterns,
     });
 
-    pack.addColumnFormat({
+    connector.addColumnFormat({
       name: "Task",
       formulaName: "Task",
       matchers: TaskUrlPatterns,
@@ -360,7 +360,7 @@ The Pack uses OAuth2 to connect to a user's Todoist account, which you can creat
 
     // #region Actions
 
-    pack.addFormula({
+    connector.addFormula({
       name: "AddProject",
       description: "Add a new Todoist project",
       parameters: [
@@ -387,7 +387,7 @@ The Pack uses OAuth2 to connect to a user's Todoist account, which you can creat
       },
     });
 
-    pack.addFormula({
+    connector.addFormula({
       name: "AddTask",
       description: "Add a new task.",
       parameters: [
@@ -422,7 +422,7 @@ The Pack uses OAuth2 to connect to a user's Todoist account, which you can creat
       },
     });
 
-    pack.addFormula({
+    connector.addFormula({
       name: "SetDueDate",
       description: "Change the due date of a task.",
       parameters: [
@@ -477,7 +477,7 @@ The Pack uses OAuth2 to connect to a user's Todoist account, which you can creat
 
     // #region Sync tables
 
-    pack.addSyncTable({
+    connector.addSyncTable({
       name: "Projects",
       schema: ProjectSchema,
       identityName: "Project",
@@ -522,7 +522,7 @@ The Pack uses OAuth2 to connect to a user's Todoist account, which you can creat
       },
     });
 
-    pack.addSyncTable({
+    connector.addSyncTable({
       name: "Tasks",
       schema: TaskSchema,
       identityName: "Task",
