@@ -11,6 +11,7 @@ This changelog keeps track of all changes to the Packs SDK. We follow convention
 
 ### Changed
 
+- `upload`, `build`, `validate`, `setOption`, `extensions`, and `whoami` now print the same `key: value` success output as `create`, `link`, `clone`, and `register`, so scripts and agents can parse every command the same way. `validate` prints `valid`. Update any script that matches the old messages.
 - `packs init --agent` now scaffolds an agent that exports `agent` and calls `agent.setInstructions()`. Agents that export `pack` keep working, so you do not need to rename an existing export.
 
 ### Deprecated
@@ -21,7 +22,7 @@ This changelog keeps track of all changes to the Packs SDK. We follow convention
 
 ### Fixed
 
-- Fixed a security vulnerability in `packs release --git-tag`. Release notes are now saved in the git tag exactly as written and are never run as shell commands.
+- Fixed a security vulnerability in `packs release --git-tag`. Release notes in the git tag message are no longer run as shell commands.
 
 ## [1.20.0] - 2026-11-06
 
@@ -48,7 +49,6 @@ This changelog keeps track of all changes to the Packs SDK. We follow convention
 
 ### Changed
 
-- `upload`, `build`, `validate`, `setOption`, `extensions`, and `whoami` now print the same `key: value` success output as `create`, `link`, `clone`, and `register`, so scripts and agents can parse every command the same way. `validate` prints `valid`. Update any script that matches the old messages.
 - New projects created with `packs init` use the Superhuman plugins templates and `@superhuman/plugins-sdk`.
 
 ### Fixed
