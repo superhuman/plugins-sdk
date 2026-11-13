@@ -546,7 +546,7 @@ The table below shows the recommended parameter type to use with various types o
 [^1]: The representation is known as ["serial number"][serial_number] and is common to all major spreadsheet applications.
 
 [samples]: ../../../samples/topic/parameter.md
-[parameters]: ../../../reference/sdk/core/interfaces/PackFormulaDef.md#parameters
+[parameters]: ../../../reference/sdk/core/interfaces/FormulaDef.md#parameters
 [makeParameter]: ../../../reference/sdk/core/functions/makeParameter.md
 [ParamDef]: ../../../reference/sdk/core/interfaces/ParamDef.md
 [destructuring_assignment]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment
@@ -571,4 +571,4 @@ The table below shows the recommended parameter type to use with various types o
 [network_domains]: ../../basics/fetcher.md#network-domains
 [examples_box_filename]: https://github.com/coda/packs-examples/blob/c565981293f14a4ca82bc2ddcf385ea9c7bbbad6/examples/box/helpers.ts#L31-L52
 [indexing]: ../../blocks/sync-tables/indexing/index.md
-[validateparameters]: ../../../reference/sdk/core/interfaces/CommonPackFormulaDef.md#validateparameters
+[validateparameters]: ../../../reference/sdk/core/interfaces/CommonFormulaDef.md#validateparameters
