@@ -172,7 +172,7 @@ examples: [
 [authentication]: ../basics/authentication/index.md
 [system_auth]: ../../reference/sdk/core/classes/ConnectorDefinitionBuilder.md#setsystemauthentication
 [user_auth]: ../../reference/sdk/core/classes/ConnectorDefinitionBuilder.md#setuserauthentication
-[connectionRequirement]: ../../reference/sdk/core/interfaces/PackFormulaDef.md#connectionrequirement
+[connectionRequirement]: ../../reference/sdk/core/interfaces/FormulaDef.md#connectionrequirement
 [sync_formula]: sync-tables/index.md#formula
 [navigation_connector_maker_tools]: ../../support/navigation.md#connector-maker-tools
 [caching]: ../advanced/caching.md
