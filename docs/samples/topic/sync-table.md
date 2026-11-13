@@ -16,7 +16,7 @@ The basic structure of a sync table.
 
 ```ts
 {% raw %}
-pack.addSyncTable({
+connector.addSyncTable({
   name: "MyThings",
   description: "Table description.",
   identityName: "Thing",
@@ -49,7 +49,7 @@ A sync table that uses a parameter. This sample syncs the list of emojis.
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 const EmojiSchema = sdk.makeObjectSchema({
   properties: {
@@ -67,7 +67,7 @@ const EmojiSchema = sdk.makeObjectSchema({
   featuredProperties: ["emoji", "group", "image"],
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Emojis",
   description: "Lists all of the emojis.",
   identityName: "Info",
@@ -111,7 +111,7 @@ pack.addSyncTable({
   },
 });
 
-pack.addNetworkDomain("emoji.family");
+connector.addNetworkDomain("emoji.family");
 {% endraw %}
 ```
 ## With continuation
@@ -120,13 +120,13 @@ A sync table that uses continuations to sync data using multiple executions. Thi
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // How many spells to fetch in each sync formula execution.
 const BATCH_SIZE = 20;
 
 // Allow requests to the DND API.
-pack.addNetworkDomain("dnd5eapi.co");
+connector.addNetworkDomain("dnd5eapi.co");
 
 // Schema that defines the metadata to return for each spell. Shared by the
 // formula, column format, and sync table.
@@ -199,7 +199,7 @@ function formatSpell(spell) {
 }
 
 // A sync table that displays all spells available in the API.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Spells",
   identityName: "Spell",
   schema: SpellSchema,
@@ -281,7 +281,7 @@ A sync table that pulls from an API using authentication. This sample syncs the 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A schema defining the data in the sync table.
 const TaskSchema = sdk.makeObjectSchema({
@@ -311,7 +311,7 @@ const TaskSchema = sdk.makeObjectSchema({
   featuredProperties: ["description", "url"],
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   schema: TaskSchema,
   identityName: "Task",
@@ -356,11 +356,11 @@ pack.addSyncTable({
   },
 });
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 
 // Setup authentication using a Todoist API token.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });
@@ -372,7 +372,7 @@ A sync table that contains a reference to a row in another sync table. This samp
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A schema defining the data in the Projects sync table.
 const ProjectSchema = sdk.makeObjectSchema({
@@ -435,7 +435,7 @@ const TaskSchema = sdk.makeObjectSchema({
 });
 
 // The definition and logic for the Projects sync table.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Projects",
   schema: ProjectSchema,
   identityName: "Project",
@@ -466,7 +466,7 @@ pack.addSyncTable({
 });
 
 // The definition and logic for the Tasks sync table.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   schema: TaskSchema,
   identityName: "Task",
@@ -505,11 +505,11 @@ pack.addSyncTable({
   },
 });
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 
 // Setup authentication using a Todoist API token.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });
@@ -522,7 +522,7 @@ Demonstrates how to index PDF content and contacts. This sample syncs informatio
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
 
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // How many members to sync in a single execution.
 const MembersPageSize = 1000;
@@ -535,10 +535,10 @@ const OneHourSecs = 60 * 60;
 
 // Allow requests to NY's Open Legislation API.
 // https://legislation.nysenate.gov/static/docs/html/index.html
-pack.addNetworkDomain("nysenate.gov");
+connector.addNetworkDomain("nysenate.gov");
 
 // The API uses an API key in the query parameters.
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.QueryParamToken,
   paramName: "key",
 });
@@ -664,7 +664,7 @@ const DocumentSchema = sdk.makeObjectSchema({
 });
 
 // A sync table of members.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Members",
   description: "Lists the current members of the senate.",
   identityName: "Member",
@@ -718,7 +718,7 @@ pack.addSyncTable({
 });
 
 // A sync table of laws.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Laws",
   description: "Lists the laws on the books.",
   instructions: `
@@ -751,7 +751,7 @@ pack.addSyncTable({
 });
 
 // A sync table of documents.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Documents",
   description: "Lists the documents with a section of the law.",
   identityName: "Document",

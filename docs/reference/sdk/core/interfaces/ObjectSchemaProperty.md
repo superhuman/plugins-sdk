@@ -53,7 +53,7 @@ The name of a field in a return value object that should be re-mapped to this pr
 This provides a way to rename fields from API responses without writing code.
 
 Suppose that you're fetching an object from an API that has a property called "duration".
-But in your pack, you'd like the value to be called "durationSeconds" to be more precise.
+But in your connector, you'd like the value to be called "durationSeconds" to be more precise.
 You could write code in your `execute` function to relabel the field, but you could
 also use `fromKey` and the platform will do it for you.
 

@@ -1,12 +1,12 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // The version of the Webflow API to use.
 const WebflowApiVersion = "1.0.0";
 
 // Per-user authentication to the ClickUp API, using OAuth2.
 // See https://developers.webflow.com/oauth
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://webflow.com/oauth/authorize",
   tokenUrl: "https://api.webflow.com/oauth/access_token",
@@ -25,5 +25,5 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Webflow.
-pack.addNetworkDomain("webflow.com");
+// Allow the connector to make requests to Webflow.
+connector.addNetworkDomain("webflow.com");

@@ -13,25 +13,25 @@ search:
 Definition for a custom column type that users can apply to any column in any Superhuman Docs table.
 A column format tells Superhuman Docs to interpret the value in a cell by executing a formula
 using that value, typically looking up data related to that value from a third-party API.
-For example, the Weather pack has a column format "Current Weather"; when applied to a column,
+For example, the Weather connector has a column format "Current Weather"; when applied to a column,
 if you type a city or address into a cell in that column, that location will be used as the input
 to a formula that fetches the current weather at that location, and the resulting object with
 weather info will be shown in the cell.
 
-A column format is just a wrapper around a formula defined in the [PackVersionDefinition.formulas](PackVersionDefinition.md#formulas) section
-of your pack definition. It tells Superhuman Docs to execute that particular formula using the value
+A column format is just a wrapper around a formula defined in the [ComponentVersionDefinition.formulas](ComponentVersionDefinition.md#formulas) section
+of your connector definition. It tells Superhuman Docs to execute that particular formula using the value
 of the cell as input.
 
 The formula referenced by a format must have exactly one required parameter.
 
 You may optionally specify one or more [matchers](#matchers), which are regular expressions
 that can be matched against values that users paste into table cells, to determine if
-this Format is applicable to that value. Matchers help users realize that there is a pack
+this Format is applicable to that value. Matchers help users realize that there is a connector
 format that may augment their experience of working with such values.
 
-For example, if you're building a Wikipedia pack, you may write a matcher regular expression
+For example, if you're building a Wikipedia connector, you may write a matcher regular expression
 that looks for Wikipedia article URLs, if you have a formula that can fetch structured data
-given an article URL. This would help users discover that there is a pack that can fetch
+given an article URL. This would help users discover that there is a connector that can fetch
 structured data given only a url.
 
 At present, matchers will only be run on URLs and not other text values.
@@ -43,7 +43,7 @@ At present, matchers will only be run on URLs and not other text values.
 > **formulaName**: `string`
 
 The name of the formula to invoke for values in columns using this format.
-This must correspond to the name of a regular, public formula defined in this pack.
+This must correspond to the name of a regular, public formula defined in this connector.
 
 ***
 

@@ -872,7 +872,7 @@ export interface ObjectSchemaProperty {
    * This provides a way to rename fields from API responses without writing code.
    *
    * Suppose that you're fetching an object from an API that has a property called "duration".
-   * But in your pack, you'd like the value to be called "durationSeconds" to be more precise.
+   * But in your connector, you'd like the value to be called "durationSeconds" to be more precise.
    * You could write code in your `execute` function to relabel the field, but you could
    * also use `fromKey` and the platform will do it for you.
    *
@@ -971,7 +971,7 @@ export type GenericObjectSchema = ObjectSchema<string, string>;
  * An identifier for a schema, allowing other schemas to reference it.
  *
  * You may optionally specify an {@link ObjectSchemaDefinition.identity} when defining an object schema.
- * This signals that this schema represents an important named entity in the context of your pack.
+ * This signals that this schema represents an important named entity in the context of your connector.
  * Schemas with identities may be referenced by other schemas, in which case Superhuman Docs
  * will render such values as @-references in the doc, allowing you to create relationships
  * between entities.
@@ -982,7 +982,7 @@ export type GenericObjectSchema = ObjectSchema<string, string>;
  */
 export interface IdentityDefinition {
   /**
-   * The name of this entity. This is an arbitrary name but should be unique within your pack.
+   * The name of this entity. This is an arbitrary name but should be unique within your connector.
    * For example, if you are defining a schema that represents a user object, "User" would be a good identity name.
    */
   name: string;
@@ -998,12 +998,19 @@ export interface IdentityDefinition {
    * you wish to reference, again to distinguish which table instance you are trying to reference.
    */
   dynamicUrl?: string;
-  /** The ID of another pack, if you are trying to reference a value from different pack. */
+  /**
+   * The ID of another connector when referencing its values. Takes precedence over {@link packId}.
+   */
+  connectorId?: number;
+  /**
+   * The ID of another connector when referencing its values.
+   * @deprecated Use {@link connectorId} instead.
+   */
   packId?: number;
   /**
    * By default, result sets returned by dynamic sync tables will not be merged together across different dynamicUrl
    * values for the purposes of presenting information. This value, if set, will allow results for identities for the
-   * same Pack and name to be merged together if they share the same `mergeKey`.
+   * same connector and name to be merged together if they share the same `mergeKey`.
    *
    * @hidden In development.
    */
@@ -1013,11 +1020,40 @@ export interface IdentityDefinition {
 }
 
 /**
- * The runtime version of {@link IdentityDefinition} with the current Pack ID injected if a different
- * one isn't set by the maker.
+ * The runtime version of {@link IdentityDefinition} with the current connector ID injected if a different
+ * one isn't set by the author.
  */
 export interface Identity extends IdentityDefinition {
+  /** @deprecated Use {@link connectorId} instead. */
   packId: number;
+}
+
+/** @internal Resolve identity aliases without changing the author's input. */
+export function normalizeIdentity<T extends IdentityDefinition>(identity: T): T {
+  const connectorId = identity.connectorId ?? identity.packId;
+  return connectorId === undefined ? {...identity} : {...identity, connectorId, packId: connectorId};
+}
+
+/** @internal Hydrate identity aliases without normalizing schema property names. */
+export function normalizeSchemaIdentities(schema: GenericObjectSchema): GenericObjectSchema;
+export function normalizeSchemaIdentities(schema: ArraySchema): ArraySchema;
+export function normalizeSchemaIdentities(schema: Schema): Schema;
+export function normalizeSchemaIdentities(schema: Schema): Schema {
+  if (isArray(schema)) {
+    return {...schema, ...(schema.items && {items: normalizeSchemaIdentities(schema.items)})};
+  }
+  if (isObject(schema)) {
+    return {
+      ...schema,
+      ...(schema.identity && {identity: normalizeIdentity(schema.identity)}),
+      ...(schema.properties && {
+        properties: Object.fromEntries(
+          Object.entries(schema.properties).map(([key, property]) => [key, normalizeSchemaIdentities(property)]),
+        ),
+      }),
+    };
+  }
+  return {...schema};
 }
 
 /**
@@ -1034,7 +1070,7 @@ export interface PropertyIdentifierDetails {
   label?: string;
   /**
    * An optional placeholder value, which will be rendered when the property value is an empty value
-   * (null, undefined, "", [], \{\}). This will be used in the Pack card title, subtitle, and snippet.
+   * (null, undefined, "", [], \{\}). This will be used in the card title, subtitle, and snippet.
    * Not accessible within the Superhuman formula language.
    */
   placeholder?: string;
@@ -1424,7 +1460,7 @@ export interface ObjectSchemaDefinition<K extends string, L extends string>
   attribution?: AttributionNode[];
   /**
    * Specifies that object instances with this schema can contain additional properties not defined
-   * in the schema, and that the packs infrastructure should retain these unknown properties
+   * in the schema, and that the platform should retain these unknown properties
    * rather than stripping them.
    *
    * Properties not declared in the schema will not work properly in Superhuman Docs: they cannot be
@@ -1805,7 +1841,7 @@ export enum AttributionNodeType {
 export interface TextAttributionNode {
   /** Identifies this as a text attribution node. */
   type: AttributionNodeType.Text;
-  /** The text to render with the pack value. */
+  /** The text to render with the connector value. */
   text: string;
 }
 
@@ -1858,12 +1894,12 @@ export interface ImageAttributionNode {
 }
 
 /**
- * Union of attribution node types for rendering attribution for a pack value. See {@link makeAttributionNode}.
+ * Union of attribution node types for rendering attribution for a connector value. See {@link makeAttributionNode}.
  */
 export type AttributionNode = TextAttributionNode | LinkAttributionNode | ImageAttributionNode;
 
 /**
- * A helper for constructing attribution text, links, or images that render along with a Pack value.
+ * A helper for constructing attribution text, links, or images that render along with a connector value.
  *
  * Many APIs have licensing requirements that ask for specific attribution to be included
  * when using their data. For example, a stock photo API may require attribution text
@@ -1983,7 +2019,7 @@ export type InferrableTypes = boolean | number | string | object | boolean[] | n
  * that describes it.
  *
  * It is vastly preferable to define a schema manually. A clear and accurate schema is one of the
- * fundamentals of a good pack. However, for data that is truly dynamic for which a schema can't
+ * fundamentals of a good connector. However, for data that is truly dynamic for which a schema can't
  * be known in advance nor can a function be written to generate a dynamic schema from other
  * inputs, it may be useful to us this helper to sniff the return value and generate a basic
  * inferred schema from it.

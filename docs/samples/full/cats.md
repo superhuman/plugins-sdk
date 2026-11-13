@@ -17,12 +17,12 @@ This Pack allows you to fetch random cat photos using the [Cat-as-a-service API]
 === "pack.ts"
     ```ts
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addNetworkDomain("cataas.com");
+    connector.addNetworkDomain("cataas.com");
 
     // Formula that fetches a random cat photo, with various options.
-    pack.addFormula({
+    connector.addFormula({
       name: "CatPhoto",
       description: "Gets a random cat image.",
       parameters: [
@@ -91,7 +91,7 @@ This Pack allows you to fetch random cat photos using the [Cat-as-a-service API]
 
     // Column format that displays the cell's value within a random cat image,
     // using the CatPhoto() formula defined above.
-    pack.addColumnFormat({
+    connector.addColumnFormat({
       name: "Cat Photo",
       instructions: "Displays the text over the photo of a random cat.",
       formulaName: "CatPhoto",

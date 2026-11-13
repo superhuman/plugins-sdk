@@ -1,8 +1,8 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Say Hello to the given name.
-pack.addFormula({
+connector.addFormula({
   name: "Hello",
   description: "A Hello World example.",
   parameters: [

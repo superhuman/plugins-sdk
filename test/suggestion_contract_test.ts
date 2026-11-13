@@ -1,11 +1,10 @@
-import './test_helper';
+import {testHelper} from './test_helper';
 import {SuggestionEndpointRequestJsonSchema} from '../suggestion_schemas';
 import {SuggestionEndpointResponseJsonSchema} from '../suggestion_schemas';
 import * as fs from 'fs';
 import {SuggestionEndpointRequestJsonSchema as generatedRequestSchema} from '../suggestions';
 import {SuggestionEndpointResponseJsonSchema as generatedResponseSchema} from '../suggestions';
 import {join} from 'path';
-import * as ts from 'typescript';
 import * as vm from 'vm';
 import {z} from 'zod';
 
@@ -22,7 +21,6 @@ describe('published suggestion SDK', () => {
   });
 
   it('preserves MCP selection and Balanced mode in consumer declarations', () => {
-    const filename = join(__dirname, 'consumer_probe.ts');
     const source = `import {ContextualTriggerAssistMode, newPack, SuggestionProviderType, SuggestionEndpointRequestJsonSchema, SuggestionEndpointResponseJsonSchema} from '../dist';
       import type {AgentTool, AgentConnectorMcpTool} from '../dist/types';
       const mcp: AgentConnectorMcpTool = {toolName: 'search'};
@@ -41,28 +39,7 @@ describe('published suggestion SDK', () => {
       newPack().addSuggestionProvider({type: SuggestionProviderType.Endpoint, name: 'Check', endpointUrl: 'https://example.com/check'});
       void request; void unavailable; void SuggestionEndpointRequestJsonSchema; void SuggestionEndpointResponseJsonSchema;
       void tools; void balanced;`;
-    const options: ts.CompilerOptions = {
-      noEmit: true,
-      strict: true,
-      skipLibCheck: false,
-      target: ts.ScriptTarget.ES2020,
-      module: ts.ModuleKind.CommonJS,
-      moduleResolution: ts.ModuleResolutionKind.NodeJs,
-      esModuleInterop: true,
-      types: [],
-    };
-    const host = ts.createCompilerHost(options);
-    const getSourceFile = host.getSourceFile.bind(host);
-    host.getSourceFile = (path, languageVersion, onError) =>
-      path === filename
-        ? ts.createSourceFile(path, source, languageVersion)
-        : getSourceFile(path, languageVersion, onError);
-    const program = ts.createProgram([filename], options, host);
-    const errors = ts.getPreEmitDiagnostics(program);
-    assert.deepEqual(
-      errors.map(error => ts.flattenDiagnosticMessageText(error.messageText, '\n')),
-      [],
-    );
+    testHelper.checkConsumer(source);
   });
 });
 

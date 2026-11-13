@@ -1,9 +1,9 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A formula that demonstrates how to generate an SVG that adapts to the user's
 // dark mode setting in Superhuman Docs.
-pack.addFormula({
+connector.addFormula({
   name: "HelloDarkMode",
   description: "Generates an image that adapts to the dark mode setting.",
   parameters: [],

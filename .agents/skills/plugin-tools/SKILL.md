@@ -1,6 +1,6 @@
 ---
 name: plugin-tools
-description: Add formulas, actions, indexed sync tables, or skills to a Superhuman connector plugin. Use when editing these capabilities or improving tool discovery and data retrieval in an existing plugin.
+description: Add formulas, actions, or indexed sync tables to a Superhuman connector plugin. Use when editing these capabilities or improving tool discovery and data retrieval in an existing plugin.
 ---
 
 # Add connector plugin tools and data
@@ -56,11 +56,5 @@ Use `connector.addSyncTable()` with a schema that defines stable IDs, a display 
 In Docs, users add a sync table to import rows into a document; indexing is needed for Go retrieval. Test the table in each surface the plugin targets.
 
 Use continuations to page remote results. A local sync execution proves the returned rows, but indexing and retrieval need a test in Go. For updates from Go, expose an action rather than relying on two-way sync.
-
-## Plugin skills
-
-Plugin skills apply to Go. Docs users use the formulas, actions, and sync tables directly.
-
-Use `connector.addSkill()` for reusable instructions that help Go choose or combine the connector's tools. This is a skill supplied by the user's Superhuman plugin, distinct from the coding-agent skills in this bundle. Check the [Go authoring guide](https://docs.superhuman.com/packs/build/latest/agents/) and installed SDK types for the supported fields. Verify routing in Go after upload.
 
 Before completing a tool or data change, follow the [local checks](../plugin-test-upload/SKILL.md#local-checks) and require successful validation and build, or report the specific blocker. Upload only when the user requests it.

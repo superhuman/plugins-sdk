@@ -1,8 +1,8 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Formula that adds five minutes to an input date and time.
-pack.addFormula({
+connector.addFormula({
   name: "FiveMinsLate",
   description: "Adds five minutes to the input date and time.",
   parameters: [

@@ -1,10 +1,10 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Okta API, using a custom token prefix and
 // account-specific endpoints.
 // See https://developer.okta.com/docs/reference/core-okta-api/#authentication
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.CustomHeaderToken,
   headerName: "Authorization",
   tokenPrefix: "SSWS",
@@ -26,5 +26,5 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Okta.
-pack.addNetworkDomain("okta.com");
+// Allow the connector to make requests to Okta.
+connector.addNetworkDomain("okta.com");

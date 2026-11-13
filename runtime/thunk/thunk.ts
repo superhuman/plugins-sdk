@@ -26,6 +26,7 @@ import type {PropertyOptionsAnnotatedResult} from '../../api';
 import type {PropertyOptionsExecutionContext} from '../../api_types';
 import type {PropertyOptionsResults} from '../../api';
 import {ReservedAuthenticationNames} from '../../types';
+import type {Schema} from '../../schema';
 import {StatusCodeError} from '../../api';
 import type {SyncExecutionContext} from '../../api_types';
 import {UpdateOutcome} from '../../api';
@@ -36,6 +37,7 @@ import {findFormula} from '../common/helpers';
 import {findSyncFormula} from '../common/helpers';
 import {isDynamicSyncTable} from '../../api';
 import {normalizePropertyOptionsResults} from '../../api';
+import {normalizeSchemaIdentities} from '../../schema';
 import {setEndpointHelper} from '../../helpers/migration';
 import {throwOnDynamicSchemaWithJsOptionsFunction} from '../../schema';
 import {unwrapError} from '../common/marshaling';
@@ -249,15 +251,27 @@ async function doFindAndExecutePackFunction<T extends FormulaSpecification>({
             }
           }
           break;
+        case MetadataFormulaType.SyncGetSchema: {
+          // Certain sync tables (Jira Issues, canonically) are not "dynamic" but have a getSchema formula
+          // in order to augment a static base schema with dynamic properties.
+          const getSchema: MetadataFormula | undefined = syncTables?.find(
+            table => table.name === formulaSpec.syncTableName,
+          )?.getSchema;
+          if (getSchema) {
+            const schema = await getSchema.execute(params as any, executionContext);
+            throwOnDynamicSchemaWithJsOptionsFunction(schema);
+            // The sync table builders wrap getSchema so it always returns a schema.
+            return normalizeSchemaIdentities(schema as Schema);
+          }
+          break;
+        }
         case MetadataFormulaType.SyncListDynamicUrls:
         case MetadataFormulaType.SyncSearchDynamicUrls:
         case MetadataFormulaType.SyncGetDisplayUrl:
         case MetadataFormulaType.SyncGetTableName:
-        case MetadataFormulaType.SyncGetSchema:
           if (syncTables) {
             const syncTable = syncTables.find(table => table.name === formulaSpec.syncTableName);
             if (syncTable) {
-              let isGetSchema = false;
               let formula: MetadataFormula | undefined;
               if (isDynamicSyncTable(syncTable)) {
                 switch (formulaSpec.metadataFormulaType) {
@@ -274,21 +288,11 @@ async function doFindAndExecutePackFunction<T extends FormulaSpecification>({
                   case MetadataFormulaType.SyncGetTableName:
                     formula = syncTable.getName;
                     break;
-                  case MetadataFormulaType.SyncGetSchema:
-                    formula = syncTable.getSchema;
-                    isGetSchema = true;
-                    break;
                   default:
-                    return ensureSwitchUnreachable(formulaSpec);
+                    return ensureSwitchUnreachable(formulaSpec.metadataFormulaType);
                 }
               } else {
                 switch (formulaSpec.metadataFormulaType) {
-                  // Certain sync tables (Jira Issues, canonically) are not "dynamic" but have a getSchema formula
-                  // in order to augment a static base schema with dynamic properties.
-                  case MetadataFormulaType.SyncGetSchema:
-                    formula = syncTable.getSchema;
-                    isGetSchema = true;
-                    break;
                   case MetadataFormulaType.SyncListDynamicUrls:
                   case MetadataFormulaType.SyncSearchDynamicUrls:
                   case MetadataFormulaType.SyncGetDisplayUrl:
@@ -296,15 +300,11 @@ async function doFindAndExecutePackFunction<T extends FormulaSpecification>({
                     // Not applicable to static tables.
                     break;
                   default:
-                    return ensureSwitchUnreachable(formulaSpec);
+                    return ensureSwitchUnreachable(formulaSpec.metadataFormulaType);
                 }
               }
               if (formula) {
-                const formulaResult = formula.execute(params as any, executionContext);
-                if (isGetSchema) {
-                  throwOnDynamicSchemaWithJsOptionsFunction(await formulaResult);
-                }
-                return formulaResult;
+                return formula.execute(params as any, executionContext);
               }
             }
           }

@@ -18,7 +18,7 @@ When the fetcher receives a response from the API indicating there was a problem
 By default an unhandled exception in your code is presented as a generic error message.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   name: "CreateOrder",
   description: "Create a new order.",
   parameters: [
@@ -58,7 +58,7 @@ pack.addFormula({
 When you want to provide a more specific error message, throw a `UserVisibleError` exception instead.
 
 ```{.ts hl_lines="5"}
-pack.addFormula({
+connector.addFormula({
   // ...
   execute: async function ([sku, quantity], context) {
     if (quantity < 0) {
@@ -84,7 +84,7 @@ pack.addFormula({
 When the error originates from an API or library, you can catch the error and throw a `UserVisibleError` one instead.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   execute: async function ([sku, quantity], context) {
     let response;
@@ -115,7 +115,7 @@ pack.addFormula({
 Some Packs include multiple formulas that call the same API, and it can be useful to share error handling logic between them. This can be done by using the `onError` field of the formula to specify a common error handling function. If running the `execute` function results in an error, it will first be sent to the `onError` function before being returned to the doc.
 
 ```{.ts hl_lines="4 18 29-38"}
-pack.addFormula({
+connector.addFormula({
   name: "CreateOrder",
   // ...
   onError: handleError,
@@ -129,7 +129,7 @@ pack.addFormula({
   },
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "CreateInvoice",
   // ...
   onError: handleError,

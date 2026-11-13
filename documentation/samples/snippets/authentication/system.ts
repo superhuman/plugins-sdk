@@ -1,11 +1,11 @@
 import * as sdk from "@superhuman/plugins-sdk";
 
-const pack = sdk.newPack();
+const connector = sdk.newConnector();
 
 const $0 = undefined;
 
 // BEGIN
 
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType[$0],
 });

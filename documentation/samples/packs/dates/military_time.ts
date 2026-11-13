@@ -1,9 +1,9 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Displays a time using military conventions. The result is a string (text)
 // value.
-pack.addFormula({
+connector.addFormula({
   name: "ToMilitaryTime",
   description: "Displays a time in military time.",
   parameters: [

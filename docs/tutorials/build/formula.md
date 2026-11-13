@@ -50,7 +50,7 @@ We'll start by scaffolding out the structure of the formula. Once we have it loo
 
     ```ts
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
     ```
 
     </div>
@@ -69,9 +69,9 @@ We'll start by scaffolding out the structure of the formula. Once we have it loo
 
     ```{.ts hl_lines="4-6"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addFormula({
+    connector.addFormula({
 
     });
     ```
@@ -91,9 +91,9 @@ We'll start by scaffolding out the structure of the formula. Once we have it loo
 
     ```{.ts hl_lines="5-6"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addFormula({
+    connector.addFormula({
       name: "Reverse",
       description: "Reverses some text.",
     });
@@ -115,9 +115,9 @@ We'll start by scaffolding out the structure of the formula. Once we have it loo
 
     ```{.ts hl_lines="7-9"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addFormula({
+    connector.addFormula({
       name: "Reverse",
       description: "Reverses some text.",
       parameters: [
@@ -142,9 +142,9 @@ We'll start by scaffolding out the structure of the formula. Once we have it loo
 
     ```{.ts hl_lines="8-10"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addFormula({
+    connector.addFormula({
       name: "Reverse",
       description: "Reverses some text.",
       parameters: [
@@ -171,9 +171,9 @@ We'll start by scaffolding out the structure of the formula. Once we have it loo
 
     ```{.ts hl_lines="9-10"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addFormula({
+    connector.addFormula({
       name: "Reverse",
       description: "Reverses some text.",
       parameters: [
@@ -203,9 +203,9 @@ We'll start by scaffolding out the structure of the formula. Once we have it loo
 
     ```{.ts hl_lines="9"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addFormula({
+    connector.addFormula({
       name: "Reverse",
       description: "Reverses some text.",
       parameters: [
@@ -236,9 +236,9 @@ We'll start by scaffolding out the structure of the formula. Once we have it loo
 
     ```{.ts hl_lines="14"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addFormula({
+    connector.addFormula({
       name: "Reverse",
       description: "Reverses some text.",
       parameters: [
@@ -270,9 +270,9 @@ We'll start by scaffolding out the structure of the formula. Once we have it loo
 
     ```{.ts hl_lines="15-17"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addFormula({
+    connector.addFormula({
       name: "Reverse",
       description: "Reverses some text.",
       parameters: [
@@ -307,9 +307,9 @@ We'll start by scaffolding out the structure of the formula. Once we have it loo
 
     ```{.ts hl_lines="16"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addFormula({
+    connector.addFormula({
       name: "Reverse",
       description: "Reverses some text.",
       parameters: [
@@ -450,9 +450,9 @@ Rebuild your Pack, and refresh the formula the formula in the doc. If everything
 ??? example "View the full code"
     ```ts
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addFormula({
+    connector.addFormula({
       name: "Reverse",
       description: "Reverses some text.",
       parameters: [
@@ -609,9 +609,9 @@ Rebuild your Pack, and try out the new `byWord` parameter in a formula. If every
 ??? example "View the full code"
     ```ts
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addFormula({
+    connector.addFormula({
       name: "Reverse",
       description: "Reverses some text.",
       parameters: [

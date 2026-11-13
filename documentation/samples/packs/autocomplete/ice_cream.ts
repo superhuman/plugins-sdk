@@ -1,8 +1,8 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Generates a fictitious ice cream order, using a flexible set of choices.
-pack.addFormula({
+connector.addFormula({
   name: "OrderIcecream",
   description: "Put in your ice cream order.",
   parameters: [

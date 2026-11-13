@@ -1,9 +1,9 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Configure per-user authentication for the Typeform API, using OAuth2.
 // See: https://developer.typeform.com/get-started/applications/
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://api.typeform.com/oauth/authorize",
   tokenUrl: "https://api.typeform.com/oauth/token",
@@ -24,4 +24,4 @@ pack.setUserAuthentication({
 });
 
 // Allow requests to Typeform.
-pack.addNetworkDomain("typeform.com");
+connector.addNetworkDomain("typeform.com");

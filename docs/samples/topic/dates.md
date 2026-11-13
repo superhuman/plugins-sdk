@@ -17,9 +17,9 @@ A formula that requires getting a date in the document&#x27;s timezone. This sam
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addFormula({
+connector.addFormula({
   name: "GoodNYEGlasses",
   description: "Determines if a date is good for New Years Eve glasses " +
     "(the year contains two zeros).",
@@ -50,11 +50,11 @@ A formula that requires getting a time in the document&#x27;s timezone. This sam
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Displays a time using military conventions. The result is a string (text)
 // value.
-pack.addFormula({
+connector.addFormula({
   name: "ToMilitaryTime",
   description: "Displays a time in military time.",
   parameters: [
@@ -86,9 +86,9 @@ A formula that requires getting a date and time in the document&#x27;s timezone.
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addFormula({
+connector.addFormula({
   name: "SameDigit",
   description: "Determines if a date and time only contain a single digit." +
     "For example, 1/1/11 1:11.",
@@ -126,7 +126,7 @@ A formula that requires sending a date to an API. This sample use the Calendarif
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A schema to represent a holiday.
 const HolidaySchema = sdk.makeObjectSchema({
@@ -143,7 +143,7 @@ const HolidaySchema = sdk.makeObjectSchema({
 });
 
 // Gets the holidays happening in the selected country on a given day.
-pack.addFormula({
+connector.addFormula({
   name: "Holidays",
   description: "Get the holidays (if any) on a given day.",
   parameters: [
@@ -209,12 +209,12 @@ pack.addFormula({
 });
 
 // Calendarific requires an API key as a query parameter.
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.QueryParamToken,
   paramName: "api_key",
 });
 
-pack.addNetworkDomain("calendarific.com");
+connector.addNetworkDomain("calendarific.com");
 {% endraw %}
 ```
 ## Time math
@@ -223,10 +223,10 @@ A formula that computes a relative time. This sample adds five minutes onto an i
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Formula that adds five minutes to an input date and time.
-pack.addFormula({
+connector.addFormula({
   name: "FiveMinsLate",
   description: "Adds five minutes to the input date and time.",
   parameters: [

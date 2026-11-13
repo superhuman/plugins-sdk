@@ -6,6 +6,7 @@ import {PublicApiPackLogType} from '../helpers/external-api/v1';
 import {PublicApiType} from '../helpers/external-api/v1';
 import {ResponseError} from '../helpers/external-api/coda';
 import {ToolType} from '../types';
+import {Type} from '../api_types';
 import {buildAgentChatMessagesUrl} from '../cli/agent_chat';
 import {buildAgentInstallCommand} from '../cli/index';
 import {buildAgentInstallUrl} from '../cli/agent_install';
@@ -28,6 +29,7 @@ import fs from 'fs-extra';
 import {getApiTokenCreationUrl} from '../cli/register';
 import {getConnectorPackIds} from '../cli/validate';
 import {handleAgentChat} from '../cli/agent_chat';
+import {handleUpload} from '../cli/upload';
 import {importManifest} from '../cli/helpers';
 import {joinAssistantTexts} from '../cli/agent_chat';
 import {parsePackIdOrUrl} from '../cli/link';
@@ -40,6 +42,54 @@ import yargs from 'yargs';
 
 describe('CLI', () => {
   describe('compile pack metadata', () => {
+    it('uploads canonical identity aliases from raw manifests', async () => {
+      const dir = fs.mkdtempSync(path.join(__dirname, 'packs', '.tmp-identity-upload-'));
+      const sandbox = sinon.createSandbox();
+      try {
+        sandbox.stub(cliHelpers, 'isTestCommand').returns(true);
+        sandbox.stub(testingHelpers, 'printAndExit').callsFake(message => {
+          throw new Error(message);
+        });
+        const schema = {
+          type: 'object',
+          identity: {name: 'Other', connectorId: 42, packId: 'ignored'},
+          properties: {original_name: {type: 'string', originalKey: 'original name'}},
+        };
+        const manifestFile = path.join(dir, 'pack.ts');
+        fs.writeFileSync(
+          manifestFile,
+          `export const pack = ${JSON.stringify({
+            version: '1.0.0',
+            formulaNamespace: 'Test',
+            formulas: [{name: 'Raw', description: 'Raw schema', parameters: [], resultType: Type.object, schema}],
+          })};`,
+        );
+        fs.writeJsonSync(path.join(dir, '.coda-pack.json'), {packId: 123});
+        const registerPackVersion = sandbox.stub().resolves({uploadUrl: 'https://upload.example/pack', headers: {}});
+        sandbox.stub(cliHelpers, 'createCodaClient').returns({
+          registerPackVersion,
+          packVersionUploadComplete: sandbox.stub().resolves({}),
+        } as any);
+        const upload = sandbox.stub(global, 'fetch').resolves(new Response());
+        sandbox.stub(console, 'info');
+        await handleUpload({
+          manifestFile,
+          apiEndpoint: 'https://coda.io',
+          apiToken: 'test-token',
+          intermediateOutputDirectory: path.join(dir, 'build'),
+          timerStrategy: configStorage.DEFAULT_TIMER_STRATEGY,
+        } as Parameters<typeof handleUpload>[0]);
+        const payload = JSON.parse(upload.firstCall.args[1]!.body as string);
+        assert.deepEqual(payload.metadata.formulas[0].schema, {
+          ...schema,
+          identity: {name: 'Other', connectorId: 42, packId: 42},
+        });
+      } finally {
+        sandbox.restore();
+        fs.removeSync(dir);
+      }
+    });
+
     it('compiles undefined formulas, formats, and synctables into empty arrays', () => {
       const packDef: PackVersionDefinition = {
         version: '1',
@@ -116,12 +166,12 @@ describe('CLI', () => {
       };
       assert.equal(
         formatWhoami(nonScopedToken),
-        `You are Some Name (email@example.com) using non-scoped token "This Token's Name"`,
+        `name: Some Name\nlogin: email@example.com\ntoken: This Token's Name\nscoped: false`,
       );
 
       assert.equal(
         formatWhoami({...nonScopedToken, scoped: true}),
-        `You are Some Name (email@example.com) using scoped token "This Token's Name"`,
+        `name: Some Name\nlogin: email@example.com\ntoken: This Token's Name\nscoped: true`,
       );
     });
   });
@@ -129,11 +179,11 @@ describe('CLI', () => {
   describe('agent template', () => {
     it('renders an agent pack with instructions, tools, and a schedule trigger', () => {
       const template = renderAgentPackTemplate('standup-bot');
-      assert.include(template, 'sdk.newAgent()');
-      assert.include(template, 'pack.setInstructions(');
+      assert.include(template, 'export const agent = sdk.newAgent();');
+      assert.include(template, 'agent.setInstructions(');
       assert.include(template, 'standup-bot');
-      assert.include(template, 'pack.setTools({');
-      assert.include(template, 'pack.setDefaultScheduleTrigger({');
+      assert.include(template, 'agent.setTools({');
+      assert.include(template, 'agent.setDefaultScheduleTrigger({');
     });
 
     it('renders a template that compiles with quotes and backslashes in the name', async () => {

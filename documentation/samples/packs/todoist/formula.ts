@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A schema defining the rich metadata to be returned about each task.
 const TaskSchema = sdk.makeObjectSchema({
@@ -29,7 +29,7 @@ const TaskSchema = sdk.makeObjectSchema({
 });
 
 // Formula that looks up rich metadata about a task given its ID.
-pack.addFormula({
+connector.addFormula({
   name: "Task",
   description: "Gets a Todoist task by ID",
   parameters: [
@@ -57,11 +57,11 @@ pack.addFormula({
   },
 });
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 
 // Setup authentication using a Todoist API token.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });

@@ -14,7 +14,7 @@ search:
 
 Helper to generate a formula that fetches a list of entities from a given URL and returns them.
 
-One of the simplest but most common use cases for a pack formula is to make a request to an API
+One of the simplest but most common use cases for a formula is to make a request to an API
 endpoint that returns a list of objects, and then return those objects either as-is
 or with slight transformations. The can be accomplished with an `execute` function that does
 exactly that, but alternatively you could use `makeTranslateObjectFormula` and an

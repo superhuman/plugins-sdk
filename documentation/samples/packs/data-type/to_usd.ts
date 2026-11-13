@@ -1,9 +1,9 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addNetworkDomain("exchangerate.host");
+connector.addNetworkDomain("exchangerate.host");
 
-pack.addFormula({
+connector.addFormula({
   name: "ToUSD",
   description: "Convert from a different currency to US dollars.",
   parameters: [

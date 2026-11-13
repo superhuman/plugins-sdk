@@ -43,7 +43,7 @@ To enable your Pack to authenticate users with OAuth you need to configure the O
 To configure [`OAuth2`][OAuth] authentication you must specify the authorization URL and the token URL. These URLs are found in the technical documentation of the API you are connecting to, and will be different for each API.
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   // These URLs come from the API's developer documentation.
   authorizationUrl: "https://example.com/authorize",
@@ -54,7 +54,7 @@ pack.setUserAuthentication({
 Many APIs also support granular scopes, allowing you to request a limited set of permissions from the user. These can be specified as an array in the `scopes` field:
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   // These URLs come from the API's developer documentation.
   authorizationUrl: "https://example.com/authorize",
@@ -161,7 +161,7 @@ try {
 Even when you do know all of the scopes you need, you may not want to request them all at once. An approval screen with a long list of permissions can be intimidating to new users and some my choose to abandon your Pack. In these cases you may want to use incremental authorization, made possible in Packs by the formula field [`extraOAuthScopes`][extraOAuthScopes]. You can use it to specify additional scopes that are needed in order to run a specific formula.
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   // ...
   scopes: ["read"],
@@ -169,7 +169,7 @@ pack.setUserAuthentication({
 
 // ...
 
-pack.addFormula({
+connector.addFormula({
   name: "UpdateItem",
   // ...
   isAction: true,
@@ -190,13 +190,13 @@ When the user signs in again they will be prompted to approve the additional sco
 For sync tables that support [two-way sync][two_way_sync] you may want to set additional scopes that only apply when the user is making edits to the table. To do so, set the field `updateOptions.extraOAuthScopes` to the scopes needed to send edits.
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   // ...
   scopes: ["read"],
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Items",
   // ...
   formula: {
@@ -215,13 +215,13 @@ pack.addSyncTable({
 The `updateOptions.extraOAuthScopes` field overrides the value of `extraOAuthScopes` if it is already set. In this case you'll want to make sure that your update scopes are inclusive of your regular sync scopes, so that the correct scopes are requested regardless of the entry point.
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   // ...
   scopes: ["user:read"],
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Items",
   // ...
   formula: {
@@ -265,7 +265,7 @@ Depending on the OAuth provider you are connecting to, you may need to utilize t
 Some OAuth providers offer or require the use of [Proof Key for Code Exchange (PKCE)][oauth_pkce] during the OAuth flow. It is an additional flow layered on top of the standard Authorization Code flow that increases security by helping prevent against certain forms of attack. To use it in a Pack you simply need to enable the feature using the `useProofKeyForCodeExchange` field of the authentication configuration.
 
 ```{.ts hl_lines="4"}
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   // ...
   useProofKeyForCodeExchange: true,
@@ -275,7 +275,7 @@ pack.setUserAuthentication({
 The PKCE standard supports two different ways of creating a challenge from the verifier: `S256` (the default) and `plain`. The platform will use the more secure `S256` method by default, but you can override it using the `pkceChallengeMethod` field.
 
 ```{.ts hl_lines="5"}
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   // ...
   useProofKeyForCodeExchange: true,
@@ -296,7 +296,7 @@ When DCR is enabled, the platform will automatically:
 This means you don't need to manually obtain or enter a client ID and secret, and the `authorizationUrl` and `tokenUrl` fields become optional.
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   useDynamicClientRegistration: true,
   useProofKeyForCodeExchange: true,
@@ -307,7 +307,7 @@ pack.setUserAuthentication({
 If the automatic endpoint discovery doesn't work for your provider, you can still specify the URLs manually alongside DCR:
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   useDynamicClientRegistration: true,
   authorizationUrl: "https://example.com/authorize",
@@ -328,7 +328,7 @@ While the Authorization Code flow discussed above is used to access private user
 To setup the authentication all you need to do is set the type and provide the URL used to token exchange.
 
 ```ts
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.OAuth2ClientCredentials,
   // This URL comes from the API's developer documentation.
   tokenUrl: "https://api.example.com/token",

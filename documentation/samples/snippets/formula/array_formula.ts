@@ -1,10 +1,10 @@
 import * as sdk from "@superhuman/plugins-sdk";
 
-const pack = sdk.newPack();
+const connector = sdk.newConnector();
 
 // BEGIN
 
-pack.addFormula({
+connector.addFormula({
   name: "${1:MyFormula}",
   description: "${2:My description.}",
   parameters: [

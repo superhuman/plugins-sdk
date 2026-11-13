@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // BEGIN
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A reference to a synced Task. Usually you can use
 // `sdk.makeReferenceSchemaFromObjectSchema` to generate these from the primary

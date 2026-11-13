@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A "numbers" parameter shared by both formulas.
 const NumbersParameter = sdk.makeParameter({
@@ -8,7 +8,7 @@ const NumbersParameter = sdk.makeParameter({
   description: "The numbers to perform the calculation on.",
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "GCD",
   description: "Returns the greatest common divisor for a list of numbers.",
   parameters: [
@@ -37,7 +37,7 @@ pack.addFormula({
   },
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "LCM",
   description: "Returns the least common multiple for a list of numbers.",
   parameters: [

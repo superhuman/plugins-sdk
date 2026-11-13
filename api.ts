@@ -1,12 +1,14 @@
 import type {ArraySchema} from './schema';
 import type {ArrayType} from './api_types';
 import type {BooleanSchema} from './schema';
+import type {CommonFormulaDef} from './api_types';
 import type {CommonPackFormulaDef} from './api_types';
 import {ConnectionRequirement} from './api_types';
 import type {CrawlStrategy} from './api_types';
 import type {DataIndexing} from './api_types';
 import type {ExecutionContext} from './api_types';
 import type {FetchRequest} from './api_types';
+import type {FormulaResult} from './api_types';
 import type {GetPermissionExecutionContext} from './api_types';
 import type {Identity} from './schema';
 import type {NumberHintTypes} from './schema';
@@ -17,7 +19,6 @@ import type {ObjectSchemaDefinitionType} from './schema';
 import type {OptionalParamDef} from './api_types';
 import type {OptionsReference} from './api_types';
 import {OptionsType} from './api_types';
-import type {PackFormulaResult} from './api_types';
 import type {ParamArgs} from './api_types';
 import type {ParamDef} from './api_types';
 import type {ParamDefs} from './api_types';
@@ -60,6 +61,7 @@ import {isPromise} from './helpers/object_utils';
 import {makeObjectSchema} from './schema';
 import {maybeUnwrapArraySchema} from './schema';
 import {normalizeSchema} from './schema';
+import {normalizeSchemaIdentities} from './schema';
 import {normalizeSchemaKey} from './schema';
 import {numberArray} from './api_types';
 import {objectSchemaHelper} from './helpers/migration';
@@ -246,7 +248,7 @@ export class StatusCodeError extends Error {
 
 /**
  * Throw this error if the user needs to re-authenticate to gain OAuth scopes that have been added
- * to the pack since their connection was created, or scopes that are specific to a certain formula.
+ * to the connector since their connection was created, or scopes that are specific to a certain formula.
  * This is useful because the platform will always attempt to execute a formula even if a user has not yet
  * re-authenticated with all relevant scopes.
  *
@@ -309,7 +311,7 @@ export class GoogleDwdError extends Error {
 
 /**
  * An error that will be thrown by {@link Fetcher.fetch} when the response body from the external system
- * exceeds packs platform limits
+ * exceeds platform limits
  *
  * This error can be caught and retried by requesting less data from the external system through
  * a smaller page size or omitting large fields.
@@ -445,7 +447,7 @@ export interface DynamicSyncTableDef<
  * describes which page of results to fetch next. The continuation will be passed verbatim
  * as an input to the subsequent invocation of the sync formula.
  *
- * The contents of this object are entirely up to the pack author.
+ * The contents of this object are entirely up to the connector author.
  *
  * Examples:
  *
@@ -524,20 +526,20 @@ export function isDynamicSyncTable(syncTable: SyncTable): syncTable is GenericDy
 
 export function wrapMetadataFunction<
   ContextT extends ExecutionContext,
-  ReturnT extends PackFormulaResult = LegacyDefaultMetadataReturnType,
+  ReturnT extends FormulaResult = LegacyDefaultMetadataReturnType,
 >(
   fnOrFormula: MetadataFormula<ContextT, ReturnT> | MetadataFunction<ContextT, ReturnT> | undefined,
 ): MetadataFormula<ContextT, ReturnT> | undefined {
   return typeof fnOrFormula === 'function' ? makeMetadataFormula<ContextT, ReturnT>(fnOrFormula) : fnOrFormula;
 }
 
-function transformToArraySchema<ResultT extends PackFormulaResult>(schema?: any): ResultT {
+function transformToArraySchema<ResultT extends FormulaResult>(schema?: any): ResultT {
   if (schema?.type === ValueType.Array) {
-    return schema;
+    return normalizeSchemaIdentities(schema) as ResultT;
   } else {
     return {
       type: ValueType.Array,
-      items: schema,
+      items: schema && normalizeSchemaIdentities(schema),
     } as ResultT;
   }
 }
@@ -549,7 +551,7 @@ export function wrapGetSchema(getSchema: MetadataFormula | undefined): MetadataF
 
   return {
     ...getSchema,
-    execute<ParamsT extends [ParamDef<Type.string>, ParamDef<Type.string>], ResultT extends PackFormulaResult>(
+    execute<ParamsT extends [ParamDef<Type.string>, ParamDef<Type.string>], ResultT extends FormulaResult>(
       params: ParamValues<ParamsT>,
       context: ExecutionContext,
     ): Promise<ResultT> | ResultT {
@@ -983,14 +985,24 @@ export function check(condition: boolean, msg: string) {
   }
 }
 
-/**
- * Base type for the inputs for creating a pack formula.
- */
+/** @deprecated Use {@link FormulaDef}. */
 export interface PackFormulaDef<
   ParamsT extends ParamDefs,
-  ResultT extends PackFormulaResult,
+  ResultT extends FormulaResult,
   ContextT extends ExecutionContext = ExecutionContext,
-> extends CommonPackFormulaDef<ParamsT> {
+> extends FormulaDef<ParamsT, ResultT, ContextT>,
+    CommonPackFormulaDef<ParamsT> {
+  // Retains the original signature for backwards-compatible consumer overload augmentations.
+  /** The JavaScript function that implements this formula */
+  execute(params: ParamValues<ParamsT>, context: ContextT): Promise<ResultT> | ResultT;
+}
+
+/** Base type for the inputs for creating a formula. */
+export interface FormulaDef<
+  ParamsT extends ParamDefs,
+  ResultT extends FormulaResult,
+  ContextT extends ExecutionContext = ExecutionContext,
+> extends CommonFormulaDef<ParamsT> {
   /** The JavaScript function that implements this formula */
   execute(params: ParamValues<ParamsT>, context: ContextT): Promise<ResultT> | ResultT;
 }
@@ -1038,32 +1050,47 @@ export interface EmptyFormulaDef<ParamsT extends ParamDefs> extends Omit<PackFor
   request: RequestHandlerTemplate;
 }
 
-/** The base class for pack formula descriptors. Subclasses vary based on the return type of the formula. */
+/** The base class for formula descriptors. Subclasses vary based on the return type of the formula. */
 export type BaseFormula<
   ParamDefsT extends ParamDefs,
-  ResultT extends PackFormulaResult,
+  ResultT extends FormulaResult,
   ContextT extends ExecutionContext = ExecutionContext,
 > = PackFormulaDef<ParamDefsT, ResultT, ContextT> & {
   resultType: TypeOf<ResultT>;
 };
 
-/** A pack formula that returns a number. */
-export type NumericPackFormula<ParamDefsT extends ParamDefs> = BaseFormula<ParamDefsT, number> & {
+/** @deprecated Use {@link NumericFormula}. */
+export type NumericPackFormula<ParamDefsT extends ParamDefs> = NumericFormula<ParamDefsT>;
+
+/** A formula that returns a number. */
+export type NumericFormula<ParamDefsT extends ParamDefs> = BaseFormula<ParamDefsT, number> & {
   schema?: NumberSchema;
 };
 
-/** A pack formula that returns a boolean. */
-export type BooleanPackFormula<ParamDefsT extends ParamDefs> = BaseFormula<ParamDefsT, boolean> & {
+/** @deprecated Use {@link BooleanFormula}. */
+export type BooleanPackFormula<ParamDefsT extends ParamDefs> = BooleanFormula<ParamDefsT>;
+
+/** A formula that returns a boolean. */
+export type BooleanFormula<ParamDefsT extends ParamDefs> = BaseFormula<ParamDefsT, boolean> & {
   schema?: BooleanSchema;
 };
 
-/** A pack formula that returns a string. */
-export type StringPackFormula<ParamDefsT extends ParamDefs> = BaseFormula<ParamDefsT, SchemaType<StringSchema>> & {
+/** @deprecated Use {@link StringFormula}. */
+export type StringPackFormula<ParamDefsT extends ParamDefs> = StringFormula<ParamDefsT>;
+
+/** A formula that returns a string. */
+export type StringFormula<ParamDefsT extends ParamDefs> = BaseFormula<ParamDefsT, SchemaType<StringSchema>> & {
   schema?: StringSchema;
 };
 
-/** A pack formula that returns a JavaScript object. */
-export type ObjectPackFormula<ParamDefsT extends ParamDefs, SchemaT extends Schema> = Omit<
+/** @deprecated Use {@link ObjectFormula}. */
+export type ObjectPackFormula<ParamDefsT extends ParamDefs, SchemaT extends Schema> = ObjectFormula<
+  ParamDefsT,
+  SchemaT
+>;
+
+/** A formula that returns a JavaScript object. */
+export type ObjectFormula<ParamDefsT extends ParamDefs, SchemaT extends Schema> = Omit<
   BaseFormula<ParamDefsT, SchemaType<SchemaT>>,
   'execute'
 > & {
@@ -1075,56 +1102,74 @@ export type ObjectPackFormula<ParamDefsT extends ParamDefs, SchemaT extends Sche
 // can't use a map (e.g. ResultTypeToFormulaTypeMap<ParamDefs, SchemaT>[ResultT]) here since
 // ParamDefsT isn't propagated correctly.
 /**
- * A pack formula, complete with metadata about the formula like its name, description, and parameters,
+ * A formula, complete with metadata about the formula like its name, description, and parameters,
  * as well as the implementation of that formula.
  *
  * This is the type for an actual user-facing formula, rather than other formula-shaped resources within a
- * pack, like an autocomplete metadata formula or a sync getter formula.
+ * connector, like an autocomplete metadata formula or a sync getter formula.
  */
 export type Formula<
   ParamDefsT extends ParamDefs = ParamDefs,
   ResultT extends ValueType = ValueType,
   SchemaT extends Schema = Schema,
 > = ResultT extends ValueType.String
-  ? StringPackFormula<ParamDefsT>
+  ? StringFormula<ParamDefsT>
   : ResultT extends ValueType.Number
-    ? NumericPackFormula<ParamDefsT>
+    ? NumericFormula<ParamDefsT>
     : ResultT extends ValueType.Boolean
-      ? BooleanPackFormula<ParamDefsT>
+      ? BooleanFormula<ParamDefsT>
       : ResultT extends ValueType.Array
-        ? ObjectPackFormula<ParamDefsT, ArraySchema<SchemaT>>
-        : ObjectPackFormula<ParamDefsT, SchemaT>;
+        ? ObjectFormula<ParamDefsT, ArraySchema<SchemaT>>
+        : ObjectFormula<ParamDefsT, SchemaT>;
 
 type V2PackFormula<ParamDefsT extends ParamDefs, SchemaT extends Schema = Schema> =
-  | StringPackFormula<ParamDefsT>
-  | NumericPackFormula<ParamDefsT>
-  | BooleanPackFormula<ParamDefsT>
-  | ObjectPackFormula<ParamDefsT, ArraySchema<SchemaT>>
-  | ObjectPackFormula<ParamDefsT, SchemaT>;
+  | StringFormula<ParamDefsT>
+  | NumericFormula<ParamDefsT>
+  | BooleanFormula<ParamDefsT>
+  | ObjectFormula<ParamDefsT, ArraySchema<SchemaT>>
+  | ObjectFormula<ParamDefsT, SchemaT>;
+
+/** @deprecated Use {@link TypedFormula}. */
+export type TypedPackFormula = TypedFormula;
 
 /**
  * The union of types that represent formula definitions, including standard formula definitions,
  * metadata formulas, and the formulas that implement sync tables.
  *
  * It should be very uncommon to need to use this type, it is most common in meta analysis of the
- * contents of a pack for internal use.
+ * contents of a connector for internal use.
  */
-export type TypedPackFormula = Formula | GenericSyncFormula;
+export type TypedFormula = Formula | GenericSyncFormula;
 
-export type TypedObjectPackFormula = ObjectPackFormula<ParamDefs, Schema>;
+/** @deprecated Use {@link TypedObjectFormula}. */
+export type TypedObjectPackFormula = TypedObjectFormula;
+
+export type TypedObjectFormula = ObjectFormula<ParamDefs, Schema>;
+
+/**
+ * @hidden
+ * @deprecated Use {@link FormulaUi}.
+ */
+export interface PackFormulaUi extends FormulaUi {}
 
 /**
  * UI configuration carried in top-level formula metadata.
  * @hidden
  */
-export interface PackFormulaUi {
+export interface FormulaUi {
   /** References a resource descriptor's key. */
   resourceKey: string;
 }
 
+/**
+ * @hidden
+ * @deprecated Use {@link FormulaMetadata}.
+ */
+export type PackFormulaMetadata = FormulaMetadata;
+
 /** @hidden */
-export type PackFormulaMetadata = Omit<
-  TypedPackFormula,
+export type FormulaMetadata = Omit<
+  TypedFormula,
   'execute' | 'executeUpdate' | 'executeGetPermissions' | 'validateParameters'
 > & {
   validateParameters?: MetadataFormulaMetadata<ExecutionContext, ParameterValidationResult>;
@@ -1134,20 +1179,36 @@ export type PackFormulaMetadata = Omit<
    */
   ui?: PackFormulaUi;
 };
+
+/**
+ * @hidden
+ * @deprecated Use {@link ObjectFormulaMetadata}.
+ */
+export type ObjectPackFormulaMetadata = ObjectFormulaMetadata;
+
 /** @hidden */
-export type ObjectPackFormulaMetadata = Omit<TypedObjectPackFormula, 'execute' | 'validateParameters'> & {
+export type ObjectFormulaMetadata = Omit<TypedObjectFormula, 'execute' | 'validateParameters'> & {
   validateParameters?: MetadataFormulaMetadata<ExecutionContext, ParameterValidationResult>;
 };
 
-export function isObjectPackFormula(fn: PackFormulaMetadata): fn is ObjectPackFormulaMetadata {
+/** @deprecated Use {@link isObjectFormula}. */
+export const isObjectPackFormula = isObjectFormula;
+
+export function isObjectFormula(fn: FormulaMetadata): fn is ObjectFormulaMetadata {
   return fn.resultType === Type.object;
 }
 
-export function isStringPackFormula(fn: BaseFormula<ParamDefs, any>): fn is StringPackFormula<ParamDefs> {
+/** @deprecated Use {@link isStringFormula}. */
+export const isStringPackFormula = isStringFormula;
+
+export function isStringFormula(fn: BaseFormula<ParamDefs, any>): fn is StringFormula<ParamDefs> {
   return fn.resultType === Type.string;
 }
 
-export function isSyncPackFormula(fn: BaseFormula<ParamDefs, any>): fn is GenericSyncFormula {
+/** @deprecated Use {@link isSyncFormula}. */
+export const isSyncPackFormula = isSyncFormula;
+
+export function isSyncFormula(fn: BaseFormula<ParamDefs, any>): fn is GenericSyncFormula {
   return Boolean((fn as GenericSyncFormula).isSyncFormula);
 }
 
@@ -1427,7 +1488,7 @@ export interface SyncFormulaDef<
     // Create a separate type for the return value to ensure it's validated against any explicit context type.
   ): Promise<SyncFormulaResult<K, L, SchemaT, ContextReturnT, PermissionsContextT>>;
   /**
-   * If the table supports object updates, the maximum number of objects that will be sent to the pack
+   * If the table supports object updates, the maximum number of objects that will be sent to the connector
    * in a single batch. Defaults to 1 if not specified.
    *
    * Only supported in Superhuman Docs.
@@ -1455,7 +1516,7 @@ export interface SyncFormulaDef<
    * but not for reads.
    * @hidden
    */
-  updateOptions?: Pick<CommonPackFormulaDef<ParamDefsT>, 'extraOAuthScopes'>;
+  updateOptions?: Pick<CommonFormulaDef<ParamDefsT>, 'extraOAuthScopes'>;
 
   /**
    * The JavaScript function that implements fetching permissions for a set of objects
@@ -1522,11 +1583,11 @@ export type SyncFormula<
  */
 export function makeNumericFormula<ParamDefsT extends ParamDefs>(
   definition: FormulaOptions<ParamDefsT, PackFormulaDef<ParamDefsT, number>>,
-): NumericPackFormula<ParamDefsT> {
+): NumericFormula<ParamDefsT> {
   return Object.assign({}, definition, {
     resultType: Type.number as Type.number,
     validateParameters: wrapMetadataFunction(definition.validateParameters),
-  }) as NumericPackFormula<ParamDefsT>;
+  }) as NumericFormula<ParamDefsT>;
 }
 
 /**
@@ -1539,13 +1600,13 @@ export function makeNumericFormula<ParamDefsT extends ParamDefs>(
  */
 export function makeStringFormula<ParamDefsT extends ParamDefs>(
   definition: FormulaOptions<ParamDefsT, StringFormulaDefLegacy<ParamDefsT>>,
-): StringPackFormula<ParamDefsT> {
+): StringFormula<ParamDefsT> {
   const {response} = definition;
   return Object.assign({}, definition, {
     resultType: Type.string as Type.string,
     validateParameters: wrapMetadataFunction(definition.validateParameters),
     ...(response && {schema: response.schema}),
-  }) as StringPackFormula<ParamDefsT>;
+  }) as StringFormula<ParamDefsT>;
 }
 
 /**
@@ -1623,7 +1684,7 @@ export function makeFormula<ParamDefsT extends ParamDefs, ResultT extends ValueT
         'ValueHintType.SelectList is not supported for formula result types.',
       );
 
-      const stringFormula: StringPackFormula<ParamDefsT> = {
+      const stringFormula: StringFormula<ParamDefsT> = {
         ...rest,
         resultType: Type.string,
         schema: formulaSchema || (codaType ? {type: ValueType.String, codaType} : undefined),
@@ -1639,7 +1700,7 @@ export function makeFormula<ParamDefsT extends ParamDefs, ResultT extends ValueT
         validateParameters: wrapMetadataFunction(fullDefinition.validateParameters),
       };
       const {onError: _, resultType: unused, codaType, formulaSchema, ...rest} = def;
-      const numericFormula: NumericPackFormula<ParamDefsT> = {
+      const numericFormula: NumericFormula<ParamDefsT> = {
         ...rest,
         resultType: Type.number,
         schema: formulaSchema || (codaType ? {type: ValueType.Number, codaType} : undefined),
@@ -1653,7 +1714,7 @@ export function makeFormula<ParamDefsT extends ParamDefs, ResultT extends ValueT
         resultType: unused,
         ...rest
       } = fullDefinition as FormulaOptions<ParamDefsT, BooleanFormulaDef<ParamDefsT>>;
-      const booleanFormula: BooleanPackFormula<ParamDefsT> = {
+      const booleanFormula: BooleanFormula<ParamDefsT> = {
         ...rest,
         resultType: Type.boolean,
         validateParameters: wrapMetadataFunction(fullDefinition.validateParameters),
@@ -1668,7 +1729,7 @@ export function makeFormula<ParamDefsT extends ParamDefs, ResultT extends ValueT
         items,
         ...rest
       } = fullDefinition as FormulaOptions<ParamDefsT, ArrayFormulaDef<ParamDefsT, SchemaT>>;
-      const arrayFormula: ObjectPackFormula<ParamDefsT, ArraySchema<SchemaT>> = {
+      const arrayFormula: ObjectFormula<ParamDefsT, ArraySchema<SchemaT>> = {
         ...rest,
         // TypeOf<SchemaType<ArraySchema<SchemaT>>> is always Type.object but TS can't infer this.
         resultType: Type.object as TypeOf<SchemaType<ArraySchema<SchemaT>>>,
@@ -1694,7 +1755,7 @@ export function makeFormula<ParamDefsT extends ParamDefs, ResultT extends ValueT
         // The deepCopy() is here to drop property option functions, which have no effect on non-sync formulas.
         schema: deepCopy(normalizeSchema(schema)),
         validateParameters: wrapMetadataFunction(fullDefinition.validateParameters),
-      } as ObjectPackFormula<ParamDefsT, SchemaT>;
+      } as ObjectFormula<ParamDefsT, SchemaT>;
 
       formula = objectFormula;
       break;
@@ -1868,14 +1929,14 @@ export type MetadataContext = Record<string, any> & {__brand: 'MetadataContext'}
  */
 export type MetadataFormulaResultType = string | number | MetadataFormulaObjectResultType;
 /**
- * A formula that returns metadata relating to a core pack building block, like a sync table,
+ * A formula that returns metadata relating to a core connector building block, like a sync table,
  * a formula parameter, or a user account. Examples include {@link DynamicOptions.getSchema},
  * {@link BaseAuthentication.getConnectionName}, and {@link ParamDef.autocomplete}.
  *
- * Many pack building blocks make use of supporting features that often require JavaScript
+ * Many connector building blocks make use of supporting features that often require JavaScript
  * or an API request to implement. For example, fetching the list of available autocomplete
  * options for a formula parameter often requires making an API call. The logic to implement this
- * and the context required, like a {@link Fetcher} is very similar to that of a pack formula itself,
+ * and the context required, like a {@link Fetcher} is very similar to that of a formula itself,
  * so metadata formulas intentionally resemble regular formulas.
  *
  * A variety of tasks like those mentioned above can all be accomplished with formulas that
@@ -1898,7 +1959,7 @@ export type MetadataFormulaResultType = string | number | MetadataFormulaObjectR
  */
 export type MetadataFormula<
   ContextT extends ExecutionContext = ExecutionContext,
-  ResultT extends PackFormulaResult = LegacyDefaultMetadataReturnType,
+  ResultT extends FormulaResult = LegacyDefaultMetadataReturnType,
 > = BaseFormula<[ParamDef<Type.string>, ParamDef<Type.string>], ResultT, ContextT> & {
   schema?: any;
 };
@@ -1971,13 +2032,13 @@ export interface PropertyOptionsAnnotatedResult {
  * These are constructed by {@link makePropertyOptionsFormula}.
  * @hidden
  */
-export type PropertyOptionsMetadataFormula<SchemaT extends Schema> = ObjectPackFormula<[], ArraySchema<SchemaT>> & {
+export type PropertyOptionsMetadataFormula<SchemaT extends Schema> = ObjectFormula<[], ArraySchema<SchemaT>> & {
   execute(params: ParamValues<[]>, context: PropertyOptionsExecutionContext): Promise<object> | object;
 };
 
 export type MetadataFormulaMetadata<
   ContextT extends ExecutionContext = ExecutionContext,
-  ResultT extends PackFormulaResult = LegacyDefaultMetadataReturnType,
+  ResultT extends FormulaResult = LegacyDefaultMetadataReturnType,
 > = Omit<MetadataFormula<ContextT, ResultT>, 'execute' | 'validateParameters'>;
 
 /**
@@ -2017,7 +2078,7 @@ export type MetadataFunction<
  */
 export type MetadataFormulaDef<
   ContextT extends ExecutionContext = ExecutionContext,
-  ReturnT extends PackFormulaResult = LegacyDefaultMetadataReturnType,
+  ReturnT extends FormulaResult = LegacyDefaultMetadataReturnType,
 > = MetadataFormula<ContextT, ReturnT> | MetadataFunction<ContextT, ReturnT>;
 
 /**
@@ -2026,7 +2087,7 @@ export type MetadataFormulaDef<
  * function implementation, and the platform will wrap it with this to generate a full metadata formula
  * definition.
  *
- * All function-like behavior in a pack is ultimately implemented using formulas, like you would
+ * All function-like behavior in a connector is ultimately implemented using formulas, like you would
  * define using {@link makeFormula}. That is, a formula with a name, description, parameter list,
  * and an `execute` function body. This includes supporting utilities like parameter autocomplete functions.
  * This wrapper simply adds the surrounding boilerplate for a given JavaScript function so that
@@ -2034,7 +2095,7 @@ export type MetadataFormulaDef<
  */
 export function makeMetadataFormula<
   ContextT extends ExecutionContext,
-  ReturnT extends PackFormulaResult = LegacyDefaultMetadataReturnType,
+  ReturnT extends FormulaResult = LegacyDefaultMetadataReturnType,
 >(
   execute: MetadataFunction<ContextT, ReturnT>,
   options?: {connectionRequirement?: ConnectionRequirement},
@@ -2104,7 +2165,7 @@ export function makePropertyOptionsFormula<SchemaT extends Schema>({
   //    {results: Array<ResultType>, cacheTtlSecs: number}, which is not something a pack schema can natively represent.
   const executeRetyped = execute as (context: PropertyOptionsExecutionContext) => SchemaType<ArraySchema<SchemaT>>;
 
-  // Bend the type to satisfy PackFormulaDef's declaration.
+  // Bend the type to satisfy FormulaDef's declaration.
   const innerExecute = async ([]: ParamValues<[]>, context: ExecutionContext): Promise<ResultT> =>
     executeRetyped(context as PropertyOptionsExecutionContext);
 
@@ -2265,7 +2326,7 @@ function isResponseExampleTemplate(obj: any): obj is {example: SchemaType<any>} 
 export function makeObjectFormula<ParamDefsT extends ParamDefs, SchemaT extends Schema>({
   response,
   ...definition
-}: FormulaOptions<ParamDefsT, ObjectResultFormulaDef<ParamDefsT, SchemaT>>): ObjectPackFormula<ParamDefsT, SchemaT> {
+}: FormulaOptions<ParamDefsT, ObjectResultFormulaDef<ParamDefsT, SchemaT>>): ObjectFormula<ParamDefsT, SchemaT> {
   let schema: Schema | undefined;
   if (response) {
     if (isResponseHandlerTemplate(response) && response.schema) {
@@ -2306,7 +2367,7 @@ export function makeObjectFormula<ParamDefsT extends ParamDefs, SchemaT extends 
     execute,
     schema,
     validateParameters: wrapMetadataFunction(definition.validateParameters),
-  }) as ObjectPackFormula<ParamDefsT, SchemaT>;
+  }) as ObjectFormula<ParamDefsT, SchemaT>;
 }
 
 /**
@@ -2375,7 +2436,7 @@ export interface SyncTableOptions<
   instructions?: string;
   /**
    * The "unique identifier" for the entity being synced. This will serve as the unique id for this
-   * table, and must be unique across other sync tables for your pack. This is often the singular
+   * table, and must be unique across other sync tables for your connector. This is often the singular
    * form of the table name, e.g. if your table name was 'Products' you might choose 'Product'
    * as the identity name.
    *
@@ -2393,7 +2454,7 @@ export interface SyncTableOptions<
    */
   schema: SchemaT;
   /**
-   * The definition of the formula that implements this sync. This is a Pack formula
+   * The definition of the formula that implements this sync. This is a formula
    * that returns an array of objects fitting the given schema and optionally a {@link Continuation}.
    * (The {@link SyncFormulaDef.name} is redundant and should be the same as the `name` parameter here.
    * These will eventually be consolidated.)
@@ -2425,7 +2486,7 @@ export interface SyncTableOptions<
    *
    * @example
    * ```
-   * pack.addSyncTable({
+   * connector.addSyncTable({
    *   name: "MessagesSharedMailbox",
    *   // ...
    *   indexing: {
@@ -2453,7 +2514,7 @@ export interface DynamicSyncTableOptions<
 > {
   /**
    * The name of the dynamic sync table. This is shown to users in the Superhuman Docs UI
-   * when listing what build blocks are contained within this pack.
+   * when listing what build blocks are contained within this connector.
    * This should describe the category of entities being synced. The actual
    * table name once added to the doc will be dynamic, it will be whatever value
    * is returned by the `getName` formula.
@@ -2461,7 +2522,7 @@ export interface DynamicSyncTableOptions<
   name: string;
   /**
    * The description of the dynamic sync table. This is shown to users in the Superhuman Docs UI
-   * when listing what build blocks are contained within this pack.
+   * when listing what build blocks are contained within this connector.
    * This should describe what the dynamic sync table does in a more detailed language.
    */
   description?: string;
@@ -2499,7 +2560,7 @@ export interface DynamicSyncTableOptions<
    */
   searchDynamicUrls?: MetadataFormulaDef;
   /**
-   * The definition of the formula that implements this sync. This is a Pack formula
+   * The definition of the formula that implements this sync. This is a formula
    * that returns an array of objects fitting the given schema and optionally a {@link Continuation}.
    * (The {@link SyncFormulaDef.name} is redundant and should be the same as the `name` parameter here.
    * These will eventually be consolidated.)
@@ -2936,7 +2997,7 @@ export function makeDynamicSyncTable<
 /**
  * Helper to generate a formula that fetches a list of entities from a given URL and returns them.
  *
- * One of the simplest but most common use cases for a pack formula is to make a request to an API
+ * One of the simplest but most common use cases for a formula is to make a request to an API
  * endpoint that returns a list of objects, and then return those objects either as-is
  * or with slight transformations. The can be accomplished with an `execute` function that does
  * exactly that, but alternatively you could use `makeTranslateObjectFormula` and an

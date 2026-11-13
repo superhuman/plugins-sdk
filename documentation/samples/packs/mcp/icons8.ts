@@ -1,10 +1,10 @@
 import * as coda from "@superhuman/plugins-sdk";
 
-export const pack = coda.newPack();
+export const connector = coda.newConnector();
 
-pack.addMCPServer({
+connector.addMCPServer({
   name: "Icons8",
   endpointUrl: "https://mcp.icons8.com/mcp/",
 });
 
-pack.addNetworkDomain("icons8.com");
+connector.addNetworkDomain("icons8.com");

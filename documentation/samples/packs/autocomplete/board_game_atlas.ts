@@ -1,8 +1,8 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Gets the price of a board game by ID, with autocomplete on the ID.
-pack.addFormula({
+connector.addFormula({
   name: "GetPrice",
   description: "Gets the price of a board game.",
   parameters: [
@@ -33,11 +33,11 @@ pack.addFormula({
   },
 });
 
-pack.addNetworkDomain("boardgameatlas.com");
+connector.addNetworkDomain("boardgameatlas.com");
 
 // Authenticate using a client ID.
 // See: https://www.boardgameatlas.com/api/docs/apps
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.QueryParamToken,
   paramName: "client_id",
 });

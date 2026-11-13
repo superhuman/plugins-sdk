@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 const EmojiSchema = sdk.makeObjectSchema({
   properties: {
@@ -17,7 +17,7 @@ const EmojiSchema = sdk.makeObjectSchema({
   featuredProperties: ["emoji", "group", "image"],
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Emojis",
   description: "Lists all of the emojis.",
   identityName: "Info",
@@ -61,4 +61,4 @@ pack.addSyncTable({
   },
 });
 
-pack.addNetworkDomain("emoji.family");
+connector.addNetworkDomain("emoji.family");

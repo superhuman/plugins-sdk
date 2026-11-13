@@ -23,7 +23,6 @@ pack.addSkill({
 });
 ```
 
-You can read more about model selection in the [Skills guide][skills_models]. We aim to provide advance notice for model updates whenever possible and we'll continue sharing updates as the Go platform evolves.
+We aim to provide advance notice for model updates whenever possible and we'll continue sharing updates as the Go platform evolves.
 
 
-[skills_models]: ../../guides/blocks/skills.md

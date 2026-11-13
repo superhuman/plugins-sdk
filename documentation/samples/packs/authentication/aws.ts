@@ -1,10 +1,10 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the AWS S3 service, using AWS Signature Version 4.
 // The user provides the URL of their S3 bucket as the endpoint, along with an
 // access key and secret.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.AWSAccessKey,
   instructionsUrl:
     "https://aws.amazon.com/premiumsupport/knowledge-center/create-access-key/",
@@ -22,4 +22,4 @@ pack.setUserAuthentication({
   },
 });
 
-pack.addNetworkDomain("amazonaws.com");
+connector.addNetworkDomain("amazonaws.com");

@@ -1,9 +1,9 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Adds a column format to the Pack, which will display the contents of the
 // column as a progress bar.
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Progress Bar",
   instructions: "Draws a progress bar with the given percentage.",
   formulaName: "ProgressBar",
@@ -12,7 +12,7 @@ pack.addColumnFormat({
 // Adds a formula to this Pack to draw a number as a progress bar. It is used by
 // the column format above, but can also be used on its own anywhere in the
 // doc.
-pack.addFormula({
+connector.addFormula({
   name: "ProgressBar",
   description: "Draws a progress bar.",
   parameters: [

@@ -72,11 +72,13 @@ export declare function _hasCycle(tree: Record<string, string[]>): boolean;
  * Normalizes a tool for comparison by sorting any arrays within it.
  * This ensures that tools with the same content but different array ordering
  * are considered equal.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export declare function normalizeTool(tool: Tool): Tool;
 /**
  * Finds duplicate tools in an array by comparing normalized versions.
  * Returns information about each duplicate found.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export declare function findDuplicateTools(tools: Tool[]): Array<{
     index: number;

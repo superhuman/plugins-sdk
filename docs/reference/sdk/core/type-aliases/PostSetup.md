@@ -13,7 +13,7 @@ search:
 > **PostSetup** = [`SetEndpoint`](../interfaces/SetEndpoint.md)
 
 Definitions for optional steps that can happen upon a user completing setup
-for a new account for this pack.
+for a new account for this connector.
 
 This addresses only a highly-specific use case today but may grow to other
 use cases and step types in the future.

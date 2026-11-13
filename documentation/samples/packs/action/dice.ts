@@ -1,9 +1,9 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Rolls virtual dice and returns the resulting numbers. Use it with a button in
 // table and store the results in another column.
-pack.addFormula({
+connector.addFormula({
   name: "RollDice",
   description: "Roll some virtual dice.",
   parameters: [

@@ -37,7 +37,7 @@ Once your Pack is installed, its actions are available for users to run.
 Actions are just a special type of formula, and to create an action simply add a formula to your Pack with the property `isAction: true`.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   name: "DoSomething",
   description: "Does something neat.",
   isAction: true,
@@ -79,7 +79,7 @@ Although actions are typically used to send data rather than calculate a value, 
 If your action is creating an item in an external API you could return the URL or ID of the new item.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   name: "AddThing",
   description: "Add a new thing.",
   resultType: sdk.ValueType.String,
@@ -127,14 +127,14 @@ const TaskSchema = sdk.makeObjectSchema({
   // ...
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   schema: TaskSchema,
   identityName: "Task",
   // ...
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "UpdateTask",
   description: "Updates the name of a task.",
   // ...
@@ -170,7 +170,7 @@ const BaseTaskSchema = sdk.makeObjectSchema({
   includeUnknownProperties: true,
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   schema: BaseTaskSchema,
   identityName: "Task",
@@ -182,7 +182,7 @@ pack.addSyncTable({
   // ...
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "UpdateTask",
   // ...
   resultType: sdk.ValueType.Object,

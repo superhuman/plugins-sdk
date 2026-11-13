@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.maybeRewriteConnectionForFormula = exports.maybeRewriteConnectionForNamedPropertyOptions = exports.makeEmptyFormula = exports.makeTranslateObjectFormula = exports.makeDynamicSyncTable = exports.makeSyncTableLegacy = exports.makeSyncTable = exports.makeObjectFormula = exports.makeSimpleAutocompleteMetadataFormula = exports.autocompleteSearchObjects = exports.simpleAutocomplete = exports.makePropertyOptionsFormula = exports.makeMetadataFormula = exports.normalizePropertyOptionsResults = exports.makeFormula = exports.makeStringFormula = exports.makeNumericFormula = exports.UpdateOutcome = exports.isSyncPackFormula = exports.isStringPackFormula = exports.isObjectPackFormula = exports.check = exports.makeUserVisibleError = exports.makeFileArrayParameter = exports.makeFileParameter = exports.makeImageArrayParameter = exports.makeImageParameter = exports.makeHtmlArrayParameter = exports.makeHtmlParameter = exports.makeDateArrayParameter = exports.makeDateParameter = exports.makeBooleanArrayParameter = exports.makeBooleanParameter = exports.makeNumericArrayParameter = exports.makeNumericParameter = exports.makeStringArrayParameter = exports.makeStringParameter = exports.makeParameter = exports.wrapGetSchema = exports.wrapMetadataFunction = exports.isDynamicSyncTable = exports.isUserVisibleError = exports.ResponseSizeTooLargeError = exports.GoogleDwdError = exports.MissingScopesError = exports.StatusCodeError = exports.UserVisibleError = void 0;
+exports.maybeRewriteConnectionForFormula = exports.maybeRewriteConnectionForNamedPropertyOptions = exports.makeEmptyFormula = exports.makeTranslateObjectFormula = exports.makeDynamicSyncTable = exports.makeSyncTableLegacy = exports.makeSyncTable = exports.makeObjectFormula = exports.makeSimpleAutocompleteMetadataFormula = exports.autocompleteSearchObjects = exports.simpleAutocomplete = exports.makePropertyOptionsFormula = exports.makeMetadataFormula = exports.normalizePropertyOptionsResults = exports.makeFormula = exports.makeStringFormula = exports.makeNumericFormula = exports.UpdateOutcome = exports.isSyncFormula = exports.isSyncPackFormula = exports.isStringFormula = exports.isStringPackFormula = exports.isObjectFormula = exports.isObjectPackFormula = exports.check = exports.makeUserVisibleError = exports.makeFileArrayParameter = exports.makeFileParameter = exports.makeImageArrayParameter = exports.makeImageParameter = exports.makeHtmlArrayParameter = exports.makeHtmlParameter = exports.makeDateArrayParameter = exports.makeDateParameter = exports.makeBooleanArrayParameter = exports.makeBooleanParameter = exports.makeNumericArrayParameter = exports.makeNumericParameter = exports.makeStringArrayParameter = exports.makeStringParameter = exports.makeParameter = exports.wrapGetSchema = exports.wrapMetadataFunction = exports.isDynamicSyncTable = exports.isUserVisibleError = exports.ResponseSizeTooLargeError = exports.GoogleDwdError = exports.MissingScopesError = exports.StatusCodeError = exports.UserVisibleError = void 0;
 const api_types_1 = require("./api_types");
 const api_types_2 = require("./api_types");
 const api_types_3 = require("./api_types");
@@ -24,10 +24,11 @@ const schema_3 = require("./schema");
 const schema_4 = require("./schema");
 const schema_5 = require("./schema");
 const schema_6 = require("./schema");
+const schema_7 = require("./schema");
 const api_types_12 = require("./api_types");
 const migration_1 = require("./helpers/migration");
 const api_types_13 = require("./api_types");
-const schema_7 = require("./schema");
+const schema_8 = require("./schema");
 /**
  * An error whose message will be shown to the end user in the UI when it occurs.
  * If an error is encountered in a formula and you want to describe the error
@@ -125,7 +126,7 @@ class StatusCodeError extends Error {
 exports.StatusCodeError = StatusCodeError;
 /**
  * Throw this error if the user needs to re-authenticate to gain OAuth scopes that have been added
- * to the pack since their connection was created, or scopes that are specific to a certain formula.
+ * to the connector since their connection was created, or scopes that are specific to a certain formula.
  * This is useful because the platform will always attempt to execute a formula even if a user has not yet
  * re-authenticated with all relevant scopes.
  *
@@ -184,7 +185,7 @@ class GoogleDwdError extends Error {
 exports.GoogleDwdError = GoogleDwdError;
 /**
  * An error that will be thrown by {@link Fetcher.fetch} when the response body from the external system
- * exceeds packs platform limits
+ * exceeds platform limits
  *
  * This error can be caught and retried by requesting less data from the external system through
  * a smaller page size or omitting large fields.
@@ -223,12 +224,12 @@ function wrapMetadataFunction(fnOrFormula) {
 exports.wrapMetadataFunction = wrapMetadataFunction;
 function transformToArraySchema(schema) {
     if ((schema === null || schema === void 0 ? void 0 : schema.type) === schema_2.ValueType.Array) {
-        return schema;
+        return (0, schema_6.normalizeSchemaIdentities)(schema);
     }
     else {
         return {
             type: schema_2.ValueType.Array,
-            items: schema,
+            items: schema && (0, schema_6.normalizeSchemaIdentities)(schema),
         };
     }
 }
@@ -287,7 +288,7 @@ function makeParameter(paramDefinition) {
             crawlStrategy = {
                 parentTable: {
                     tableName,
-                    propertyKey: (0, schema_6.normalizeSchemaKey)(propertyKey),
+                    propertyKey: (0, schema_7.normalizeSchemaKey)(propertyKey),
                     inheritPermissions,
                 },
             };
@@ -389,18 +390,24 @@ function check(condition, msg) {
     }
 }
 exports.check = check;
-function isObjectPackFormula(fn) {
+/** @deprecated Use {@link isObjectFormula}. */
+exports.isObjectPackFormula = isObjectFormula;
+function isObjectFormula(fn) {
     return fn.resultType === api_types_6.Type.object;
 }
-exports.isObjectPackFormula = isObjectPackFormula;
-function isStringPackFormula(fn) {
+exports.isObjectFormula = isObjectFormula;
+/** @deprecated Use {@link isStringFormula}. */
+exports.isStringPackFormula = isStringFormula;
+function isStringFormula(fn) {
     return fn.resultType === api_types_6.Type.string;
 }
-exports.isStringPackFormula = isStringPackFormula;
-function isSyncPackFormula(fn) {
+exports.isStringFormula = isStringFormula;
+/** @deprecated Use {@link isSyncFormula}. */
+exports.isSyncPackFormula = isSyncFormula;
+function isSyncFormula(fn) {
     return Boolean(fn.isSyncFormula);
 }
-exports.isSyncPackFormula = isSyncPackFormula;
+exports.isSyncFormula = isSyncFormula;
 /**
  * Possible outcomes for a single sync update.
  * @hidden
@@ -616,7 +623,7 @@ exports.normalizePropertyOptionsResults = normalizePropertyOptionsResults;
  * function implementation, and the platform will wrap it with this to generate a full metadata formula
  * definition.
  *
- * All function-like behavior in a pack is ultimately implemented using formulas, like you would
+ * All function-like behavior in a connector is ultimately implemented using formulas, like you would
  * define using {@link makeFormula}. That is, a formula with a name, description, parameter list,
  * and an `execute` function body. This includes supporting utilities like parameter autocomplete functions.
  * This wrapper simply adds the surrounding boilerplate for a given JavaScript function so that
@@ -677,7 +684,7 @@ function makePropertyOptionsFormula({ execute, schema, name, }) {
     // 2) This metadata function itself has a flexible return type of either Array<ResultType> or
     //    {results: Array<ResultType>, cacheTtlSecs: number}, which is not something a pack schema can natively represent.
     const executeRetyped = execute;
-    // Bend the type to satisfy PackFormulaDef's declaration.
+    // Bend the type to satisfy FormulaDef's declaration.
     const innerExecute = async ([], context) => executeRetyped(context);
     const formulaDefn = {
         connectionRequirement: api_types_1.ConnectionRequirement.Optional,
@@ -1081,7 +1088,7 @@ exports.makeDynamicSyncTable = makeDynamicSyncTable;
 /**
  * Helper to generate a formula that fetches a list of entities from a given URL and returns them.
  *
- * One of the simplest but most common use cases for a pack formula is to make a request to an API
+ * One of the simplest but most common use cases for a formula is to make a request to an API
  * endpoint that returns a list of objects, and then return those objects either as-is
  * or with slight transformations. The can be accomplished with an `execute` function that does
  * exactly that, but alternatively you could use `makeTranslateObjectFormula` and an
@@ -1245,8 +1252,8 @@ schema, identityName, }) {
     for (const propertyName of propertiesWithOptionsFunctions) {
         const inputSchemaWithoutArray = (0, schema_4.maybeUnwrapArraySchema)(inputSchema.properties[propertyName]);
         const outputSchema = (0, schema_4.maybeUnwrapArraySchema)(schema.properties[propertyName]);
-        (0, ensure_1.assertCondition)((0, schema_7.unwrappedSchemaSupportsOptions)(inputSchemaWithoutArray), `Property "${propertyName}" must have codaType of ValueHintType.SelectList or ValueHintType.Reference to configure property options`);
-        (0, ensure_1.assertCondition)((0, schema_7.unwrappedSchemaSupportsOptions)(outputSchema), `Property "${propertyName}" lost codaType on deep copy?...`);
+        (0, ensure_1.assertCondition)((0, schema_8.unwrappedSchemaSupportsOptions)(inputSchemaWithoutArray), `Property "${propertyName}" must have codaType of ValueHintType.SelectList or ValueHintType.Reference to configure property options`);
+        (0, ensure_1.assertCondition)((0, schema_8.unwrappedSchemaSupportsOptions)(outputSchema), `Property "${propertyName}" lost codaType on deep copy?...`);
         outputSchema.options = propertyName;
         namedPropertyOptions[propertyName] = makePropertyOptionsFormula({
             execute: inputSchemaWithoutArray.options,

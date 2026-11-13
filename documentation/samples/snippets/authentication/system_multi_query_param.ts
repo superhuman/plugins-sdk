@@ -1,10 +1,10 @@
 import * as sdk from "@superhuman/plugins-sdk";
 
-const pack = sdk.newPack();
+const connector = sdk.newConnector();
 
 // BEGIN
 
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.MultiQueryParamToken,
   params: [
     { name: "${1:myToken}", description: "${2:My token description}" },

@@ -16,7 +16,7 @@ To add support for incremental sync in your Pack, you'll need to:
 The example below demonstrates the pattern, using a hypothetical API that supports filtering records using a `modifiedSince` parameter.
 
 ```{.ts hl_lines="7-9 16-20 29-35"}
-pack.addSyncTable({
+connector.addSyncTable({
   // ...
   formula: {
     // ...

@@ -18,7 +18,7 @@ You can solve this by defining a crawl hierarchy that the knowledge layer can fo
 To establish the crawl hierarchy, add the `crawlStrategy` field to the parameters of the child table that can be sourced from the parent table. Set `crawlStrategy` to point to the parent table and the specific column that contains the value.
 
 ```{.ts hl_lines="12-17"}
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   // ...
   formula: {
@@ -49,7 +49,7 @@ const ProjectSchema = sdk.makeObjectSchema({
   // ...
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Projects",
   identityName: "Project",
   schema: ProjectSchema,

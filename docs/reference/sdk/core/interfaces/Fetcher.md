@@ -10,10 +10,10 @@ search:
 
 # Interface: Fetcher
 
-A utility that allows you to make HTTP requests from a pack. The fetcher also
+A utility that allows you to make HTTP requests from a connector. The fetcher also
 handles applying user authentication credentials to each request, if applicable.
 
-This is only way a pack is able to make HTTP requests, as using other libraries is unsupported.
+This is only way a connector is able to make HTTP requests, as using other libraries is unsupported.
 
 ## Methods
 
@@ -23,7 +23,7 @@ This is only way a pack is able to make HTTP requests, as using other libraries 
 
 Makes an HTTP request.
 
-If authentication is used with this pack, the user's secret credentials will be
+If authentication is used with this connector, the user's secret credentials will be
 automatically applied to the request (whether in the HTTP headers, as a URL parameter,
 or whatever the authentication type dictates). Your invocation of `fetch()` need not
 deal with authentication in any way, the platform will handle that entirely on your behalf.

@@ -19,11 +19,11 @@ Authentication that passes a long-lived token in the Authorization header using 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Todoist API, using a personal API token in
 // an "Authorization: Bearer ..." header.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 
@@ -37,8 +37,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 {% endraw %}
 ```
 ## Custom header
@@ -47,17 +47,17 @@ Authentication that passes a long-lived token in a custom header. This sample co
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // System-wide authentication to RapidAPI, using an API key in a custom header.
 // See https://docs.rapidapi.com/docs/keys#how-to-find-your-api-key.
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.CustomHeaderToken,
   headerName: "X-RapidAPI-Key",
 });
 
-// Allow the pack to make requests to RapidAPI.
-pack.addNetworkDomain("rapidapi.com");
+// Allow the connector to make requests to RapidAPI.
+connector.addNetworkDomain("rapidapi.com");
 {% endraw %}
 ```
 ## Multiple headers
@@ -66,11 +66,11 @@ Authentication that passes multiple long-lived tokens in HTTP headers. This samp
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Copper API, using multiple HTTP headers.
 // See https://developer.copper.com/introduction/requests.html#headers.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.MultiHeaderToken,
   headers: [
     { name: "X-PW-AccessToken", description: "API key" },
@@ -91,8 +91,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Copper.
-pack.addNetworkDomain("copper.com");
+// Allow the connector to make requests to Copper.
+connector.addNetworkDomain("copper.com");
 {% endraw %}
 ```
 ## Query parameter
@@ -101,17 +101,17 @@ Authentication that passes a long-lived token in a query parameter. This sample 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // System-wide authentication to the Giphy API, using an API key in the query
 // string. See https://support.giphy.com/hc/en-us/articles/360020283431.
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.QueryParamToken,
   paramName: "api_key",
 });
 
-// Allow the pack to make requests to Giphy.
-pack.addNetworkDomain("giphy.com");
+// Allow the connector to make requests to Giphy.
+connector.addNetworkDomain("giphy.com");
 {% endraw %}
 ```
 ## Multiple query parameters
@@ -120,11 +120,11 @@ Authentication that passes multiple long-lived tokens in query parameters. This 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Smarty API, using multiple query parameters.
 // See https://www.smarty.com/docs/cloud/authentication#keypairs
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.MultiQueryParamToken,
   params: [
     { name: "auth-id", description: "The Auth ID of the secret key." },
@@ -132,8 +132,8 @@ pack.setUserAuthentication({
   ],
 });
 
-// Allow the pack to make requests to Smarty.
-pack.addNetworkDomain("smartystreets.com");
+// Allow the connector to make requests to Smarty.
+connector.addNetworkDomain("smartystreets.com");
 {% endraw %}
 ```
 ## Custom tokens
@@ -142,12 +142,12 @@ Authentication that passes any number of custom tokens in the URL, headers, or r
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Vonage API, using an API key and secret
 // in the request body.
 // See https://developer.vonage.com/en/api/sms
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.Custom,
   params: [
     { name: "api_key", description: "API key." },
@@ -155,7 +155,7 @@ pack.setUserAuthentication({
   ],
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "SendSMS",
   description: "Sends an SMS message.",
   parameters: [
@@ -211,8 +211,8 @@ pack.addFormula({
   },
 });
 
-// Allow the pack to make requests to Vonage (former Nexmo).
-pack.addNetworkDomain("nexmo.com");
+// Allow the connector to make requests to Vonage (former Nexmo).
+connector.addNetworkDomain("nexmo.com");
 {% endraw %}
 ```
 ## Username and password
@@ -221,12 +221,12 @@ Authentication that passes a username and password in the Authorization header u
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Twilio API, using an Account SID and token in
 // an "Authorization: Basic ..." header.
 // See https://www.twilio.com/docs/usage/requests-to-twilio
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.WebBasic,
   instructionsUrl: "https://www.twilio.com/docs/sms/api#sms-api-authentication",
 
@@ -247,8 +247,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Twilio.
-pack.addNetworkDomain("twilio.com");
+// Allow the connector to make requests to Twilio.
+connector.addNetworkDomain("twilio.com");
 {% endraw %}
 ```
 ## Superhuman Docs API token
@@ -257,20 +257,20 @@ Authentication optimized for connecting to the Superhuman Docs API, which is a t
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Superhuman Docs API, using a token in the
 // Authorization header.
 // See https://docs.superhuman.com/developers/apis/v1
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.CodaApiHeaderBearerToken,
 
   // Creates the token automatically when the Pack is installed.
   shouldAutoAuthSetup: true,
 });
 
-// Allow the pack to make requests to Superhuman Docs.
-pack.addNetworkDomain("docs.superhuman.com");
+// Allow the connector to make requests to Superhuman Docs.
+connector.addNetworkDomain("docs.superhuman.com");
 {% endraw %}
 ```
 ## AWS Signature Version 4
@@ -279,12 +279,12 @@ Authentication that supports Amazon Web Services (AWS), using an access key and 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the AWS S3 service, using AWS Signature Version 4.
 // The user provides the URL of their S3 bucket as the endpoint, along with an
 // access key and secret.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.AWSAccessKey,
   instructionsUrl:
     "https://aws.amazon.com/premiumsupport/knowledge-center/create-access-key/",
@@ -302,7 +302,7 @@ pack.setUserAuthentication({
   },
 });
 
-pack.addNetworkDomain("amazonaws.com");
+connector.addNetworkDomain("amazonaws.com");
 {% endraw %}
 ```
 ## OAuth2
@@ -311,11 +311,11 @@ Authentication that uses the Authorization Code OAuth2 flow. This sample connect
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Todoist API, using an OAuth2 flow.
 // See https://developer.todoist.com/guides/#oauth
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://app.todoist.com/oauth/authorize",
   tokenUrl: "https://api.todoist.com/oauth/access_token",
@@ -331,8 +331,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 {% endraw %}
 ```
 ## OAuth2 client credentials
@@ -341,19 +341,19 @@ Authentication that uses the Client Credentials OAuth2 flow. This sample connect
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // System-wide authentication to Blizzard's Battle.net APIs, using the OAuth2
 // client_credentials flow.
 // oxlint-disable-next-line stylistic/max-len
 // See https://develop.battle.net/documentation/guides/using-oauth/client-credentials-flow.
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.OAuth2ClientCredentials,
   tokenUrl: "https://oauth.battle.net/token",
 });
 
-// Allow the pack to make requests to Battle.net.
-pack.addNetworkDomain("blizzard.com");
+// Allow the connector to make requests to Battle.net.
+connector.addNetworkDomain("blizzard.com");
 {% endraw %}
 ```
 ## Manual endpoint
@@ -362,12 +362,12 @@ Authentication that requires users to enter the endpoint URL for their account. 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Okta API, using a custom token prefix and
 // account-specific endpoints.
 // See https://developer.okta.com/docs/reference/core-okta-api/#authentication
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.CustomHeaderToken,
   headerName: "Authorization",
   tokenPrefix: "SSWS",
@@ -389,8 +389,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Okta.
-pack.addNetworkDomain("okta.com");
+// Allow the connector to make requests to Okta.
+connector.addNetworkDomain("okta.com");
 {% endraw %}
 ```
 ## Automatic endpoint
@@ -399,13 +399,13 @@ Authentication that automatically determines the account-specific endpoint URL d
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Salesforce API, using OAuth2 and an
 // automatically determined account-specific endpoint.
 // oxlint-disable-next-line stylistic/max-len
 // See https://help.salesforce.com/s/articleView?id=sf.remoteaccess_authenticate.htm&type=5
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://login.salesforce.com/services/oauth2/authorize",
   tokenUrl: "https://login.salesforce.com/services/oauth2/token",
@@ -432,8 +432,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Salesforce.
-pack.addNetworkDomain("salesforce.com");
+// Allow the connector to make requests to Salesforce.
+connector.addNetworkDomain("salesforce.com");
 {% endraw %}
 ```
 ## User-selected endpoint
@@ -442,13 +442,13 @@ Authentication that presents a list of endpoints to the user for them to select 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Jira Cloud API, using OAuth2 with a
 // post-submit step to select the instance to connect to. Note that this code
 // isn't compatible with Jira Data Center.
 // See https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://auth.atlassian.com/authorize",
   tokenUrl: "https://auth.atlassian.com/oauth/token",
@@ -515,8 +515,8 @@ async function getUser(context: sdk.ExecutionContext) {
   return response.body;
 }
 
-// Allow the pack to make requests to Jira.
-pack.addNetworkDomain("atlassian.com");
+// Allow the connector to make requests to Jira.
+connector.addNetworkDomain("atlassian.com");
 {% endraw %}
 ```
 

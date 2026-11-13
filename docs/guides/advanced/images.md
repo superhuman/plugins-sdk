@@ -130,9 +130,9 @@ When using a formula as a tool, ensure any image URLs returned are correctly ann
 
     ```{.ts hl_lines="9"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addFormula({
+    connector.addFormula({
       name: "DogPhoto",
       description: "Gets a random photo of a dog.",
       parameters: [],
@@ -154,7 +154,7 @@ When using a formula as a tool, ensure any image URLs returned are correctly ann
 
     ```{.ts hl_lines="9"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
     const PokemonSchema = sdk.makeObjectSchema({
       properties: {
@@ -167,7 +167,7 @@ When using a formula as a tool, ensure any image URLs returned are correctly ann
       displayProperty: "name",
     });
 
-    pack.addFormula({
+    connector.addFormula({
       name: "Pokemon",
       description: "Gets information about a Pokemon.",
       parameters: [
@@ -212,21 +212,21 @@ Some apps host images on a CDN at a separate domain; in that case, you'll need t
 
 ```{.ts hl_lines="12-14 19-20"}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addMCPServer({
+connector.addMCPServer({
   name: "GitHub",
   endpointUrl: "https://api.githubcopilot.com/mcp/",
 });
 
 // Register the domain where the MCP server is hosted.
-pack.addNetworkDomain("githubcopilot.com");
+connector.addNetworkDomain("githubcopilot.com");
 
 // Register additional domains where images are hosted.
-pack.addNetworkDomain("github.com");
-pack.addNetworkDomain("githubusercontent.com");
+connector.addNetworkDomain("github.com");
+connector.addNetworkDomain("githubusercontent.com");
 
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://github.com/settings/tokens",
   // Only send credentials to the MCP server.

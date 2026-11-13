@@ -118,7 +118,7 @@ Information about state of the current sync.
 
 > `readonly` **temporaryBlobStorage**: [`TemporaryBlobStorage`](TemporaryBlobStorage.md)
 
-A utility to fetch and store files and images that either require the pack user's authentication
+A utility to fetch and store files and images that either require the connector user's authentication
 or are too large to return inline. See [core.TemporaryBlobStorage](TemporaryBlobStorage.md).
 
 #### Inherited from

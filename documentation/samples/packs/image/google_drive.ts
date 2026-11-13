@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Schema defining the fields to sync for each file.
 const FileSchema = sdk.makeObjectSchema({
@@ -24,7 +24,7 @@ const FileSchema = sdk.makeObjectSchema({
 });
 
 // Sync table for files.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Files",
   identityName: "File",
   schema: FileSchema,
@@ -92,7 +92,7 @@ pack.addSyncTable({
 });
 
 // Set per-user authentication using Google's OAuth2.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
   tokenUrl: "https://oauth2.googleapis.com/token",
@@ -108,6 +108,6 @@ pack.setUserAuthentication({
 
 // Allow access to the Google domains.
 // Note: Using multiple domains in a Pack requires approval from Superhuman.
-pack.addNetworkDomain("googleapis.com");
-pack.addNetworkDomain("docs.google.com");
-pack.addNetworkDomain("googleusercontent.com");
+connector.addNetworkDomain("googleapis.com");
+connector.addNetworkDomain("docs.google.com");
+connector.addNetworkDomain("googleusercontent.com");

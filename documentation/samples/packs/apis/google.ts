@@ -1,9 +1,9 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to Google APIs, using OAuth2.
 // See https://developers.google.com/identity/protocols/oauth2/web-server
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
   tokenUrl: "https://oauth2.googleapis.com/token",
@@ -30,5 +30,5 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Google.
-pack.addNetworkDomain("googleapis.com");
+// Allow the connector to make requests to Google.
+connector.addNetworkDomain("googleapis.com");

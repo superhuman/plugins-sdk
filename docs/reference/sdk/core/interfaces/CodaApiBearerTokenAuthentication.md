@@ -16,13 +16,13 @@ This is identical to [AuthenticationType.HeaderBearerToken](../enumerations/Auth
 with a UI to generate an API token rather than needing to paste an arbitrary API
 token into a text input.
 
-This is primarily for use by Superhuman-authored packs, as it is only relevant for interacting with the
+This is primarily for use by Superhuman-authored connectors, as it is only relevant for interacting with the
 Superhuman Docs REST API.
 
 ## Example
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.CodaApiHeaderBearerToken,
 });
 ```
@@ -53,8 +53,8 @@ pack.setUserAuthentication({
 When requiresEndpointUrl is set to true, this should be the root domain that all endpoints share.
 For example, this value would be "example.com" if specific endpoints looked like {custom-subdomain}.example.com.
 
-For packs that make requests to multiple domains (uncommon), this should be the domain within
-[PackVersionDefinition.networkDomains](PackVersionDefinition.md#networkdomains) that this configuration applies to.
+For connectors that make requests to multiple domains (uncommon), this should be the domain within
+[ComponentVersionDefinition.networkDomains](ComponentVersionDefinition.md#networkdomains) that this configuration applies to.
 
 #### Inherited from
 
@@ -84,7 +84,7 @@ with the creating user's Superhuman username.
 
 > `optional` **instructionsUrl**: `string`
 
-A link to a help article or other page with more instructions about how to set up an account for this pack.
+A link to a help article or other page with more instructions about how to set up an account for this connector.
 
 #### Inherited from
 
@@ -96,8 +96,8 @@ A link to a help article or other page with more instructions about how to set u
 
 > `optional` **networkDomain**: `string` \| `string`[]
 
-Which domain(s) should get auth credentials, when a pack is configured with multiple domains.
-Packs configured with only one domain or with requiresEndpointUrl set to true can omit this.
+Which domain(s) should get auth credentials, when a connector is configured with multiple domains.
+Connectors configured with only one domain or with requiresEndpointUrl set to true can omit this.
 
 Using multiple authenticated network domains is uncommon and requires Superhuman approval.
 
@@ -111,8 +111,8 @@ Using multiple authenticated network domains is uncommon and requires Superhuman
 
 > `optional` **postSetup**: [`SetEndpoint`](SetEndpoint.md)[]
 
-One or more setup steps to run after the user has set up the account, before completing installation of the pack.
-This is not common.
+One or more setup steps to run after the user has set up the account, before completing installation of the
+connector. This is not common.
 
 #### Inherited from
 
@@ -124,7 +124,7 @@ This is not common.
 
 > `optional` **requiresEndpointUrl**: `boolean`
 
-If true, indicates this pack has a specific endpoint domain for each account, that is used
+If true, indicates this connector has a specific endpoint domain for each account, that is used
 as the basis of HTTP requests. For example, API requests are made to <custom-subdomain>.example.com
 rather than example.com. If true, the user will be prompted to provide their specific endpoint domain
 when creating a new account.
@@ -140,7 +140,7 @@ when creating a new account.
 > `optional` **shouldAutoAuthSetup**: `boolean`
 
 If true, automatically creates and configures an account with a Superhuman Docs API token with
-default settings when installing the pack: a read-write token, added to the doc
+default settings when installing the connector: a read-write token, added to the doc
 as a shared account that allows actions.
 
 ***

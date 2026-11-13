@@ -1,10 +1,10 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to Facebook (Meta) APIs, using OAuth2.
 // oxlint-disable-next-line stylistic/max-len
 // See https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://www.facebook.com/v14.0/dialog/oauth",
   tokenUrl: "https://graph.facebook.com/v14.0/oauth/access_token",
@@ -25,5 +25,5 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Facebook.
-pack.addNetworkDomain("facebook.com");
+// Allow the connector to make requests to Facebook.
+connector.addNetworkDomain("facebook.com");

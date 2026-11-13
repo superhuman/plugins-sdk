@@ -1,9 +1,9 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the ClickUp API, using OAuth2.
 // See https://clickup.com/api
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://app.clickup.com/api",
   tokenUrl: "https://app.clickup.com/api/v2/oauth/token",
@@ -19,5 +19,5 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to the ClickUp.
-pack.addNetworkDomain("clickup.com");
+// Allow the connector to make requests to the ClickUp.
+connector.addNetworkDomain("clickup.com");

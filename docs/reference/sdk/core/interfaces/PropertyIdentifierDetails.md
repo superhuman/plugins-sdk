@@ -31,7 +31,7 @@ If set to '', the label will be omitted.
 > `optional` **placeholder**: `string`
 
 An optional placeholder value, which will be rendered when the property value is an empty value
-(null, undefined, "", [], {}). This will be used in the Pack card title, subtitle, and snippet.
+(null, undefined, "", [], {}). This will be used in the card title, subtitle, and snippet.
 Not accessible within the Superhuman formula language.
 
 ***

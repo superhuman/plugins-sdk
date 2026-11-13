@@ -12,14 +12,14 @@ search:
 
 > **MetadataFormula**\<`ContextT`, `ResultT`\> = [`BaseFormula`](BaseFormula.md)\<\[[`ParamDef`](../interfaces/ParamDef.md)\<[`string`](../enumerations/Type.md#string)\>, [`ParamDef`](../interfaces/ParamDef.md)\<[`string`](../enumerations/Type.md#string)\>\], `ResultT`, `ContextT`\> & `object`
 
-A formula that returns metadata relating to a core pack building block, like a sync table,
+A formula that returns metadata relating to a core connector building block, like a sync table,
 a formula parameter, or a user account. Examples include [DynamicOptions.getSchema](../interfaces/DynamicOptions.md#getschema),
 [BaseAuthentication.getConnectionName](../interfaces/BaseAuthentication.md#getconnectionname), and [ParamDef.autocomplete](../interfaces/ParamDef.md#autocomplete).
 
-Many pack building blocks make use of supporting features that often require JavaScript
+Many connector building blocks make use of supporting features that often require JavaScript
 or an API request to implement. For example, fetching the list of available autocomplete
 options for a formula parameter often requires making an API call. The logic to implement this
-and the context required, like a [Fetcher](../interfaces/Fetcher.md) is very similar to that of a pack formula itself,
+and the context required, like a [Fetcher](../interfaces/Fetcher.md) is very similar to that of a formula itself,
 so metadata formulas intentionally resemble regular formulas.
 
 A variety of tasks like those mentioned above can all be accomplished with formulas that
@@ -51,4 +51,4 @@ current value.
 | Type Parameter | Default type |
 | ------ | ------ |
 | `ContextT` *extends* [`ExecutionContext`](../interfaces/ExecutionContext.md) | [`ExecutionContext`](../interfaces/ExecutionContext.md) |
-| `ResultT` *extends* [`PackFormulaResult`](PackFormulaResult.md) | [`LegacyDefaultMetadataReturnType`](LegacyDefaultMetadataReturnType.md) |
+| `ResultT` *extends* [`FormulaResult`](FormulaResult.md) | [`LegacyDefaultMetadataReturnType`](LegacyDefaultMetadataReturnType.md) |

@@ -14,19 +14,27 @@ The types of tools that can be used in a skill.
 
 ## Enumeration Members
 
-### ContactResolution
+### ~~ContactResolution~~
 
 > **ContactResolution**: `"ContactResolution"`
 
 Tool that provides access to contact resolution capabilities.
 
+#### Deprecated
+
+Skills are no longer used. Connectors should not set tools.
+
 ***
 
-### Knowledge
+### ~~Knowledge~~
 
 > **Knowledge**: `"Knowledge"`
 
 Allows knowledge to be used as a tool.
+
+#### Deprecated
+
+Skills are no longer used. Connectors should not set tools.
 
 ***
 
@@ -34,15 +42,19 @@ Allows knowledge to be used as a tool.
 
 > **Pack**: `"Pack"`
 
-Allows formulas within a pack to be used as tools.
+Allows formulas within a connector to be used as tools.
 
 ***
 
-### ScreenAnnotation
+### ~~ScreenAnnotation~~
 
 > **ScreenAnnotation**: `"ScreenAnnotation"`
 
 Allows screen annotations to be used as tools.
+
+#### Deprecated
+
+Skills are no longer used. Connectors should not set tools.
 
 ***
 

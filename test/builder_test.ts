@@ -1,9 +1,10 @@
-import './test_helper';
+import {testHelper} from './test_helper';
 import type {AgentDefinitionBuilder} from '../builder';
 import type {AgentRoutineDefinition} from '../types';
 import {AuthenticationType} from '../types';
 import {BaseDefinitionBuilder} from '../builder';
 import {ConnectionRequirement} from '../api_types';
+import {ConnectorDefinitionBuilder} from '../builder';
 import {ContextualTriggerAssistMode} from '../types';
 import {ContextualTriggerSurface} from '../types';
 import type {DefaultTriggerDefinition} from '../types';
@@ -27,6 +28,7 @@ import type {ObjectFormulaDef} from '../api';
 import type {ObjectSchema} from '../schema';
 import {PackDefinitionBuilder} from '../builder';
 import type {PackVersionDefinition} from '../types';
+import type {PackVersionMetadata} from '../compiled_types';
 import type {ParamDefs} from '../api_types';
 import {ParameterType} from '../api_types';
 import {PostSetupType} from '..';
@@ -46,9 +48,131 @@ import {makeParameter} from '../api';
 import {makeSchema} from '../schema';
 import {newAgent} from '../builder';
 import {newPack} from '../builder';
+import {normalizePackMetadataIdentities} from '../helpers/metadata';
 import {validatePackVersionMetadata} from '../testing/upload_validation';
 
 describe('Builder', () => {
+  it('resolves supplied identity IDs and leaves missing IDs available for host injection', () => {
+    for (const [identity, expected] of [
+      [{packId: 42}, {connectorId: 42, packId: 42}],
+      [{connectorId: 42}, {connectorId: 42, packId: 42}],
+      [
+        {connectorId: 42, packId: 'ignored'},
+        {connectorId: 42, packId: 42},
+      ],
+      [
+        {connectorId: null, packId: 42},
+        {connectorId: 42, packId: 42},
+      ],
+      [
+        {connectorId: undefined, packId: 42},
+        {connectorId: 42, packId: 42},
+      ],
+      [
+        {connectorId: 0, packId: 7},
+        {connectorId: 0, packId: 0},
+      ],
+      [{}, {}],
+    ]) {
+      const metadata = compilePackMetadata({
+        formulas: [{schema: {type: ValueType.Object, identity: {name: 'Other', ...identity}, properties: {}}}],
+      } as unknown as PackVersionDefinition);
+      assert.deepEqual<unknown>((metadata.formulas[0].schema as GenericObjectSchema).identity, {
+        name: 'Other',
+        ...expected,
+      });
+    }
+  });
+
+  it('hydrates legacy external metadata without adding missing component lists', () => {
+    const metadata: ExternalPackVersionMetadata = {
+      version: '1.0.0',
+      authentication: {type: AuthenticationType.None, requiresEndpointUrl: false},
+    };
+    assert.deepEqual(normalizePackMetadataIdentities(metadata), metadata);
+  });
+
+  it('hydrates historical namespace-keyed formulas without changing their stored shape', () => {
+    const legacyMetadata = {
+      version: '1.0.0',
+      formulas: {
+        Legacy: [{schema: {type: ValueType.Object, identity: {name: 'Other', packId: 42}, properties: {}}}],
+      },
+    };
+    const before = JSON.stringify(legacyMetadata);
+    const hydrated = normalizePackMetadataIdentities(legacyMetadata as unknown as PackVersionMetadata);
+    assert.deepEqual<unknown>(hydrated, {
+      version: '1.0.0',
+      formulas: {
+        Legacy: [
+          {schema: {type: ValueType.Object, identity: {name: 'Other', packId: 42, connectorId: 42}, properties: {}}},
+        ],
+      },
+    });
+    assert.equal(JSON.stringify(legacyMetadata), before);
+  });
+
+  it('hydrates stored sync tables without adding a missing schema', () => {
+    const legacyMetadata = {version: '1.0.0', syncTables: [{name: 'Legacy', getter: {name: 'SyncLegacy'}}]};
+    const hydrated = normalizePackMetadataIdentities(legacyMetadata as unknown as PackVersionMetadata);
+    assert.deepEqual<unknown>(hydrated, legacyMetadata);
+  });
+
+  it('compiles identity aliases without rewriting raw schema keys or inputs', () => {
+    const schema = {
+      type: ValueType.Object,
+      identity: {name: 'Root', packId: 7, connectorId: 42},
+      properties: {
+        original_name: {
+          type: ValueType.Array,
+          items: {
+            type: ValueType.Object,
+            identity: {name: 'Nested', packId: 8},
+            originalKey: 'original name',
+            properties: {},
+          },
+        },
+      },
+    };
+    const manifest = {
+      version: '1.0.0',
+      formulas: [{name: 'Raw', schema}],
+      syncTables: [
+        {
+          name: 'Rows',
+          schema,
+          getter: {schema},
+          getSchema: {schema},
+          namedPropertyOptions: {other: {schema: {type: ValueType.Array, items: schema}}},
+        },
+      ],
+    } as unknown as PackVersionDefinition;
+    const before = JSON.stringify(manifest);
+    const metadata = compilePackMetadata(manifest);
+    for (const output of [
+      metadata.formulas[0].schema,
+      metadata.syncTables[0].schema,
+      metadata.syncTables[0].getter.schema,
+      metadata.syncTables[0].getSchema!.schema,
+      metadata.syncTables[0].namedPropertyOptions!.other.schema!.items,
+    ]) {
+      assert.deepEqual(output, {
+        ...schema,
+        identity: {name: 'Root', packId: 42, connectorId: 42},
+        properties: {
+          original_name: {
+            ...schema.properties.original_name,
+            items: {
+              ...schema.properties.original_name.items,
+              identity: {name: 'Nested', packId: 8, connectorId: 8},
+            },
+          },
+        },
+      });
+    }
+    assert.equal(JSON.stringify(manifest), before);
+  });
+
   let pack: PackDefinitionBuilder;
   const dummyObjectSchema = makeObjectSchema({
     type: ValueType.Object,
@@ -807,6 +931,42 @@ describe('Agent builder', () => {
       assert.deepEqual(agent.agent.tools, [{type: ToolType.Pack, packId: 1234}]);
     });
 
+    it('adds a connector by connectorId and keeps packId on the upload', () => {
+      agent.setTools({
+        connectors: [{connectorId: 1234, formulas: [{formulaName: 'CreateTask'}], mcpTools: [{toolName: 'search'}]}],
+      });
+      assert.deepEqual(agent.agent.tools, [
+        {type: ToolType.Pack, packId: 1234, formulas: [{formulaName: 'CreateTask'}], mcpTools: [{toolName: 'search'}]},
+      ]);
+    });
+
+    it('prefers connectorId when an untyped caller sets both', () => {
+      // @ts-expect-error The type allows only one of connectorId and packId.
+      agent.setTools({connectors: [{connectorId: 1234, packId: 5678}]});
+      assert.deepEqual(agent.agent.tools, [{type: ToolType.Pack, packId: 1234}]);
+    });
+
+    it('validates a connector named by connectorId', async () => {
+      agent.setVersion('1.0.0');
+      agent.setInstructions('Do a thing.');
+      agent.setTools({connectors: [{connectorId: 1234}]});
+      const metadata = await validatePackVersionMetadata(
+        compilePackMetadata(agent as unknown as PackVersionDefinition),
+        undefined,
+      );
+      assert.deepEqual(metadata.agent?.tools, [{type: ToolType.Pack, packId: 1234}]);
+    });
+
+    it('rejects a connector that sets neither connectorId nor packId', async () => {
+      agent.setVersion('1.0.0');
+      agent.setInstructions('Do a thing.');
+      agent.setTools({connectors: [{} as any]});
+      await testHelper.willBeRejectedWith(
+        validatePackVersionMetadata(compilePackMetadata(agent as unknown as PackVersionDefinition), undefined),
+        /packId/,
+      );
+    });
+
     it('limits a connector to specific formulas', () => {
       agent.setTools({connectors: [{packId: 1234, formulas: [{formulaName: 'CreateTask'}]}]});
       assert.deepEqual(agent.agent.tools, [
@@ -882,6 +1042,72 @@ describe('Agent builder', () => {
       assert.deepEqual(metadata.agent, {
         instructions: 'Do a thing.',
         tools: [{type: ToolType.CodaDocsAndTables}],
+      });
+    });
+
+    describe('required connectors', () => {
+      it('puts required on the connector tools, and the result passes upload', async () => {
+        agent
+          .setVersion('1.0.0')
+          .setInstructions('Do a thing.')
+          .setTools({
+            connectors: [
+              {packId: 1001, required: true},
+              {packId: 2001, required: {groupName: 'email'}},
+              {packId: 2002, required: {groupName: 'email'}},
+              {packId: 3001},
+            ],
+          });
+        const metadata = await validatePackVersionMetadata(
+          compilePackMetadata(agent as unknown as PackVersionDefinition),
+          undefined,
+        );
+        assert.deepEqual(metadata.agent, {
+          instructions: 'Do a thing.',
+          tools: [
+            {type: ToolType.Pack, packId: 1001, required: true},
+            {type: ToolType.Pack, packId: 2001, required: {groupName: 'email'}},
+            {type: ToolType.Pack, packId: 2002, required: {groupName: 'email'}},
+            {type: ToolType.Pack, packId: 3001},
+          ],
+        });
+      });
+
+      it('treats required: false the same as absent, and leaves the key out', () => {
+        agent.setTools({connectors: [{packId: 1, required: false}, {packId: 2}]});
+        assert.deepEqual(agent.agent, {
+          tools: [
+            {type: ToolType.Pack, packId: 1},
+            {type: ToolType.Pack, packId: 2},
+          ],
+        });
+      });
+
+      it("keeps its own read-only copy of the author's group", () => {
+        const required = {groupName: 'email'};
+        agent.setTools({connectors: [{packId: 2001, required}]});
+        required.groupName = 'chat';
+        assert.deepEqual(agent.agent.tools, [{type: ToolType.Pack, packId: 2001, required: {groupName: 'email'}}]);
+        const loose = agent as any;
+        assert.throws(() => {
+          loose.agent.tools[0].required.groupName = 'chat';
+        }, TypeError);
+      });
+
+      for (const required of [{groupName: ''}, {groupName: '  '}, {}, {group: 'email'}]) {
+        it(`rejects required: ${JSON.stringify(required)} and keeps the earlier tools`, () => {
+          agent.setTools({docs: true});
+          assert.throws(
+            () => agent.setTools({connectors: [{packId: 1, required: required as any}]}),
+            'A required connector group needs a name containing non-whitespace text.',
+          );
+          assert.deepEqual(agent.agent.tools, [{type: ToolType.CodaDocsAndTables}]);
+        });
+      }
+
+      it('treats required: null as absent', () => {
+        agent.setTools({connectors: [{packId: 1, required: null as any}]});
+        assert.deepEqual(agent.agent.tools, [{type: ToolType.Pack, packId: 1}]);
       });
     });
   });
@@ -1186,12 +1412,13 @@ describe('Agent builder', () => {
     });
 
     it('is not reachable at runtime either', () => {
-      // Enumerated rather than hardcoded, so a method added to PackDefinitionBuilder later
+      // Enumerated rather than hardcoded, so a method added to ConnectorDefinitionBuilder later
       // can't quietly become reachable on an agent.
       const authorableOnAgent = ['addSuggestedPrompt'];
-      const packOnly = Object.getOwnPropertyNames(PackDefinitionBuilder.prototype).filter(
+      const packOnly = Object.getOwnPropertyNames(ConnectorDefinitionBuilder.prototype).filter(
         name => name !== 'constructor' && !name.startsWith('_') && !authorableOnAgent.includes(name),
       );
+      assert.includeMembers(packOnly, ['addFormula', 'addSyncTable', 'setUserAuthentication']);
       const reachable = packOnly.filter(name => (agent as any)[name] !== undefined);
       assert.deepEqual(reachable, [], 'nothing pack-only is reachable on an agent');
     });

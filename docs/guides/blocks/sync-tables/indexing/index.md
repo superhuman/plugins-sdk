@@ -11,7 +11,7 @@ description: Add content to the built-in vector database to use with RAG.
 
 LLMs have a limited context window — the amount of text they can consider at once. This can make it challenging to give your connector access to all the data it needs, which can be much larger. One approach is RAG (retrieval-augmented generation), in which the LLM first retrieves relevant records for the user's query and then generates a response using them.
 
-The platform provides a built-in RAG system we call the knowledge layer. You write some code in your connector to sync the records, and the platform will chunk them, store them in a vector database, and expose a search tool to your connector. See the [Tools guide][tools_knowledge] for more information on how to connect indexed knowledge to a skill.
+The platform provides a built-in RAG system we call the knowledge layer. You write some code in your connector to sync the records, and the platform will chunk them, store them in a vector database, and expose a search tool to your connector.
 
 
 ## When to use it
@@ -59,7 +59,6 @@ Making changes to your Pack or connection settings doesn't immediately trigger t
 
 [sync_tables]: ../index.md
 [sync_tables_limits]: ../index.md#limits
-[tools_knowledge]: ../../skills.md#knowledge
 [indexing_schemas]: ./schema.md
 [incremental]: ./incremental.md
 [crawling]: ./crawling.md

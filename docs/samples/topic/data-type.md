@@ -16,7 +16,7 @@ The basic structure of a formula that returns a string.
 
 ```ts
 {% raw %}
-pack.addFormula({
+connector.addFormula({
   name: "MyFormula",
   description: "My description.",
   parameters: [
@@ -37,7 +37,7 @@ The basic structure of a formula that returns a number.
 
 ```ts
 {% raw %}
-pack.addFormula({
+connector.addFormula({
   name: "MyFormula",
   description: "My description.",
   parameters: [
@@ -58,7 +58,7 @@ The basic structure of a formula that returns a boolean.
 
 ```ts
 {% raw %}
-pack.addFormula({
+connector.addFormula({
   name: "MyFormula",
   description: "My description.",
   parameters: [
@@ -79,7 +79,7 @@ The basic structure of a formula that returns an array.
 
 ```ts
 {% raw %}
-pack.addFormula({
+connector.addFormula({
   name: "MyFormula",
   description: "My description.",
   parameters: [
@@ -103,7 +103,7 @@ The basic structure of a formula that returns an object.
 
 ```ts
 {% raw %}
-pack.addFormula({
+connector.addFormula({
   name: "MyFormula",
   description: "My description.",
   parameters: [
@@ -126,10 +126,10 @@ A formula that returns a number formatted as a percent value. This sample conver
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Formula that converts slices of a pizza into a percentage eaten.
-pack.addFormula({
+connector.addFormula({
   name: "PizzaEaten",
   description: "Calculates what percentage of a pizza was eaten.",
   parameters: [
@@ -153,11 +153,11 @@ A formula that returns a number formatted as a currency value. This sample conve
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addNetworkDomain("exchangerate.host");
+connector.addNetworkDomain("exchangerate.host");
 
-pack.addFormula({
+connector.addFormula({
   name: "ToUSD",
   description: "Convert from a different currency to US dollars.",
   parameters: [
@@ -202,10 +202,10 @@ A formula that returns a date and time, passed as a string. This sample adds fiv
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Formula that adds five minutes to an input date and time.
-pack.addFormula({
+connector.addFormula({
   name: "FiveMinsLate",
   description: "Adds five minutes to the input date and time.",
   parameters: [
@@ -232,10 +232,10 @@ A formula that returns markdown content. This sample returns the contents of the
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Returns the contents of GitHub repo's README.md file as markdown.
-pack.addFormula({
+connector.addFormula({
   name: "GetReadme",
   description: "Gets the content of a GitHub repo's README.md file.",
   parameters: [
@@ -258,7 +258,7 @@ pack.addFormula({
   },
 });
 
-pack.addNetworkDomain("raw.githubusercontent.com");
+connector.addNetworkDomain("raw.githubusercontent.com");
 {% endraw %}
 ```
 ## HTML
@@ -267,10 +267,10 @@ A formula that returns HTML content. This sample returns HTML with every word of
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Returns HTML with every other word of the input text bolded.
-pack.addFormula({
+connector.addFormula({
   name: "AlternatingBold",
   description: "Bold every other word.",
   parameters: [
@@ -300,10 +300,10 @@ A formula that a URL to embed. This sample returns an embed of the infamous YouT
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Returns the infamous YouTube video by Rick Astley as an embed.
-pack.addFormula({
+connector.addFormula({
   name: "Rickroll",
   description: "Embeds the video \"Never Gonna Give You Up\".",
   parameters: [],
@@ -321,10 +321,10 @@ A formula that returns an image, as a reference. This sample returns a random ph
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Formula that fetches a random cat photo, with various options.
-pack.addFormula({
+connector.addFormula({
   name: "CatPhoto",
   description: "Gets a random cat image.",
   parameters: [
@@ -363,8 +363,8 @@ pack.addFormula({
   },
 });
 
-// Allow the pack to make requests to Cat-as-a-service API.
-pack.addNetworkDomain("cataas.com");
+// Allow the connector to make requests to Cat-as-a-service API.
+connector.addNetworkDomain("cataas.com");
 {% endraw %}
 ```
 

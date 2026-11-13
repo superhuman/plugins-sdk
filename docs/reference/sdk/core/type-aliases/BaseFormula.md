@@ -12,7 +12,7 @@ search:
 
 > **BaseFormula**\<`ParamDefsT`, `ResultT`, `ContextT`\> = [`PackFormulaDef`](../interfaces/PackFormulaDef.md)\<`ParamDefsT`, `ResultT`, `ContextT`\> & `object`
 
-The base class for pack formula descriptors. Subclasses vary based on the return type of the formula.
+The base class for formula descriptors. Subclasses vary based on the return type of the formula.
 
 ## Type Declaration
 
@@ -25,5 +25,5 @@ The base class for pack formula descriptors. Subclasses vary based on the return
 | Type Parameter | Default type |
 | ------ | ------ |
 | `ParamDefsT` *extends* [`ParamDefs`](ParamDefs.md) | - |
-| `ResultT` *extends* [`PackFormulaResult`](PackFormulaResult.md) | - |
+| `ResultT` *extends* [`FormulaResult`](FormulaResult.md) | - |
 | `ContextT` *extends* [`ExecutionContext`](../interfaces/ExecutionContext.md) | [`ExecutionContext`](../interfaces/ExecutionContext.md) |

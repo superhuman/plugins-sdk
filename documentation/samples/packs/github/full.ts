@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Regular expression used to parse repo URLs.
 const RepoUrlRegex = new RegExp("^https://github.com/([^/]+)/([^/]+)");
@@ -8,12 +8,12 @@ const RepoUrlRegex = new RegExp("^https://github.com/([^/]+)/([^/]+)");
 const PageSize = 50;
 
 // Allow the Pack to access the GitHub domain.
-pack.addNetworkDomain("github.com");
+connector.addNetworkDomain("github.com");
 
 // Setup per-user authentication using GitHub's OAuth2.
 // Remember to set your client ID and secret in the "Settings" tab.
 // See https://docs.github.com/en/developers/apps/building-oauth-apps
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://github.com/login/oauth/authorize",
   tokenUrl: "https://github.com/login/oauth/access_token",
@@ -52,7 +52,7 @@ const RepoSchema = sdk.makeObjectSchema({
 });
 
 // A formula to fetch information about a repo.
-pack.addFormula({
+connector.addFormula({
   name: "Repo",
   description: "Get information about a repo from its URL.",
   parameters: [
@@ -76,7 +76,7 @@ pack.addFormula({
 });
 
 // A column format that automatically applies the Repo() formula.
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Repo",
   instructions: "Show details about a GitHub repo, given a URL.",
   formulaName: "Repo",
@@ -84,7 +84,7 @@ pack.addColumnFormat({
 });
 
 // An action formula that allows a user to star a repo.
-pack.addFormula({
+connector.addFormula({
   name: "Star",
   description: "Add a star to a repo.",
   parameters: [
@@ -107,7 +107,7 @@ pack.addFormula({
 });
 
 // A sync table that lists all of the user's repos.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Repos",
   description: "All of the repos that the user has access to.",
   identityName: "Repo",

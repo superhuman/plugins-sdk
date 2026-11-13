@@ -29,7 +29,7 @@ sdk.makeAttributionNode({
 
 > **text**: `string`
 
-The text to render with the pack value.
+The text to render with the connector value.
 
 ***
 

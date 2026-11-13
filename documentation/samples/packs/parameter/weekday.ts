@@ -1,8 +1,8 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Formula that gets the current weekday, for example "Monday".
-pack.addFormula({
+connector.addFormula({
   name: "CurrentWeekday",
   description: "Get the current day of the week.",
   parameters: [],

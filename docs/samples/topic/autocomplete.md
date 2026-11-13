@@ -17,10 +17,10 @@ A formula with a parameter that provides autocomplete for acceptable values. Thi
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Returns the noise an animal makes. Ex) "cow" => "moo".
-pack.addFormula({
+connector.addFormula({
   name: "AnimalNoise",
   description: "Gets the noise than an animal makes.",
   parameters: [
@@ -53,10 +53,10 @@ A formula with a parameter that provides autocomplete for acceptable values, whe
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Gets the price of a board game by ID, with autocomplete on the ID.
-pack.addFormula({
+connector.addFormula({
   name: "GetPrice",
   description: "Gets the price of a board game.",
   parameters: [
@@ -87,11 +87,11 @@ pack.addFormula({
   },
 });
 
-pack.addNetworkDomain("boardgameatlas.com");
+connector.addNetworkDomain("boardgameatlas.com");
 
 // Authenticate using a client ID.
 // See: https://www.boardgameatlas.com/api/docs/apps
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.QueryParamToken,
   paramName: "client_id",
 });
@@ -103,11 +103,11 @@ A formula with a parameter that provides autocomplete for acceptable values, whe
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Greet someone in their language, with the greeting autocomplete adjusting
 // based on the language selected.
-pack.addFormula({
+connector.addFormula({
   name: "Greeting",
   description: "Greet someone.",
   parameters: [
@@ -159,10 +159,10 @@ A formula with vararg parameters that represent key-value pairs, which provides 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Generates a fictitious ice cream order, using a flexible set of choices.
-pack.addFormula({
+connector.addFormula({
   name: "OrderIcecream",
   description: "Put in your ice cream order.",
   parameters: [

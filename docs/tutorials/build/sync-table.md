@@ -141,11 +141,11 @@ Start by scaffolding out the structure of the sync table, coming back to some of
 
     ```ts
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addNetworkDomain("gutendex.com");
+    connector.addNetworkDomain("gutendex.com");
 
-    pack.addSyncTable({
+    connector.addSyncTable({
 
     });
     ```
@@ -167,11 +167,11 @@ Start by scaffolding out the structure of the sync table, coming back to some of
 
     ```{.ts hl_lines="7-9"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addNetworkDomain("gutendex.com");
+    connector.addNetworkDomain("gutendex.com");
 
-    pack.addSyncTable({
+    connector.addSyncTable({
       name: "Books",
       description: "Lists books in the collection.",
       identityName: "Book",
@@ -193,11 +193,11 @@ Start by scaffolding out the structure of the sync table, coming back to some of
 
     ```{.ts hl_lines="10"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addNetworkDomain("gutendex.com");
+    connector.addNetworkDomain("gutendex.com");
 
-    pack.addSyncTable({
+    connector.addSyncTable({
       name: "Books",
       description: "Lists books in the collection.",
       identityName: "Book",
@@ -225,11 +225,11 @@ Start by scaffolding out the structure of the sync table, coming back to some of
 
     ```{.ts hl_lines="11-18"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addNetworkDomain("gutendex.com");
+    connector.addNetworkDomain("gutendex.com");
 
-    pack.addSyncTable({
+    connector.addSyncTable({
       name: "Books",
       description: "Lists books in the collection.",
       identityName: "Book",
@@ -268,7 +268,7 @@ With the structure set up, you can now write the code that fetches the rows.
     <div markdown>
 
     ```{.ts hl_lines="7-12"}
-    pack.addSyncTable({
+    connector.addSyncTable({
       // ...
       formula: {
         name: "SyncBooks",
@@ -306,7 +306,7 @@ With the structure set up, you can now write the code that fetches the rows.
     <div markdown>
 
     ```{.ts hl_lines="6-14"}
-    pack.addSyncTable({
+    connector.addSyncTable({
       // ...
       formula: {
         // ...
@@ -341,7 +341,7 @@ With the structure set up, you can now write the code that fetches the rows.
     <div markdown>
 
     ```{.ts hl_lines="15-18"}
-    pack.addSyncTable({
+    connector.addSyncTable({
       // ...
       formula: {
         // ...
@@ -392,15 +392,15 @@ The schema is essentially a blueprint for each row in the sync table, describing
 
     ```{.ts hl_lines="6-8"}
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
-    pack.addNetworkDomain("gutendex.com");
+    connector.addNetworkDomain("gutendex.com");
 
     const BookSchema = sdk.makeObjectSchema({
 
     });
 
-    pack.addSyncTable({
+    connector.addSyncTable({
       name: "Books",
       description: "Lists books in the collection.",
       identityName: "Book",

@@ -17,10 +17,10 @@ Date array parameters are meant to represent date ranges. A date range can
 be a fixed range, e.g. April 1, 2020 - May 15, 2020, or it can be a "live"
 range, like "last 30 days".
 
-At execution time, a date range will always be passed to a pack as an
+At execution time, a date range will always be passed to a connector as an
 array of two specific dates, but for many use cases, it is necessary
 to provide a default value that is a "live" range rather than hardcoded
-one. For example, if your pack has a table that syncs recent emails,
+one. For example, if your connector has a table that syncs recent emails,
 you might want to have a date range parameter that default to
 "last 7 days". Defaulting to a hardcoded date range would not be useful
 and requiring the user to always specify a date range may be inconvenient.

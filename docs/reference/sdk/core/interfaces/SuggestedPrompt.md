@@ -17,7 +17,7 @@ An agent adds them with `addSuggestedPrompt()` on the agent builder.
 ## Example
 
 ```ts
-pack.addSuggestedPrompt({
+agent.addSuggestedPrompt({
   name: "ticketStatus",
   displayName: "Check ticket status",
   prompt: "Show me the status of all open support tickets"

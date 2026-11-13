@@ -1,8 +1,8 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Action that uploads a file to Amazon S3.
-pack.addFormula({
+connector.addFormula({
   name: "Upload",
   description: "Upload a file to AWS S3.",
   parameters: [
@@ -75,12 +75,12 @@ function getFilename(contentDisposition) {
 }
 
 // Set per-user authentication using AWS Signature Version 4 with an access key.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.AWSAccessKey,
   service: "s3",
   requiresEndpointUrl: true,
   endpointDomain: "amazonaws.com",
 });
 
-// Allow the pack to make requests to AWS.
-pack.addNetworkDomain("amazonaws.com");
+// Allow the connector to make requests to AWS.
+connector.addNetworkDomain("amazonaws.com");

@@ -1,12 +1,12 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // System-wide authentication to RapidAPI, using an API key in a custom header.
 // See https://docs.rapidapi.com/docs/keys#how-to-find-your-api-key.
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.CustomHeaderToken,
   headerName: "X-RapidAPI-Key",
 });
 
-// Allow the pack to make requests to RapidAPI.
-pack.addNetworkDomain("rapidapi.com");
+// Allow the connector to make requests to RapidAPI.
+connector.addNetworkDomain("rapidapi.com");

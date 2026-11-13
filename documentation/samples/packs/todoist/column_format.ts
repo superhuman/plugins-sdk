@@ -11,10 +11,10 @@ const TaskUrlPatterns: RegExp[] = [
   new RegExp("^https://todoist.com/showTask\\?id=([0-9]+)"),
 ];
 
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Add a column format that displays a task URL as rich metadata.
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Task",
   // The formula "Task" below will get run on the cell value.
   formulaName: "Task",
@@ -53,7 +53,7 @@ const TaskSchema = sdk.makeObjectSchema({
 // Formula that looks up rich metadata about a task given its URL. This is used
 // by the "Task" column format above, but is also a regular formula that can be
 // used elsewhere.
-pack.addFormula({
+connector.addFormula({
   name: "Task",
   description: "Gets a Todoist task by URL",
   parameters: [
@@ -93,11 +93,11 @@ function extractTaskId(taskUrl: string) {
   throw new sdk.UserVisibleError("Invalid task URL: " + taskUrl);
 }
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 
 // Setup authentication using a Todoist API token.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });

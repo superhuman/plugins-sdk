@@ -48,14 +48,14 @@ A formula that gets a JSON value. This sample generates random bacon-themed Lore
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // When using the fetcher, this is the domain of the API that your pack makes
 // fetcher requests to.
-pack.addNetworkDomain("baconipsum.com");
+connector.addNetworkDomain("baconipsum.com");
 
 // This line adds a new formula to this Pack.
-pack.addFormula({
+connector.addFormula({
   name: "BaconIpsum",
   description: "Returns meat-themed lorem ipsum copy.",
   parameters: [], // No parameters required.
@@ -89,13 +89,13 @@ A formula that fetches binary data. This sample gets image data and calculates t
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Regular expression that matches Superhuman-hosted images.
 const HostedImageUrlRegex = new RegExp("^https://(?:[^/]*\.)?codahosted.io/.*");
 
 // Formula that calculates the file size of an image.
-pack.addFormula({
+connector.addFormula({
   name: "FileSize",
   description: "Gets the file size of an image, in bytes.",
   parameters: [
@@ -135,7 +135,7 @@ A sync table that queries a GraphQL API. This sample lists the products in a moc
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 const PageSize = 20;
 const OneDaySecs = 24 * 60 * 60;
@@ -163,9 +163,9 @@ const ProductSchema = sdk.makeObjectSchema({
   featuredProperties: ["description", "image", "link"],
 });
 
-pack.addNetworkDomain("mock.shop");
+connector.addNetworkDomain("mock.shop");
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Products",
   description: "Lists the products available in the store.",
   identityName: "Product",
@@ -253,9 +253,9 @@ An action formula that sends application/x-www-form-urlencoded data. This sample
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addFormula({
+connector.addFormula({
   name: "Upload",
   description: "Uploads an image to Imgur.",
   parameters: [
@@ -290,9 +290,9 @@ pack.addFormula({
   },
 });
 
-pack.addNetworkDomain("imgur.com");
+connector.addNetworkDomain("imgur.com");
 
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.CustomHeaderToken,
   headerName: "Authentication",
   tokenPrefix: "Client-ID",

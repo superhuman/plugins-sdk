@@ -1,7 +1,9 @@
 import {AgentDefinitionBuilder} from '../builder';
+import {ConnectorDefinitionBuilder} from '../builder';
 import {PackDefinitionBuilder} from '../builder';
 import {PackMetadataValidationError} from '../testing/upload_validation';
 import type {PackVersionDefinition} from '../types';
+import type * as Sdk from '../index';
 import {createFakePackVersionMetadata} from './test_utils';
 import {executeFormulaOrSyncWithVM} from '../testing/execution';
 import fs from 'fs';
@@ -15,6 +17,7 @@ import {rejects} from 'assert';
 import {strictEqual} from 'assert';
 import {validatePackDefinitionExports} from '../helpers/pack_exports';
 import {validatePackVersionMetadata} from '../testing/upload_validation';
+import * as vm from 'vm';
 
 describe('pack export aliases', () => {
   const pack = {id: 1};
@@ -148,6 +151,54 @@ describe('pack export aliases', () => {
     );
   });
 
+  it('preserves the legacy subclass and factory constructor identity', () => {
+    assert.notStrictEqual(ConnectorDefinitionBuilder, PackDefinitionBuilder);
+    class CustomConnector extends ConnectorDefinitionBuilder {}
+    class CustomPack extends PackDefinitionBuilder {}
+    assert.notInstanceOf(new CustomConnector(), PackDefinitionBuilder);
+    assert.instanceOf(new CustomPack(), ConnectorDefinitionBuilder);
+    assert.equal(ConnectorDefinitionBuilder.name, 'ConnectorDefinitionBuilder');
+    assert.notInstanceOf(new ConnectorDefinitionBuilder(), PackDefinitionBuilder);
+    for (const builder of [newConnector(), newPack(), new PackDefinitionBuilder()]) {
+      assert.instanceOf(builder, ConnectorDefinitionBuilder);
+      assert.instanceOf(builder, PackDefinitionBuilder);
+      assert.strictEqual(builder.constructor, PackDefinitionBuilder);
+      assert.equal(builder.constructor.name, 'PackDefinitionBuilder');
+      assert.strictEqual(builder.setVersion('1.2.3'), builder);
+      assert.equal(builder.version, '1.2.3');
+    }
+  });
+
+  it('preserves the legacy subclass and factory behavior in the browser bundle', () => {
+    const module = {exports: {}};
+    vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../dist/bundle.js'), 'utf8'), {
+      module,
+      Buffer,
+      TextEncoder,
+      TextDecoder,
+    });
+    const sdk = module.exports as typeof Sdk;
+    assert.isFunction(sdk.ConnectorDefinitionBuilder);
+    assert.notStrictEqual(sdk.ConnectorDefinitionBuilder, sdk.PackDefinitionBuilder);
+    assert.notInstanceOf(new sdk.ConnectorDefinitionBuilder(), sdk.PackDefinitionBuilder);
+    const definition = {version: '1.2.3', formulaNamespace: 'Example', networkDomains: ['example.com']};
+    for (const builder of [
+      new sdk.PackDefinitionBuilder(definition),
+      sdk.newConnector(definition),
+      sdk.newPack(definition),
+    ]) {
+      assert.instanceOf(builder, sdk.ConnectorDefinitionBuilder);
+      assert.instanceOf(builder, sdk.PackDefinitionBuilder);
+      assert.strictEqual(builder.constructor, sdk.PackDefinitionBuilder);
+      assert.equal(builder.constructor.name, 'PackDefinitionBuilder');
+      assert.equal(builder.version, '1.2.3');
+      assert.equal(builder.formulaNamespace, 'Example');
+      assert.deepEqual(Array.from(builder.networkDomains), ['example.com']);
+      assert.strictEqual(builder.setVersion('2.0.0'), builder);
+      assert.equal(builder.version, '2.0.0');
+    }
+  });
+
   it('newConnector matches newPack, and newPack still builds a pack', () => {
     assert.instanceOf(newConnector(), PackDefinitionBuilder);
     assert.instanceOf(newPack(), PackDefinitionBuilder);
@@ -162,6 +213,8 @@ describe('pack export aliases', () => {
     const pack = newPack(definition);
     assert.instanceOf(connector, PackDefinitionBuilder);
     assert.deepEqual(connector, pack);
+    assert.deepEqual({...new ConnectorDefinitionBuilder(definition)}, {...connector});
+    assert.instanceOf(connector, ConnectorDefinitionBuilder);
     assert.equal(connector.version, '1.2.3');
     assert.equal(connector.formulaNamespace, 'Example');
     assert.deepEqual(connector.networkDomains, ['example.com']);

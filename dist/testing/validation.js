@@ -73,7 +73,7 @@ function validateResult(formula, result) {
     if (maybeError) {
         throw types_3.ResultValidationException.fromErrors(formula.name, [maybeError]);
     }
-    if ((0, api_1.isObjectPackFormula)(formula)) {
+    if ((0, api_1.isObjectFormula)(formula)) {
         // We've already validated that the result type is valid by this point.
         validateObjectResult(formula, result);
     }

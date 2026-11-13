@@ -16,7 +16,7 @@ search:
 
 | Type Parameter | Default type |
 | ------ | ------ |
-| `T` *extends* [`PackFormulaResult`](../../core/type-aliases/PackFormulaResult.md) \| [`GenericSyncFormulaResult`](../../core/type-aliases/GenericSyncFormulaResult.md) | `any` |
+| `T` *extends* [`FormulaResult`](../../core/type-aliases/FormulaResult.md) \| [`GenericSyncFormulaResult`](../../core/type-aliases/GenericSyncFormulaResult.md) | `any` |
 
 ## Parameters
 

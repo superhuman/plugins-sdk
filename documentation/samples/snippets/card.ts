@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as sdk from "@superhuman/plugins-sdk";
 
-const pack = sdk.newPack();
+const connector = sdk.newConnector();
 
 const $1Schema = undefined;
 
@@ -33,7 +33,7 @@ const $1$Thing$Schema = sdk.makeObjectSchema({
 });
 
 // A formula that accepts a URL and returns an object matching the schema above.
-pack.addFormula({
+connector.addFormula({
   name: "$1",
   description: "${6:My description.}",
   parameters: [
@@ -56,7 +56,7 @@ pack.addFormula({
 });
 
 // A column format that defines which URL patterns the formula should match.
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "$1",
   instructions: "${7:My instructions.}",
   formulaName: "$1",

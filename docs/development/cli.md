@@ -67,7 +67,7 @@ You can now access the CLI in any directory by typing the command `packs`.
 
 ### Create Pack definition
 
-Run `npx packs init` to initialize an empty project with the recommended settings and dependencies.
+Run `npx packs init` to initialize an empty project with the recommended settings and dependencies. To scaffold an agent instead of a connector, run `npx packs init --agent`.
 
 
 ## Running code locally
@@ -345,7 +345,7 @@ Alternatively, you can create releases from within the Pack Studio.
 
 ## Recommended file structure
 
-When using the CLI to build a Pack you can split your code into multiple files, which can be really useful for large or complex Packs. You can organize your code however you like, as long as there is a file that exports the Pack definition with the name `pack` (typically named `pack.ts`).
+When using the CLI to build a Pack you can split your code into multiple files, which can be really useful for large or complex Packs. You can organize your code however you like, as long as there is a file (typically named `pack.ts`) that exports the definition as `connector`, or as `agent` for an agent.
 
 Superhuman engineers have built dozens of Packs over the years, and have settled on the recommended file structure below:
 

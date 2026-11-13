@@ -23,8 +23,8 @@ agent.setTools({
   mail: true,
   webSearch: {allowedDomains: ['docs.example.com']},   // or just `true` for unrestricted
   connectors: [
-    {packId: 1234, formulas: [{formulaName: 'CreateTask'}]},  // restrict to specific formulas
-    {packId: 5678},                                            // or grant the whole connector
+    {connectorId: 1234, formulas: [{formulaName: 'CreateTask'}]},  // restrict to specific formulas
+    {connectorId: 5678},                                            // or grant the whole connector
   ],
 });
 ```
@@ -32,8 +32,11 @@ agent.setTools({
 - `docs: true` → Coda/Superhuman Docs read+write access.
 - `mail: true` → Mail & Calendar (Superhuman Mail) access.
 - `webSearch: true | {allowedDomains: string[]}` → web search, optionally domain-restricted.
-- `connectors: Array<{packId: number, formulas?: Array<{formulaName: string}>}>` → grants access to
-  connector plugins (e.g. Slack) by plugin ID, optionally narrowed to specific formulas.
+- `connectors: Array<{connectorId: number, formulas?: Array<{formulaName: string}>}>` → grants access to
+  connector plugins (e.g. Slack) by plugin ID, optionally narrowed to specific formulas. Set
+  `connectorId`, not the deprecated `packId`; a connector takes one or the other, never both.
+
+Use `connectorId` for the current SDK. To check an older installation, run `node -p "const a = require('@superhuman/plugins-sdk').newAgent(); a.setTools({connectors: [{connectorId: 1}]}); a.agent.tools[0].packId"` from the plugin's directory. If it prints `undefined`, the installed SDK predates `connectorId`: write `packId` in place of `connectorId` in every connector, or upgrade with `npm install @superhuman/plugins-sdk@latest`.
 
 ### Finding a connector plugin's ID
 
@@ -203,7 +206,7 @@ agent.setTools({
   docs: true,
   mail: true,
   webSearch: {allowedDomains: ['status.example.com']},
-  connectors: [{packId: 1000}, {packId: 1002}, {packId: 1004}],
+  connectors: [{connectorId: 1000}, {connectorId: 1002}, {connectorId: 1004}],
 });
 
 agent.addDefaultRoutine({

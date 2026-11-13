@@ -16,11 +16,11 @@ The Asana API uses OAuth2 to authenticate users, and requires the use of PKCE.
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Asana API, using OAuth2.
 // See https://developers.asana.com/docs/oauth
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://app.asana.com/-/oauth_authorize",
   tokenUrl: "https://app.asana.com/-/oauth_token",
@@ -39,8 +39,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Asana.
-pack.addNetworkDomain("asana.com");
+// Allow the connector to make requests to Asana.
+connector.addNetworkDomain("asana.com");
 {% endraw %}
 ```
 ## AWS S3
@@ -49,12 +49,12 @@ The Amazon Web Services (AWS) S3 service uses their custom signature method.
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the AWS S3 service, using AWS Signature Version 4.
 // The user provides the URL of their S3 bucket as the endpoint, along with an
 // access key and secret.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.AWSAccessKey,
   instructionsUrl:
     "https://aws.amazon.com/premiumsupport/knowledge-center/create-access-key/",
@@ -72,7 +72,7 @@ pack.setUserAuthentication({
   },
 });
 
-pack.addNetworkDomain("amazonaws.com");
+connector.addNetworkDomain("amazonaws.com");
 {% endraw %}
 ```
 ## Battle.net
@@ -81,19 +81,19 @@ Blizzard&#x27;s Battle.net APIs use the Client Credentials OAuth2 flow.
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // System-wide authentication to Blizzard's Battle.net APIs, using the OAuth2
 // client_credentials flow.
 // oxlint-disable-next-line stylistic/max-len
 // See https://develop.battle.net/documentation/guides/using-oauth/client-credentials-flow.
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.OAuth2ClientCredentials,
   tokenUrl: "https://oauth.battle.net/token",
 });
 
-// Allow the pack to make requests to Battle.net.
-pack.addNetworkDomain("blizzard.com");
+// Allow the connector to make requests to Battle.net.
+connector.addNetworkDomain("blizzard.com");
 {% endraw %}
 ```
 ## Board Game Atlas
@@ -102,16 +102,16 @@ The Board Game Atlas API requires the developer to provide their client ID as qu
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Authenticate using a client ID.
 // See: https://www.boardgameatlas.com/api/docs/apps
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.QueryParamToken,
   paramName: "client_id",
 });
 
-pack.addNetworkDomain("boardgameatlas.com");
+connector.addNetworkDomain("boardgameatlas.com");
 {% endraw %}
 ```
 ## ClickUp
@@ -120,11 +120,11 @@ The ClickUp API uses OAuth2 to authenticate users.
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the ClickUp API, using OAuth2.
 // See https://clickup.com/api
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://app.clickup.com/api",
   tokenUrl: "https://app.clickup.com/api/v2/oauth/token",
@@ -140,8 +140,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to the ClickUp.
-pack.addNetworkDomain("clickup.com");
+// Allow the connector to make requests to the ClickUp.
+connector.addNetworkDomain("clickup.com");
 {% endraw %}
 ```
 ## Superhuman Docs API
@@ -150,20 +150,20 @@ The Superhuman Docs API requires the user to provide an API token, passed in an 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Superhuman Docs API, using a token in the
 // Authorization header.
 // See https://docs.superhuman.com/developers/apis/v1
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.CodaApiHeaderBearerToken,
 
   // Creates the token automatically when the Pack is installed.
   shouldAutoAuthSetup: true,
 });
 
-// Allow the pack to make requests to Superhuman Docs.
-pack.addNetworkDomain("docs.superhuman.com");
+// Allow the connector to make requests to Superhuman Docs.
+connector.addNetworkDomain("docs.superhuman.com");
 {% endraw %}
 ```
 ## Copper API
@@ -172,11 +172,11 @@ The Copper API requires the user to provide an API key and their email address, 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Copper API, using multiple HTTP headers.
 // See https://developer.copper.com/introduction/requests.html#headers.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.MultiHeaderToken,
   headers: [
     { name: "X-PW-AccessToken", description: "API key" },
@@ -197,8 +197,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Copper.
-pack.addNetworkDomain("copper.com");
+// Allow the connector to make requests to Copper.
+connector.addNetworkDomain("copper.com");
 {% endraw %}
 ```
 ## Dropbox
@@ -207,11 +207,11 @@ The Dropbox API uses OAuth2 to authenticate users, prompting them to approve a s
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Set per-user authentication using Dropbox's OAuth2.
 // See https://developers.dropbox.com/oauth-guide
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://www.dropbox.com/oauth2/authorize",
   tokenUrl: "https://api.dropbox.com/oauth2/token",
@@ -224,7 +224,7 @@ pack.setUserAuthentication({
 });
 
 // Allow access to the Dropbox domain.
-pack.addNetworkDomain("dropboxapi.com");
+connector.addNetworkDomain("dropboxapi.com");
 {% endraw %}
 ```
 ## Facebook (Meta)
@@ -233,12 +233,12 @@ The Facebook (Meta) APIs use OAuth2 to authenticate users, prompting them to app
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to Facebook (Meta) APIs, using OAuth2.
 // oxlint-disable-next-line stylistic/max-len
 // See https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://www.facebook.com/v14.0/dialog/oauth",
   tokenUrl: "https://graph.facebook.com/v14.0/oauth/access_token",
@@ -259,8 +259,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Facebook.
-pack.addNetworkDomain("facebook.com");
+// Allow the connector to make requests to Facebook.
+connector.addNetworkDomain("facebook.com");
 {% endraw %}
 ```
 ## Giphy
@@ -269,17 +269,17 @@ The Giphy API requires the developer to provide their API key as query parameter
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // System-wide authentication to the Giphy API, using an API key in the query
 // string. See https://support.giphy.com/hc/en-us/articles/360020283431.
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.QueryParamToken,
   paramName: "api_key",
 });
 
-// Allow the pack to make requests to Giphy.
-pack.addNetworkDomain("giphy.com");
+// Allow the connector to make requests to Giphy.
+connector.addNetworkDomain("giphy.com");
 {% endraw %}
 ```
 ## GitHub
@@ -288,12 +288,12 @@ The GitHub API uses OAuth2 to authenticate users, prompting them to approve a sp
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Setup per-user authentication using GitHub's OAuth2.
 // Remember to set your client ID and secret in the "Settings" tab.
 // See https://docs.github.com/en/developers/apps/building-oauth-apps
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://github.com/login/oauth/authorize",
   tokenUrl: "https://github.com/login/oauth/access_token",
@@ -311,7 +311,7 @@ pack.setUserAuthentication({
 });
 
 // Allow the Pack to access the GitHub domain.
-pack.addNetworkDomain("github.com");
+connector.addNetworkDomain("github.com");
 {% endraw %}
 ```
 ## Google
@@ -320,11 +320,11 @@ The Google APIs use OAuth2 to authenticate users, prompting them to approve a sp
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to Google APIs, using OAuth2.
 // See https://developers.google.com/identity/protocols/oauth2/web-server
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
   tokenUrl: "https://oauth2.googleapis.com/token",
@@ -351,8 +351,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Google.
-pack.addNetworkDomain("googleapis.com");
+// Allow the connector to make requests to Google.
+connector.addNetworkDomain("googleapis.com");
 {% endraw %}
 ```
 ## Jira
@@ -361,13 +361,13 @@ The Jira API uses OAuth2 to authenticate users. After authenticating users must 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Jira Cloud API, using OAuth2 with a
 // post-submit step to select the instance to connect to. Note that this code
 // isn't compatible with Jira Data Center.
 // See https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://auth.atlassian.com/authorize",
   tokenUrl: "https://auth.atlassian.com/oauth/token",
@@ -434,8 +434,8 @@ async function getUser(context: sdk.ExecutionContext) {
   return response.body;
 }
 
-// Allow the pack to make requests to Jira.
-pack.addNetworkDomain("atlassian.com");
+// Allow the connector to make requests to Jira.
+connector.addNetworkDomain("atlassian.com");
 {% endraw %}
 ```
 ## Microsoft
@@ -444,12 +444,12 @@ The Microsoft APIs use OAuth2 to authenticate users, prompting them to approve a
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to Microsoft APIs, using OAuth2.
 // oxlint-disable-next-line stylistic/max-len
 // See https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl:
     "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
@@ -476,8 +476,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Microsoft.
-pack.addNetworkDomain("microsoft.com");
+// Allow the connector to make requests to Microsoft.
+connector.addNetworkDomain("microsoft.com");
 {% endraw %}
 ```
 ## Okta
@@ -486,12 +486,12 @@ The Okta API requires the user to provide an API key, passed as an Authorization
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Okta API, using a custom token prefix and
 // account-specific endpoints.
 // See https://developer.okta.com/docs/reference/core-okta-api/#authentication
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.CustomHeaderToken,
   headerName: "Authorization",
   tokenPrefix: "SSWS",
@@ -513,8 +513,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Okta.
-pack.addNetworkDomain("okta.com");
+// Allow the connector to make requests to Okta.
+connector.addNetworkDomain("okta.com");
 {% endraw %}
 ```
 ## Rapid API
@@ -523,17 +523,17 @@ Rapid APIs require that the developer provide an API key, passed in a custom hea
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // System-wide authentication to RapidAPI, using an API key in a custom header.
 // See https://docs.rapidapi.com/docs/keys#how-to-find-your-api-key.
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.CustomHeaderToken,
   headerName: "X-RapidAPI-Key",
 });
 
-// Allow the pack to make requests to RapidAPI.
-pack.addNetworkDomain("rapidapi.com");
+// Allow the connector to make requests to RapidAPI.
+connector.addNetworkDomain("rapidapi.com");
 {% endraw %}
 ```
 ## Salesforce
@@ -542,13 +542,13 @@ The Salesforce API uses OAuth2 to authenticate users, prompting them to approve 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Salesforce API, using OAuth2 and an
 // automatically determined account-specific endpoint.
 // oxlint-disable-next-line stylistic/max-len
 // See https://help.salesforce.com/s/articleView?id=sf.remoteaccess_authenticate.htm&type=5
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://login.salesforce.com/services/oauth2/authorize",
   tokenUrl: "https://login.salesforce.com/services/oauth2/token",
@@ -575,8 +575,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Salesforce.
-pack.addNetworkDomain("salesforce.com");
+// Allow the connector to make requests to Salesforce.
+connector.addNetworkDomain("salesforce.com");
 {% endraw %}
 ```
 ## Slack
@@ -585,11 +585,11 @@ The Slack API uses OAuth2 to authenticate users, prompting them to approve a spe
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Slack API, using OAuth2.
 // See https://api.slack.com/authentication/oauth-v2
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://slack.com/oauth/v2/authorize",
   tokenUrl: "https://slack.com/api/oauth.v2.access",
@@ -617,8 +617,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Slack.
-pack.addNetworkDomain("slack.com");
+// Allow the connector to make requests to Slack.
+connector.addNetworkDomain("slack.com");
 {% endraw %}
 ```
 ## Todoist
@@ -627,11 +627,11 @@ The Todoist API uses OAuth2 to authenticate users, prompting them to approve a s
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Todoist API, using an OAuth2 flow.
 // See https://developer.todoist.com/guides/#oauth
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://app.todoist.com/oauth/authorize",
   tokenUrl: "https://api.todoist.com/oauth/access_token",
@@ -647,8 +647,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 {% endraw %}
 ```
 ## Typeform
@@ -657,11 +657,11 @@ The Typeform API uses OAuth2 to authenticate users, prompting them to approve a 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Configure per-user authentication for the Typeform API, using OAuth2.
 // See: https://developer.typeform.com/get-started/applications/
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://api.typeform.com/oauth/authorize",
   tokenUrl: "https://api.typeform.com/oauth/token",
@@ -682,7 +682,7 @@ pack.setUserAuthentication({
 });
 
 // Allow requests to Typeform.
-pack.addNetworkDomain("typeform.com");
+connector.addNetworkDomain("typeform.com");
 {% endraw %}
 ```
 ## Twilio
@@ -691,12 +691,12 @@ The Twilio API requires the user to provide the SID and token for their account,
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Twilio API, using an Account SID and token in
 // an "Authorization: Basic ..." header.
 // See https://www.twilio.com/docs/usage/requests-to-twilio
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.WebBasic,
   instructionsUrl: "https://www.twilio.com/docs/sms/api#sms-api-authentication",
 
@@ -717,8 +717,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Twilio.
-pack.addNetworkDomain("twilio.com");
+// Allow the connector to make requests to Twilio.
+connector.addNetworkDomain("twilio.com");
 {% endraw %}
 ```
 ## Webflow
@@ -727,14 +727,14 @@ The Typeform API uses OAuth2 to authenticate users, and requires the developer t
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // The version of the Webflow API to use.
 const WebflowApiVersion = "1.0.0";
 
 // Per-user authentication to the ClickUp API, using OAuth2.
 // See https://developers.webflow.com/oauth
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://webflow.com/oauth/authorize",
   tokenUrl: "https://api.webflow.com/oauth/access_token",
@@ -753,8 +753,8 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Webflow.
-pack.addNetworkDomain("webflow.com");
+// Allow the connector to make requests to Webflow.
+connector.addNetworkDomain("webflow.com");
 {% endraw %}
 ```
 ## Yahoo
@@ -763,12 +763,12 @@ The Yahoo APIs uses OAuth2 to authenticate users.
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Setup per-user authentication using Yahoo's OAuth2.
 // Remember to set your client ID and secret in the "Settings" tab.
 // See https://developer.yahoo.com/oauth2/guide/flows_authcode/
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://api.login.yahoo.com/oauth2/request_auth",
   tokenUrl: "https://api.login.yahoo.com/oauth2/get_token",
@@ -786,7 +786,7 @@ pack.setUserAuthentication({
 });
 
 // Allow the Pack to access the Yahoo domain.
-pack.addNetworkDomain("yahoo.com");
+connector.addNetworkDomain("yahoo.com");
 {% endraw %}
 ```
 

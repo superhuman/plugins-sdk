@@ -27,6 +27,22 @@ https://docs.superhuman.com/go/agent/setup/{PACK_ID}
 Replace `{PACK_ID}` with the ID of the Pack containing the connector.
 
 
+### Agent developer settings {:#agent-go}
+
+After an agent is installed, you can find its developer settings by opening the following URL in your browser:
+
+```
+https://docs.superhuman.com/go/agent/setup/{PACK_ID}
+```
+
+Replace `{PACK_ID}` with the ID of the Pack containing the agent.
+
+
+### Active writing agents {:#agents-for-writing}
+
+Move the pointer to the right edge of the page until the Superhuman Go notch appears, click **Writing suggestions**. The **Agents for writing** panel opens.
+
+
 ## :superhuman-docs: Docs
 
 ### Pack list {:#pack-list}

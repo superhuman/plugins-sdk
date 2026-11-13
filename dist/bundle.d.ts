@@ -58,15 +58,15 @@ export interface TypeMap {
 	[Type.markdown]: string;
 	[Type.email]: string;
 }
-/**
- * The union of types for arguments to the `execute` function for a formula.
- */
-export type PackFormulaValue = $Values<Omit<TypeMap, Type.object>> | PackFormulaValue[];
-/**
- * The union of types that can be returned by the `execute` function for a formula.
- */
-export type PackFormulaResult = $Values<TypeMap> | PackFormulaResult[];
-export type TypeOf<T extends PackFormulaResult> = T extends number ? Type.number : T extends string ? Type.string : T extends boolean ? Type.boolean : T extends Date ? Type.date : T extends object ? Type.object : never;
+/** @deprecated Use {@link FormulaValue}. */
+export type PackFormulaValue = FormulaValue;
+/** The union of types for arguments to the `execute` function for a formula. */
+export type FormulaValue = $Values<Omit<TypeMap, Type.object>> | FormulaValue[];
+/** @deprecated Use {@link FormulaResult}. */
+export type PackFormulaResult = FormulaResult;
+/** The union of types that can be returned by the `execute` function for a formula. */
+export type FormulaResult = $Values<TypeMap> | FormulaResult[];
+export type TypeOf<T extends FormulaResult> = T extends number ? Type.number : T extends string ? Type.string : T extends boolean ? Type.boolean : T extends Date ? Type.date : T extends object ? Type.object : never;
 /**
  * Enumeration of types of formula parameters. These describe semantic value types (as opposed to
  * JavaScript value types).
@@ -89,19 +89,19 @@ export declare enum ParameterType {
 	 */
 	Date = "date",
 	/**
-	 * Indicates a parameter that is a rich text value that should be passed to the pack as HTML.
+	 * Indicates a parameter that is a rich text value that should be passed to the connector as HTML.
 	 */
 	Html = "html",
 	/**
-	 * Indicates a parameter that is an image. The pack is passed an image URL.
+	 * Indicates a parameter that is an image. The connector is passed an image URL.
 	 */
 	Image = "image",
 	/**
-	 * Indicates a parameter that is a file. The pack is passed a file URL.
+	 * Indicates a parameter that is a file. The connector is passed a file URL.
 	 */
 	File = "file",
 	/**
-	 * Indicates a parameter that is a rich text value that should be passed to the pack as Markdown.
+	 * Indicates a parameter that is a rich text value that should be passed to the connector as Markdown.
 	 */
 	Markdown = "markdown",
 	/**
@@ -145,7 +145,7 @@ export declare enum ParameterType {
 	 *
 	 * Currently, when such a parameter is used with a sync table formula or an action formula
 	 * ({@link BaseFormulaDef.isAction}), which will generate a builder UI for selecting parameters, a date array
-	 * parameter will always render as a date range selector. A date range will always be passed to a pack formula
+	 * parameter will always render as a date range selector. A date range will always be passed to a formula
 	 * as a list of two elements, the beginning of the range and the end of the range.
 	 */
 	DateArray = "dateArray",
@@ -154,7 +154,7 @@ export declare enum ParameterType {
 	 */
 	SparseDateArray = "sparseDateArray",
 	/**
-	 * Indicates a parameter that is a list of rich text values that should be passed to the pack as HTML.
+	 * Indicates a parameter that is a list of rich text values that should be passed to the connector as HTML.
 	 */
 	HtmlArray = "htmlArray`",
 	/**
@@ -162,7 +162,7 @@ export declare enum ParameterType {
 	 */
 	SparseHtmlArray = "sparseHtmlArray",
 	/**
-	 * Indicates a parameter that is a list of image values. The pack is passed a list of image URLs.
+	 * Indicates a parameter that is a list of image values. The connector is passed a list of image URLs.
 	 */
 	ImageArray = "imageArray",
 	/**
@@ -170,7 +170,7 @@ export declare enum ParameterType {
 	 */
 	SparseImageArray = "sparseImageArray",
 	/**
-	 * Indicates a parameter that is a list of file values. The pack is passed a list of file URLs.
+	 * Indicates a parameter that is a list of file values. The connector is passed a list of file URLs.
 	 */
 	FileArray = "fileArray",
 	/**
@@ -179,7 +179,7 @@ export declare enum ParameterType {
 	SparseFileArray = "sparseFileArray",
 	/**
 	 * Indicates a parameter that is a list of rich text values that should be passed to the
-	 * pack as Markdown.
+	 * connector as Markdown.
 	 */
 	MarkdownArray = "markdownArray`",
 	/**
@@ -286,9 +286,10 @@ export interface ParamDef<T extends UnionType> {
 	 * For a parameter that has an autocomplete providing options, or one that uses an allowedPresetValues
 	 * list, this setting controls whether the user is given an option to enter a custom value.
 	 *
-	 * Pack code cannot completely assume it will never see other values, though. For example, if this
+	 * Connector code cannot completely assume it will never see other values, though. For example, if this
 	 * parameter's value is being set via a formula (instead of a user manually picking a value from
-	 * the Superhuman Docs UI), the platform will do nothing to validate that input before passing it to the pack.
+	 * the Superhuman Docs UI), the platform will do nothing to validate that input before passing it to the
+	 * connector.
 	 *
 	 * Defaults to true.
 	 *
@@ -405,10 +406,11 @@ export interface SyncTableRelation {
 	 */
 	inheritPermissions?: boolean;
 }
-/**
- * Inputs for creating a formula that are common between regular formulas and sync table formulas.
- */
-export interface CommonPackFormulaDef<T extends ParamDefs> {
+/** @deprecated Use {@link CommonFormulaDef}. */
+export interface CommonPackFormulaDef<T extends ParamDefs> extends CommonFormulaDef<T> {
+}
+/** Inputs for creating a formula that are common between regular formulas and sync table formulas. */
+export interface CommonFormulaDef<T extends ParamDefs> {
 	/**
 	 * The name of the formula, used to invoke it.
 	 */
@@ -436,8 +438,8 @@ export interface CommonPackFormulaDef<T extends ParamDefs> {
 	 * Sample inputs and outputs demonstrating usage of this formula.
 	 */
 	readonly examples?: Array<{
-		params: Array<PackFormulaValue | undefined>;
-		result: PackFormulaResult;
+		params: Array<FormulaValue | undefined>;
+		result: FormulaResult;
 	}>;
 	/**
 	 * Does this formula take an action (vs retrieve data or make a calculation)?
@@ -461,7 +463,7 @@ export interface CommonPackFormulaDef<T extends ParamDefs> {
 	readonly isExperimental?: boolean;
 	/**
 	 * Whether this is a formula that will be used internally and not exposed directly to users.
-	 * Not for use by packs that are not Superhuman-authored.
+	 * Not for use by connectors that are not Superhuman-authored.
 	 */
 	readonly isSystem?: boolean;
 	/**
@@ -470,16 +472,16 @@ export interface CommonPackFormulaDef<T extends ParamDefs> {
 	 */
 	readonly purpose?: FormulaPurpose;
 	/**
-	 * OAuth scopes that the formula needs that weren't requested in the pack's overall authentication
-	 * config. For example, a Slack pack can have one formula that needs admin privileges, but non-admins
-	 * can use the bulk of the pack without those privileges. The platform will give users help in understanding
+	 * OAuth scopes that the formula needs that weren't requested in the connector's overall authentication
+	 * config. For example, a Slack connector can have one formula that needs admin privileges, but non-admins
+	 * can use the bulk of the connector without those privileges. The platform will give users help in understanding
 	 * that they need additional authentication to use a formula with extra OAuth scopes. Note that
-	 * these scopes will always be requested in addition to the default scopes for the pack,
+	 * these scopes will always be requested in addition to the default scopes for the connector,
 	 * so an end user must have both sets of permissions.
 	 */
 	readonly extraOAuthScopes?: string[];
 	/**
-	 * Without this set, any authentication of the pack will be allowed to invoke this formula.
+	 * Without this set, any authentication of the connector will be allowed to invoke this formula.
 	 *
 	 * This property is not allowed if connectionRequirement is None.
 	 *
@@ -552,14 +554,14 @@ export declare enum ConnectionRequirement {
 	Required = "required"
 }
 /**
- * A full definition of a pack's user authentication settings, used in
- * {@link PackDefinitionBuilder.setUserAuthentication}.
+ * A full definition of a connector's user authentication settings, used in
+ * {@link ConnectorDefinitionBuilder.setUserAuthentication}.
  */
 export type UserAuthenticationDef = AuthenticationDef & {
 	/**
-	 * It can be annoying to set `connectionRequirement` on every building block in a Pack.
-	 * Use this setting in your Pack's auth settings to quickly say "every building block
-	 * in this Pack requires an account". Without a connectionRequirement, building blocks
+	 * It can be annoying to set `connectionRequirement` on every building block in a connector.
+	 * Use this setting in your connector's auth settings to quickly say "every building block
+	 * in this connector requires an account". Without a connectionRequirement, building blocks
 	 * will be assumed to not need account connections.
 	 */
 	defaultConnectionRequirement?: ConnectionRequirement;
@@ -597,7 +599,7 @@ export interface FetchRequest {
 	method: FetchMethodType;
 	/**
 	 * The URL to connect to. This is typically an absolute URL, but if your
-	 * pack uses authentication and {@link BaseAuthentication.requiresEndpointUrl} and so has a unique
+	 * connector uses authentication and {@link BaseAuthentication.requiresEndpointUrl} and so has a unique
 	 * endpoint per user account, you may also use a relative URL and the platform will
 	 * apply the user's endpoint automatically.
 	 */
@@ -623,7 +625,7 @@ export interface FetchRequest {
 	/**
 	 * A time in seconds that the platform should cache the result of this HTTP request.
 	 *
-	 * Any time that this pack makes the same FetchRequest, a cached value can be returned
+	 * Any time that this connector makes the same FetchRequest, a cached value can be returned
 	 * instead of making the HTTP request. If left unspecified, the platform will automatically
 	 * cache all GET requests for approximately 5 minutes. To disable the default caching,
 	 * set this value to `0`.
@@ -649,7 +651,7 @@ export interface FetchRequest {
 	 */
 	isBinaryResponse?: boolean;
 	/**
-	 * If true, the platform will not apply authentication credentials even if this pack is
+	 * If true, the platform will not apply authentication credentials even if this connector is
 	 * configured to use authentication. This is very rare, but sometimes you may
 	 * wish to make an unauthenticated supporting request as part of a formula implementation.
 	 */
@@ -704,16 +706,16 @@ export interface FetchResponse<T extends any = any> {
 	};
 }
 /**
- * A utility that allows you to make HTTP requests from a pack. The fetcher also
+ * A utility that allows you to make HTTP requests from a connector. The fetcher also
  * handles applying user authentication credentials to each request, if applicable.
  *
- * This is only way a pack is able to make HTTP requests, as using other libraries is unsupported.
+ * This is only way a connector is able to make HTTP requests, as using other libraries is unsupported.
  */
 export interface Fetcher {
 	/**
 	 * Makes an HTTP request.
 	 *
-	 * If authentication is used with this pack, the user's secret credentials will be
+	 * If authentication is used with this connector, the user's secret credentials will be
 	 * automatically applied to the request (whether in the HTTP headers, as a URL parameter,
 	 * or whatever the authentication type dictates). Your invocation of `fetch()` need not
 	 * deal with authentication in any way, the platform will handle that entirely on your behalf.
@@ -729,20 +731,20 @@ export interface Fetcher {
  * you can just return an image or file URL from a formula invocation, and if the schema
  * indicates that the value represents an attachment, Superhuman Docs will ingest the data at that URL
  * and host it from Superhuman Docs. However, if the URL requires authentication, Superhuman Docs will be unable
- * to download the data since this ingestion does not happen within the packs execution
+ * to download the data since this ingestion does not happen within the connector execution
  * environment.
  *
- * The solution is for your pack code to fetch the data at the URL, since the pack
+ * The solution is for your connector code to fetch the data at the URL, since the connector
  * execution environment will apply the user's authentication, and then you can
  * stash the downloaded value in `TemporaryBlobStorage`, which will return a temporary
- * URL that you can return from the pack. Superhuman Docs will be able to ingest the data from
+ * URL that you can return from the connector. Superhuman Docs will be able to ingest the data from
  * that temporary URL.
  *
  * Similarly, suppose your formula generates a very large value like a dynamically-generated
- * image that you wish to return and have Superhuman Docs render. Pack return values are meant to be
+ * image that you wish to return and have Superhuman Docs render. Connector return values are meant to be
  * fairly small, representing human-readable data. Large values like images are meant to
  * be returned as URLs referencing that data. So rather than return the raw image data,
- * your pack should use {@link storeBlob} to upload that large data to temporary storage.
+ * your connector should use {@link storeBlob} to upload that large data to temporary storage.
  * You will be returned a URL that you can then return with your formula response, and
  * Superhuman Docs will ingest the data from that URL into permanent storage.
  */
@@ -969,7 +971,7 @@ export type UnknownInvocationError = BaseInvocationError & {
  */
 export type InvocationError = HttpStatusInvocationError | RateLimitExceededInvocationError | TimeoutInvocationError | ResponseTooLargeInvocationError | UnknownInvocationError;
 /**
- * The source applications that can invoke a Pack.
+ * The source applications that can invoke a connector.
  */
 export declare enum InvocationSource {
 	/**
@@ -996,7 +998,8 @@ export declare enum InvocationSource {
  */
 export interface InvocationLocation {
 	/**
-	 * The source application that invoked the Pack. Allows the Pack to adjust its functionality based on the context.
+	 * The source application that invoked the connector. Allows the connector to adjust its functionality based on the
+	 * context.
 	 */
 	source?: InvocationSource;
 	/** The base URL of the platform environment executing this formula. Only for internal use. */
@@ -1007,7 +1010,7 @@ export interface InvocationLocation {
 	docId?: string;
 	/**
 	 * The ID of the user this invocation runs on behalf of. Only populated for
-	 * Superhuman-created Packs. Superhuman internal use only.
+	 * Superhuman-created connectors. Superhuman internal use only.
 	 * @internal
 	 */
 	userId?: string;
@@ -1023,7 +1026,7 @@ export interface ExecutionContext {
 	 */
 	readonly fetcher: Fetcher;
 	/**
-	 * A utility to fetch and store files and images that either require the pack user's authentication
+	 * A utility to fetch and store files and images that either require the connector user's authentication
 	 * or are too large to return inline. See {@link core.TemporaryBlobStorage}.
 	 */
 	readonly temporaryBlobStorage: TemporaryBlobStorage;
@@ -1147,10 +1150,10 @@ export interface GetPermissionExecutionContext extends ExecutionContext {
  * be a fixed range, e.g. April 1, 2020 - May 15, 2020, or it can be a "live"
  * range, like "last 30 days".
  *
- * At execution time, a date range will always be passed to a pack as an
+ * At execution time, a date range will always be passed to a connector as an
  * array of two specific dates, but for many use cases, it is necessary
  * to provide a default value that is a "live" range rather than hardcoded
- * one. For example, if your pack has a table that syncs recent emails,
+ * one. For example, if your connector has a table that syncs recent emails,
  * you might want to have a date range parameter that default to
  * "last 7 days". Defaulting to a hardcoded date range would not be useful
  * and requiring the user to always specify a date range may be inconvenient.
@@ -1215,14 +1218,14 @@ export type OptionsReference = string & {
  * cacheTtlSecs to indicate how long the results can be cached for. The default cacheTtlSecs
  * is about 5 minutes, if unspecified.
  */
-export type PropertyOptionsMetadataResult<ResultT extends PackFormulaResult[]> = ResultT | {
+export type PropertyOptionsMetadataResult<ResultT extends FormulaResult[]> = ResultT | {
 	result: ResultT;
 	cacheTtlSecs?: number;
 };
 /**
  * A JavaScript function for property options.
  */
-export type PropertyOptionsMetadataFunction<ResultT extends PackFormulaResult[]> = (context: PropertyOptionsExecutionContext) => Promise<PropertyOptionsMetadataResult<ResultT>> | PropertyOptionsMetadataResult<ResultT>;
+export type PropertyOptionsMetadataFunction<ResultT extends FormulaResult[]> = (context: PropertyOptionsExecutionContext) => Promise<PropertyOptionsMetadataResult<ResultT>> | PropertyOptionsMetadataResult<ResultT>;
 declare enum TableRole {
 	Users = "users",
 	GroupMembers = "groupMembers"
@@ -2051,7 +2054,7 @@ export interface ObjectSchemaProperty {
 	 * This provides a way to rename fields from API responses without writing code.
 	 *
 	 * Suppose that you're fetching an object from an API that has a property called "duration".
-	 * But in your pack, you'd like the value to be called "durationSeconds" to be more precise.
+	 * But in your connector, you'd like the value to be called "durationSeconds" to be more precise.
 	 * You could write code in your `execute` function to relabel the field, but you could
 	 * also use `fromKey` and the platform will do it for you.
 	 *
@@ -2141,7 +2144,7 @@ export type GenericObjectSchema = ObjectSchema<string, string>;
  * An identifier for a schema, allowing other schemas to reference it.
  *
  * You may optionally specify an {@link ObjectSchemaDefinition.identity} when defining an object schema.
- * This signals that this schema represents an important named entity in the context of your pack.
+ * This signals that this schema represents an important named entity in the context of your connector.
  * Schemas with identities may be referenced by other schemas, in which case Superhuman Docs
  * will render such values as @-references in the doc, allowing you to create relationships
  * between entities.
@@ -2152,7 +2155,7 @@ export type GenericObjectSchema = ObjectSchema<string, string>;
  */
 export interface IdentityDefinition {
 	/**
-	 * The name of this entity. This is an arbitrary name but should be unique within your pack.
+	 * The name of this entity. This is an arbitrary name but should be unique within your connector.
 	 * For example, if you are defining a schema that represents a user object, "User" would be a good identity name.
 	 */
 	name: string;
@@ -2166,12 +2169,19 @@ export interface IdentityDefinition {
 	 * you wish to reference, again to distinguish which table instance you are trying to reference.
 	 */
 	dynamicUrl?: string;
-	/** The ID of another pack, if you are trying to reference a value from different pack. */
+	/**
+	 * The ID of another connector when referencing its values. Takes precedence over {@link packId}.
+	 */
+	connectorId?: number;
+	/**
+	 * The ID of another connector when referencing its values.
+	 * @deprecated Use {@link connectorId} instead.
+	 */
 	packId?: number;
 	/**
 	 * By default, result sets returned by dynamic sync tables will not be merged together across different dynamicUrl
 	 * values for the purposes of presenting information. This value, if set, will allow results for identities for the
-	 * same Pack and name to be merged together if they share the same `mergeKey`.
+	 * same connector and name to be merged together if they share the same `mergeKey`.
 	 *
 	 * @hidden In development.
 	 */
@@ -2180,10 +2190,11 @@ export interface IdentityDefinition {
 	attribution?: AttributionNode[];
 }
 /**
- * The runtime version of {@link IdentityDefinition} with the current Pack ID injected if a different
- * one isn't set by the maker.
+ * The runtime version of {@link IdentityDefinition} with the current connector ID injected if a different
+ * one isn't set by the author.
  */
 export interface Identity extends IdentityDefinition {
+	/** @deprecated Use {@link connectorId} instead. */
 	packId: number;
 }
 /**
@@ -2200,7 +2211,7 @@ export interface PropertyIdentifierDetails {
 	label?: string;
 	/**
 	 * An optional placeholder value, which will be rendered when the property value is an empty value
-	 * (null, undefined, "", [], \{\}). This will be used in the Pack card title, subtitle, and snippet.
+	 * (null, undefined, "", [], \{\}). This will be used in the card title, subtitle, and snippet.
 	 * Not accessible within the Superhuman formula language.
 	 */
 	placeholder?: string;
@@ -2518,7 +2529,7 @@ export interface ObjectSchemaDefinition<K extends string, L extends string> exte
 	attribution?: AttributionNode[];
 	/**
 	 * Specifies that object instances with this schema can contain additional properties not defined
-	 * in the schema, and that the packs infrastructure should retain these unknown properties
+	 * in the schema, and that the platform should retain these unknown properties
 	 * rather than stripping them.
 	 *
 	 * Properties not declared in the schema will not work properly in Superhuman Docs: they cannot be
@@ -2848,7 +2859,7 @@ export declare enum AttributionNodeType {
 export interface TextAttributionNode {
 	/** Identifies this as a text attribution node. */
 	type: AttributionNodeType.Text;
-	/** The text to render with the pack value. */
+	/** The text to render with the connector value. */
 	text: string;
 }
 /**
@@ -2898,11 +2909,11 @@ export interface ImageAttributionNode {
 	imageUrl: string;
 }
 /**
- * Union of attribution node types for rendering attribution for a pack value. See {@link makeAttributionNode}.
+ * Union of attribution node types for rendering attribution for a connector value. See {@link makeAttributionNode}.
  */
 export type AttributionNode = TextAttributionNode | LinkAttributionNode | ImageAttributionNode;
 /**
- * A helper for constructing attribution text, links, or images that render along with a Pack value.
+ * A helper for constructing attribution text, links, or images that render along with a connector value.
  *
  * Many APIs have licensing requirements that ask for specific attribution to be included
  * when using their data. For example, a stock photo API may require attribution text
@@ -2954,7 +2965,7 @@ export type InferrableTypes = boolean | number | string | object | boolean[] | n
  * that describes it.
  *
  * It is vastly preferable to define a schema manually. A clear and accurate schema is one of the
- * fundamentals of a good pack. However, for data that is truly dynamic for which a schema can't
+ * fundamentals of a good connector. However, for data that is truly dynamic for which a schema can't
  * be known in advance nor can a function be written to generate a dynamic schema from other
  * inputs, it may be useful to us this helper to sniff the return value and generate a basic
  * inferred schema from it.
@@ -3306,7 +3317,7 @@ export declare class StatusCodeError extends Error {
 }
 /**
  * Throw this error if the user needs to re-authenticate to gain OAuth scopes that have been added
- * to the pack since their connection was created, or scopes that are specific to a certain formula.
+ * to the connector since their connection was created, or scopes that are specific to a certain formula.
  * This is useful because the platform will always attempt to execute a formula even if a user has not yet
  * re-authenticated with all relevant scopes.
  *
@@ -3346,7 +3357,7 @@ export declare class MissingScopesError extends Error {
 }
 /**
  * An error that will be thrown by {@link Fetcher.fetch} when the response body from the external system
- * exceeds packs platform limits
+ * exceeds platform limits
  *
  * This error can be caught and retried by requesting less data from the external system through
  * a smaller page size or omitting large fields.
@@ -3452,7 +3463,7 @@ export interface DynamicSyncTableDef<K extends string, L extends string, ParamDe
  * describes which page of results to fetch next. The continuation will be passed verbatim
  * as an input to the subsequent invocation of the sync formula.
  *
- * The contents of this object are entirely up to the pack author.
+ * The contents of this object are entirely up to the connector author.
  *
  * Examples:
  *
@@ -3549,10 +3560,13 @@ export type ParamDefFromOptionsUnion<T extends ParameterType, O extends Paramete
  * ```
  */
 export declare function makeParameter<T extends ParameterType, O extends ParameterOptions<T>>(paramDefinition: O): ParamDefFromOptionsUnion<T, O>;
-/**
- * Base type for the inputs for creating a pack formula.
- */
-export interface PackFormulaDef<ParamsT extends ParamDefs, ResultT extends PackFormulaResult, ContextT extends ExecutionContext = ExecutionContext> extends CommonPackFormulaDef<ParamsT> {
+/** @deprecated Use {@link FormulaDef}. */
+export interface PackFormulaDef<ParamsT extends ParamDefs, ResultT extends FormulaResult, ContextT extends ExecutionContext = ExecutionContext> extends FormulaDef<ParamsT, ResultT, ContextT>, CommonPackFormulaDef<ParamsT> {
+	/** The JavaScript function that implements this formula */
+	execute(params: ParamValues<ParamsT>, context: ContextT): Promise<ResultT> | ResultT;
+}
+/** Base type for the inputs for creating a formula. */
+export interface FormulaDef<ParamsT extends ParamDefs, ResultT extends FormulaResult, ContextT extends ExecutionContext = ExecutionContext> extends CommonFormulaDef<ParamsT> {
 	/** The JavaScript function that implements this formula */
 	execute(params: ParamValues<ParamsT>, context: ContextT): Promise<ResultT> | ResultT;
 }
@@ -3583,54 +3597,75 @@ export interface EmptyFormulaDef<ParamsT extends ParamDefs> extends Omit<PackFor
 	/** A definition of the request and any parameter transformations to make in order to implement this formula. */
 	request: RequestHandlerTemplate;
 }
-/** The base class for pack formula descriptors. Subclasses vary based on the return type of the formula. */
-export type BaseFormula<ParamDefsT extends ParamDefs, ResultT extends PackFormulaResult, ContextT extends ExecutionContext = ExecutionContext> = PackFormulaDef<ParamDefsT, ResultT, ContextT> & {
+/** The base class for formula descriptors. Subclasses vary based on the return type of the formula. */
+export type BaseFormula<ParamDefsT extends ParamDefs, ResultT extends FormulaResult, ContextT extends ExecutionContext = ExecutionContext> = PackFormulaDef<ParamDefsT, ResultT, ContextT> & {
 	resultType: TypeOf<ResultT>;
 };
-/** A pack formula that returns a number. */
-export type NumericPackFormula<ParamDefsT extends ParamDefs> = BaseFormula<ParamDefsT, number> & {
+/** @deprecated Use {@link NumericFormula}. */
+export type NumericPackFormula<ParamDefsT extends ParamDefs> = NumericFormula<ParamDefsT>;
+/** A formula that returns a number. */
+export type NumericFormula<ParamDefsT extends ParamDefs> = BaseFormula<ParamDefsT, number> & {
 	schema?: NumberSchema;
 };
-/** A pack formula that returns a boolean. */
-export type BooleanPackFormula<ParamDefsT extends ParamDefs> = BaseFormula<ParamDefsT, boolean> & {
+/** @deprecated Use {@link BooleanFormula}. */
+export type BooleanPackFormula<ParamDefsT extends ParamDefs> = BooleanFormula<ParamDefsT>;
+/** A formula that returns a boolean. */
+export type BooleanFormula<ParamDefsT extends ParamDefs> = BaseFormula<ParamDefsT, boolean> & {
 	schema?: BooleanSchema;
 };
-/** A pack formula that returns a string. */
-export type StringPackFormula<ParamDefsT extends ParamDefs> = BaseFormula<ParamDefsT, SchemaType<StringSchema>> & {
+/** @deprecated Use {@link StringFormula}. */
+export type StringPackFormula<ParamDefsT extends ParamDefs> = StringFormula<ParamDefsT>;
+/** A formula that returns a string. */
+export type StringFormula<ParamDefsT extends ParamDefs> = BaseFormula<ParamDefsT, SchemaType<StringSchema>> & {
 	schema?: StringSchema;
 };
-/** A pack formula that returns a JavaScript object. */
-export type ObjectPackFormula<ParamDefsT extends ParamDefs, SchemaT extends Schema> = Omit<BaseFormula<ParamDefsT, SchemaType<SchemaT>>, "execute"> & {
+/** @deprecated Use {@link ObjectFormula}. */
+export type ObjectPackFormula<ParamDefsT extends ParamDefs, SchemaT extends Schema> = ObjectFormula<ParamDefsT, SchemaT>;
+/** A formula that returns a JavaScript object. */
+export type ObjectFormula<ParamDefsT extends ParamDefs, SchemaT extends Schema> = Omit<BaseFormula<ParamDefsT, SchemaType<SchemaT>>, "execute"> & {
 	schema?: SchemaT;
 	execute(params: ParamValues<ParamDefsT>, context: ExecutionContext): Promise<object> | object;
 };
 /**
- * A pack formula, complete with metadata about the formula like its name, description, and parameters,
+ * A formula, complete with metadata about the formula like its name, description, and parameters,
  * as well as the implementation of that formula.
  *
  * This is the type for an actual user-facing formula, rather than other formula-shaped resources within a
- * pack, like an autocomplete metadata formula or a sync getter formula.
+ * connector, like an autocomplete metadata formula or a sync getter formula.
  */
-export type Formula<ParamDefsT extends ParamDefs = ParamDefs, ResultT extends ValueType = ValueType, SchemaT extends Schema = Schema> = ResultT extends ValueType.String ? StringPackFormula<ParamDefsT> : ResultT extends ValueType.Number ? NumericPackFormula<ParamDefsT> : ResultT extends ValueType.Boolean ? BooleanPackFormula<ParamDefsT> : ResultT extends ValueType.Array ? ObjectPackFormula<ParamDefsT, ArraySchema<SchemaT>> : ObjectPackFormula<ParamDefsT, SchemaT>;
+export type Formula<ParamDefsT extends ParamDefs = ParamDefs, ResultT extends ValueType = ValueType, SchemaT extends Schema = Schema> = ResultT extends ValueType.String ? StringFormula<ParamDefsT> : ResultT extends ValueType.Number ? NumericFormula<ParamDefsT> : ResultT extends ValueType.Boolean ? BooleanFormula<ParamDefsT> : ResultT extends ValueType.Array ? ObjectFormula<ParamDefsT, ArraySchema<SchemaT>> : ObjectFormula<ParamDefsT, SchemaT>;
+/** @deprecated Use {@link TypedFormula}. */
+export type TypedPackFormula = TypedFormula;
 /**
  * The union of types that represent formula definitions, including standard formula definitions,
  * metadata formulas, and the formulas that implement sync tables.
  *
  * It should be very uncommon to need to use this type, it is most common in meta analysis of the
- * contents of a pack for internal use.
+ * contents of a connector for internal use.
  */
-export type TypedPackFormula = Formula | GenericSyncFormula;
-export type TypedObjectPackFormula = ObjectPackFormula<ParamDefs, Schema>;
+export type TypedFormula = Formula | GenericSyncFormula;
+export type TypedObjectFormula = ObjectFormula<ParamDefs, Schema>;
+/**
+ * @hidden
+ * @deprecated Use {@link FormulaUi}.
+ */
+export interface PackFormulaUi extends FormulaUi {
+}
 /**
  * UI configuration carried in top-level formula metadata.
  * @hidden
  */
-export interface PackFormulaUi {
+export interface FormulaUi {
 	/** References a resource descriptor's key. */
 	resourceKey: string;
 }
+/**
+ * @hidden
+ * @deprecated Use {@link FormulaMetadata}.
+ */
+export type PackFormulaMetadata = FormulaMetadata;
 /** @hidden */
-export type PackFormulaMetadata = Omit<TypedPackFormula, "execute" | "executeUpdate" | "executeGetPermissions" | "validateParameters"> & {
+export type FormulaMetadata = Omit<TypedFormula, "execute" | "executeUpdate" | "executeGetPermissions" | "validateParameters"> & {
 	validateParameters?: MetadataFormulaMetadata<ExecutionContext, ParameterValidationResult>;
 	/**
 	 * UI configuration for this top-level formula.
@@ -3639,7 +3674,7 @@ export type PackFormulaMetadata = Omit<TypedPackFormula, "execute" | "executeUpd
 	ui?: PackFormulaUi;
 };
 /** @hidden */
-export type ObjectPackFormulaMetadata = Omit<TypedObjectPackFormula, "execute" | "validateParameters"> & {
+export type ObjectFormulaMetadata = Omit<TypedObjectFormula, "execute" | "validateParameters"> & {
 	validateParameters?: MetadataFormulaMetadata<ExecutionContext, ParameterValidationResult>;
 };
 /**
@@ -3836,7 +3871,7 @@ export interface SyncFormulaDef<K extends string, L extends string, ParamDefsT e
 	 */
 	execute<ContextReturnT extends ContextT>(params: ParamValues<ParamDefsT>, context: ContextT): Promise<SyncFormulaResult<K, L, SchemaT, ContextReturnT, PermissionsContextT>>;
 	/**
-	 * If the table supports object updates, the maximum number of objects that will be sent to the pack
+	 * If the table supports object updates, the maximum number of objects that will be sent to the connector
 	 * in a single batch. Defaults to 1 if not specified.
 	 *
 	 * Only supported in Superhuman Docs.
@@ -3859,7 +3894,7 @@ export interface SyncFormulaDef<K extends string, L extends string, ParamDefsT e
 	 * but not for reads.
 	 * @hidden
 	 */
-	updateOptions?: Pick<CommonPackFormulaDef<ParamDefsT>, "extraOAuthScopes">;
+	updateOptions?: Pick<CommonFormulaDef<ParamDefsT>, "extraOAuthScopes">;
 	/**
 	 * The JavaScript function that implements fetching permissions for a set of objects
 	 * if the objects in this sync table have permissions in the external system.
@@ -4076,14 +4111,14 @@ export type MetadataContext = Record<string, any> & {
  */
 export type MetadataFormulaResultType = string | number | MetadataFormulaObjectResultType;
 /**
- * A formula that returns metadata relating to a core pack building block, like a sync table,
+ * A formula that returns metadata relating to a core connector building block, like a sync table,
  * a formula parameter, or a user account. Examples include {@link DynamicOptions.getSchema},
  * {@link BaseAuthentication.getConnectionName}, and {@link ParamDef.autocomplete}.
  *
- * Many pack building blocks make use of supporting features that often require JavaScript
+ * Many connector building blocks make use of supporting features that often require JavaScript
  * or an API request to implement. For example, fetching the list of available autocomplete
  * options for a formula parameter often requires making an API call. The logic to implement this
- * and the context required, like a {@link Fetcher} is very similar to that of a pack formula itself,
+ * and the context required, like a {@link Fetcher} is very similar to that of a formula itself,
  * so metadata formulas intentionally resemble regular formulas.
  *
  * A variety of tasks like those mentioned above can all be accomplished with formulas that
@@ -4104,7 +4139,7 @@ export type MetadataFormulaResultType = string | number | MetadataFormulaObjectR
  * values of the others. This is dictionary mapping the names of each parameter to its
  * current value.
  */
-export type MetadataFormula<ContextT extends ExecutionContext = ExecutionContext, ResultT extends PackFormulaResult = LegacyDefaultMetadataReturnType> = BaseFormula<[
+export type MetadataFormula<ContextT extends ExecutionContext = ExecutionContext, ResultT extends FormulaResult = LegacyDefaultMetadataReturnType> = BaseFormula<[
 	ParamDef<Type.string>,
 	ParamDef<Type.string>
 ], ResultT, ContextT> & {
@@ -4115,12 +4150,12 @@ export type MetadataFormula<ContextT extends ExecutionContext = ExecutionContext
  * These are constructed by {@link makePropertyOptionsFormula}.
  * @hidden
  */
-export type PropertyOptionsMetadataFormula<SchemaT extends Schema> = ObjectPackFormula<[
+export type PropertyOptionsMetadataFormula<SchemaT extends Schema> = ObjectFormula<[
 ], ArraySchema<SchemaT>> & {
 	execute(params: ParamValues<[
 	]>, context: PropertyOptionsExecutionContext): Promise<object> | object;
 };
-export type MetadataFormulaMetadata<ContextT extends ExecutionContext = ExecutionContext, ResultT extends PackFormulaResult = LegacyDefaultMetadataReturnType> = Omit<MetadataFormula<ContextT, ResultT>, "execute" | "validateParameters">;
+export type MetadataFormulaMetadata<ContextT extends ExecutionContext = ExecutionContext, ResultT extends FormulaResult = LegacyDefaultMetadataReturnType> = Omit<MetadataFormula<ContextT, ResultT>, "execute" | "validateParameters">;
 /**
  * Historically, metadata formulas could return a variety of types.
  * This type is used to represent the legacy return types.
@@ -4137,20 +4172,20 @@ export type MetadataFunction<ContextT extends ExecutionContext = ExecutionContex
  * be the JavaScript function that implements a metadata formula (strongly recommended)
  * or a full metadata formula definition (mostly supported for legacy code).
  */
-export type MetadataFormulaDef<ContextT extends ExecutionContext = ExecutionContext, ReturnT extends PackFormulaResult = LegacyDefaultMetadataReturnType> = MetadataFormula<ContextT, ReturnT> | MetadataFunction<ContextT, ReturnT>;
+export type MetadataFormulaDef<ContextT extends ExecutionContext = ExecutionContext, ReturnT extends FormulaResult = LegacyDefaultMetadataReturnType> = MetadataFormula<ContextT, ReturnT> | MetadataFunction<ContextT, ReturnT>;
 /**
  * A wrapper that generates a formula definition from the function that implements a metadata formula.
  * It is uncommon to ever need to call this directly, normally you would just define the JavaScript
  * function implementation, and the platform will wrap it with this to generate a full metadata formula
  * definition.
  *
- * All function-like behavior in a pack is ultimately implemented using formulas, like you would
+ * All function-like behavior in a connector is ultimately implemented using formulas, like you would
  * define using {@link makeFormula}. That is, a formula with a name, description, parameter list,
  * and an `execute` function body. This includes supporting utilities like parameter autocomplete functions.
  * This wrapper simply adds the surrounding boilerplate for a given JavaScript function so that
  * it is shaped like a formula to be used at runtime.
  */
-export declare function makeMetadataFormula<ContextT extends ExecutionContext, ReturnT extends PackFormulaResult = LegacyDefaultMetadataReturnType>(execute: MetadataFunction<ContextT, ReturnT>, options?: {
+export declare function makeMetadataFormula<ContextT extends ExecutionContext, ReturnT extends FormulaResult = LegacyDefaultMetadataReturnType>(execute: MetadataFunction<ContextT, ReturnT>, options?: {
 	connectionRequirement?: ConnectionRequirement;
 }): MetadataFormula<ContextT, ReturnT>;
 /**
@@ -4290,7 +4325,7 @@ export interface SyncTableOptions<K extends string, L extends string, ParamDefsT
 	instructions?: string;
 	/**
 	 * The "unique identifier" for the entity being synced. This will serve as the unique id for this
-	 * table, and must be unique across other sync tables for your pack. This is often the singular
+	 * table, and must be unique across other sync tables for your connector. This is often the singular
 	 * form of the table name, e.g. if your table name was 'Products' you might choose 'Product'
 	 * as the identity name.
 	 *
@@ -4308,7 +4343,7 @@ export interface SyncTableOptions<K extends string, L extends string, ParamDefsT
 	 */
 	schema: SchemaT;
 	/**
-	 * The definition of the formula that implements this sync. This is a Pack formula
+	 * The definition of the formula that implements this sync. This is a formula
 	 * that returns an array of objects fitting the given schema and optionally a {@link Continuation}.
 	 * (The {@link SyncFormulaDef.name} is redundant and should be the same as the `name` parameter here.
 	 * These will eventually be consolidated.)
@@ -4338,7 +4373,7 @@ export interface SyncTableOptions<K extends string, L extends string, ParamDefsT
 	 *
 	 * @example
 	 * ```
-	 * pack.addSyncTable({
+	 * connector.addSyncTable({
 	 *   name: "MessagesSharedMailbox",
 	 *   // ...
 	 *   indexing: {
@@ -4358,7 +4393,7 @@ export interface SyncTableOptions<K extends string, L extends string, ParamDefsT
 export interface DynamicSyncTableOptions<K extends string, L extends string, ParamDefsT extends ParamDefs, SchemaT extends ObjectSchemaDefinition<K, L>, ContextT extends SyncExecutionContext<any, any>, PermissionsContextT extends SyncPassthroughData> {
 	/**
 	 * The name of the dynamic sync table. This is shown to users in the Superhuman Docs UI
-	 * when listing what build blocks are contained within this pack.
+	 * when listing what build blocks are contained within this connector.
 	 * This should describe the category of entities being synced. The actual
 	 * table name once added to the doc will be dynamic, it will be whatever value
 	 * is returned by the `getName` formula.
@@ -4366,7 +4401,7 @@ export interface DynamicSyncTableOptions<K extends string, L extends string, Par
 	name: string;
 	/**
 	 * The description of the dynamic sync table. This is shown to users in the Superhuman Docs UI
-	 * when listing what build blocks are contained within this pack.
+	 * when listing what build blocks are contained within this connector.
 	 * This should describe what the dynamic sync table does in a more detailed language.
 	 */
 	description?: string;
@@ -4404,7 +4439,7 @@ export interface DynamicSyncTableOptions<K extends string, L extends string, Par
 	 */
 	searchDynamicUrls?: MetadataFormulaDef;
 	/**
-	 * The definition of the formula that implements this sync. This is a Pack formula
+	 * The definition of the formula that implements this sync. This is a formula
 	 * that returns an array of objects fitting the given schema and optionally a {@link Continuation}.
 	 * (The {@link SyncFormulaDef.name} is redundant and should be the same as the `name` parameter here.
 	 * These will eventually be consolidated.)
@@ -4542,7 +4577,7 @@ export declare function makeDynamicSyncTable<K extends string, L extends string,
 /**
  * Helper to generate a formula that fetches a list of entities from a given URL and returns them.
  *
- * One of the simplest but most common use cases for a pack formula is to make a request to an API
+ * One of the simplest but most common use cases for a formula is to make a request to an API
  * endpoint that returns a list of objects, and then return those objects either as-is
  * or with slight transformations. The can be accomplished with an `execute` function that does
  * exactly that, but alternatively you could use `makeTranslateObjectFormula` and an
@@ -4576,8 +4611,8 @@ export declare function makeTranslateObjectFormula<ParamDefsT extends ParamDefs,
 	parameters: ParamDefsT;
 	varargParameters?: ParamDefs | undefined;
 	examples?: {
-		params: (PackFormulaValue | undefined)[];
-		result: PackFormulaResult;
+		params: (FormulaValue | undefined)[];
+		result: FormulaResult;
 	}[] | undefined;
 	isAction?: boolean | undefined;
 	connectionRequirement?: ConnectionRequirement | undefined;
@@ -4622,8 +4657,8 @@ export declare function makeEmptyFormula<ParamDefsT extends ParamDefs>(definitio
 	parameters: ParamDefsT;
 	varargParameters?: ParamDefs | undefined;
 	examples?: {
-		params: (PackFormulaValue | undefined)[];
-		result: PackFormulaResult;
+		params: (FormulaValue | undefined)[];
+		result: FormulaResult;
 	}[] | undefined;
 	isAction?: boolean | undefined;
 	connectionRequirement?: ConnectionRequirement | undefined;
@@ -4718,14 +4753,14 @@ declare enum PackCategory {
 	Weather = "Weather"
 }
 /**
- * Authentication types supported by Packs.
+ * Authentication types supported by Connectors.
  *
  * @see [Authenticating with other services](https://docs.superhuman.com/packs/build/latest/guides/basics/authentication/)
  * @see [Authentication samples](https://docs.superhuman.com/packs/build/latest/samples/topic/authentication/)
  */
 export declare enum AuthenticationType {
 	/**
-	 * Indicates this pack does not use authentication. You may also omit an authentication declaration entirely.
+	 * Indicates this connector does not use authentication. You may also omit an authentication declaration entirely.
 	 */
 	None = "None",
 	/**
@@ -4809,7 +4844,7 @@ export declare enum AuthenticationType {
 	 */
 	CodaApiHeaderBearerToken = "CodaApiHeaderBearerToken",
 	/**
-	 * Only for use by Superhuman-authored packs.
+	 * Only for use by Superhuman-authored connectors.
 	 *
 	 * @see {@link GoogleDomainWideDelegationAuthentication}
 	 * TODO(neal): Unhide.
@@ -4817,7 +4852,7 @@ export declare enum AuthenticationType {
 	 */
 	GoogleDomainWideDelegation = "GoogleDomainWideDelegation",
 	/**
-	 * Only for use by Superhuman-authored packs.
+	 * Only for use by Superhuman-authored connectors.
 	 *
 	 * @see {@link GoogleServiceAccountAuthentication}
 	 * TODO(neal): Unhide.
@@ -4825,19 +4860,19 @@ export declare enum AuthenticationType {
 	 */
 	GoogleServiceAccount = "GoogleServiceAccount",
 	/**
-	 * Only for use by Superhuman-authored packs.
+	 * Only for use by Superhuman-authored connectors.
 	 *
 	 * App-only Microsoft Entra authentication with a customer-provided certificate. The connection
 	 * stores the directory (tenant) id, one or more application (client) ids, the certificate, and
 	 * its private key. The platform signs a client assertion and mints access tokens per request
-	 * audience; the pack never sees the private key.
+	 * audience; the connector never sees the private key.
 	 *
 	 * @see {@link EntraCertificateAuthentication}
 	 * @hidden
 	 */
 	EntraCertificate = "EntraCertificate",
 	/**
-	 * Only for use by Superhuman-authored packs.
+	 * Only for use by Superhuman-authored connectors.
 	 *
 	 * @see {@link VariousAuthentication}
 	 * @hidden
@@ -4845,7 +4880,7 @@ export declare enum AuthenticationType {
 	Various = "Various"
 }
 /**
- * A pack or formula which does not use authentication.
+ * A connector or formula which does not use authentication.
  */
 export interface NoAuthentication {
 	/** Identifies this as not using authentication. You may also omit any definition to achieve the same result. */
@@ -4862,7 +4897,7 @@ export interface NoAuthentication {
  * can make fetcher requests using relative URLs and the fetcher will apply the endpoint
  * to the URL automatically.)
  *
- * As an example, we use this in the Jira pack to set up the Jira instance endpoint
+ * As an example, we use this in the Jira connector to set up the Jira instance endpoint
  * to use with the user's account. A Jira account may have access to multiple
  * Jira instances; after authorizing the user account, this step makes an API call to
  * fetch all of the Jira instances that the user has access to, which are rendered as
@@ -4894,8 +4929,9 @@ export interface SetEndpoint {
 	getOptionsFormula?: MetadataFormula;
 }
 /**
- * Simplified configuration for {@link SetEndpoint} that a pack developer can specify when calling
- * {@link PackDefinitionBuilder.setUserAuthentication} or {@link PackDefinitionBuilder.setSystemAuthentication}.
+ * Simplified configuration for {@link SetEndpoint} that a connector developer can specify when calling
+ * {@link ConnectorDefinitionBuilder.setUserAuthentication} or
+ * {@link ConnectorDefinitionBuilder.setSystemAuthentication}.
  */
 export type SetEndpointDef = Omit<SetEndpoint, "getOptions" | "getOptionsFormula"> & {
 	/** See {@link SetEndpoint.getOptions} */
@@ -4914,15 +4950,16 @@ export declare enum PostSetupType {
 }
 /**
  * Definitions for optional steps that can happen upon a user completing setup
- * for a new account for this pack.
+ * for a new account for this connector.
  *
  * This addresses only a highly-specific use case today but may grow to other
  * use cases and step types in the future.
  */
 export type PostSetup = SetEndpoint;
 /**
- * Simplified configuration for {@link PostSetup} that a pack developer can specify when calling
- * {@link PackDefinitionBuilder.setUserAuthentication} or {@link PackDefinitionBuilder.setSystemAuthentication}.
+ * Simplified configuration for {@link PostSetup} that a connector developer can specify when calling
+ * {@link ConnectorDefinitionBuilder.setUserAuthentication} or
+ * {@link ConnectorDefinitionBuilder.setSystemAuthentication}.
  */
 export type PostSetupDef = SetEndpointDef;
 /**
@@ -4943,39 +4980,50 @@ export interface BaseAuthentication {
 	 * A function that is called when a user sets up a new account, that returns the ID of
 	 * that account in the third-party system being called.
 	 *
-	 * This ID is not yet subsequently exposed to pack developers and is mostly for Superhuman Docs
+	 * This ID is not yet subsequently exposed to connector developers and is mostly for Superhuman Docs
 	 * internal use.
 	 *
 	 * @ignore
 	 */
 	getConnectionUserId?: MetadataFormula;
 	/**
-	 * A link to a help article or other page with more instructions about how to set up an account for this pack.
+	 * A link to a help article or other page with more instructions about how to set up an account for this connector.
 	 */
 	instructionsUrl?: string;
 	/**
-	 * If true, indicates this pack has a specific endpoint domain for each account, that is used
+	 * If true, indicates this connector has a specific endpoint domain for each account, that is used
 	 * as the basis of HTTP requests. For example, API requests are made to <custom-subdomain>.example.com
 	 * rather than example.com. If true, the user will be prompted to provide their specific endpoint domain
 	 * when creating a new account.
 	 */
 	requiresEndpointUrl?: boolean;
 	/**
+	 * Who supplies the endpoint URL when {@link BaseAuthentication.requiresEndpointUrl} is true. Omit it
+	 * to keep the default: an endpoint the admin set in the pack configuration is used, and otherwise
+	 * each member is asked when connecting.
+	 *
+	 * Requires `requiresEndpointUrl: true`. Can't be combined with `endpointKey` or a `SetEndpoint`
+	 * postSetup step, which supply the endpoint another way.
+	 *
+	 * @hidden In early access, live in production but the shape may change.
+	 */
+	endpointSetBy?: EndpointSetBy;
+	/**
 	 * When requiresEndpointUrl is set to true, this should be the root domain that all endpoints share.
 	 * For example, this value would be "example.com" if specific endpoints looked like \{custom-subdomain\}.example.com.
 	 *
-	 * For packs that make requests to multiple domains (uncommon), this should be the domain within
-	 * {@link PackVersionDefinition.networkDomains} that this configuration applies to.
+	 * For connectors that make requests to multiple domains (uncommon), this should be the domain within
+	 * {@link ComponentVersionDefinition.networkDomains} that this configuration applies to.
 	 */
 	endpointDomain?: string;
 	/**
-	 * One or more setup steps to run after the user has set up the account, before completing installation of the pack.
-	 * This is not common.
+	 * One or more setup steps to run after the user has set up the account, before completing installation of the
+	 * connector. This is not common.
 	 */
 	postSetup?: PostSetup[];
 	/**
-	 * Which domain(s) should get auth credentials, when a pack is configured with multiple domains.
-	 * Packs configured with only one domain or with requiresEndpointUrl set to true can omit this.
+	 * Which domain(s) should get auth credentials, when a connector is configured with multiple domains.
+	 * Connectors configured with only one domain or with requiresEndpointUrl set to true can omit this.
 	 *
 	 * Using multiple authenticated network domains is uncommon and requires Superhuman approval.
 	 */
@@ -4986,7 +5034,7 @@ export interface BaseAuthentication {
  *
  * @example
  * ```ts
- * pack.setUserAuthentication({
+ * connector.setUserAuthentication({
  *   type: sdk.AuthenticationType.HeaderBearerToken,
  * });
  * ```
@@ -5005,12 +5053,12 @@ export interface HeaderBearerTokenAuthentication extends BaseAuthentication {
  * with a UI to generate an API token rather than needing to paste an arbitrary API
  * token into a text input.
  *
- * This is primarily for use by Superhuman-authored packs, as it is only relevant for interacting with the
+ * This is primarily for use by Superhuman-authored connectors, as it is only relevant for interacting with the
  * Superhuman Docs REST API.
  *
  * @example
  * ```ts
- * pack.setUserAuthentication({
+ * connector.setUserAuthentication({
  *   type: sdk.AuthenticationType.CodaApiHeaderBearerToken,
  * });
  * ```
@@ -5027,7 +5075,7 @@ export interface CodaApiBearerTokenAuthentication extends BaseAuthentication {
 	deferConnectionSetup?: boolean;
 	/**
 	 * If true, automatically creates and configures an account with a Superhuman Docs API token with
-	 * default settings when installing the pack: a read-write token, added to the doc
+	 * default settings when installing the connector: a read-write token, added to the doc
 	 * as a shared account that allows actions.
 	 */
 	shouldAutoAuthSetup?: boolean;
@@ -5038,7 +5086,7 @@ export interface CodaApiBearerTokenAuthentication extends BaseAuthentication {
  *
  * @example
  * ```ts
- * pack.setUserAuthentication({
+ * connector.setUserAuthentication({
  *   type: sdk.AuthenticationType.CustomHeaderToken,
  *   headerName: "X-API-Key",
  * });
@@ -5068,7 +5116,7 @@ export interface CustomHeaderTokenAuthentication extends BaseAuthentication {
  *
  * @example
  * ```ts
- * pack.setUserAuthentication({
+ * connector.setUserAuthentication({
  *   type: sdk.AuthenticationType.MultiHeaderToken,
  *   headers: [
  *     {name: 'Header1', description: 'Enter the value for Header1',  tokenPrefix: 'prefix1'},
@@ -5109,7 +5157,7 @@ export interface MultiHeaderTokenAuthentication extends BaseAuthentication {
  *
  * @example
  * ```ts
- * pack.setUserAuthentication({
+ * connector.setUserAuthentication({
  *   type: sdk.AuthenticationType.QueryParamToken,
  *   paramName: "key",
  * });
@@ -5135,7 +5183,7 @@ export interface QueryParamTokenAuthentication extends BaseAuthentication {
  *
  * @example
  * ```ts
- * pack.setUserAuthentication({
+ * connector.setUserAuthentication({
  *   type: sdk.AuthenticationType.MultiQueryParamToken,
  *   params: [
  *     { name: "key", description: "The key." },
@@ -5219,6 +5267,38 @@ export interface BaseOAuthAuthentication extends BaseAuthentication {
 	 * See https://datatracker.ietf.org/doc/html/rfc8707 for more details.
 	 */
 	resource?: string;
+	/**
+	 * What an organization's admin must enter in the pack configuration before members can connect.
+	 * The pack is meant to stay unavailable in the organization until the admin does. This is typical
+	 * for services hosted on a per-customer domain (see {@link BaseAuthentication.requiresEndpointUrl}),
+	 * where no single OAuth app works for every customer.
+	 *
+	 * With {@link OAuth2ClientCredentialsAuthentication}, listing
+	 * {@link AdminSetupRequirement.OAuthClientIdAndSecret} means the admin enters the app's client ID
+	 * and secret once and the organization shares one connection. Without it, each member enters
+	 * their own.
+	 *
+	 * {@link AdminSetupRequirement.OAuthUrls} requires {@link AdminSetupRequirement.OAuthClientIdAndSecret}
+	 * and is only accepted on {@link AuthenticationType.OAuth2}.
+	 * {@link AdminSetupRequirement.OAuthClientIdAndSecret} cannot be combined with
+	 * {@link OAuth2DynamicCodeAuthentication.useDynamicClientRegistration}.
+	 * Not supported inside `adminAuthentications`.
+	 *
+	 * @example
+	 * ```ts
+	 * pack.setUserAuthentication({
+	 *   type: sdk.AuthenticationType.OAuth2,
+	 *   authorizationUrl: "/oauth/authorize",
+	 *   tokenUrl: "/oauth/token",
+	 *   requiresEndpointUrl: true,
+	 *   endpointSetBy: sdk.EndpointSetBy.Admin,
+	 *   requiresAdminSetup: [sdk.AdminSetupRequirement.OAuthClientIdAndSecret],
+	 * });
+	 * ```
+	 *
+	 * @hidden In early access, live in production but the shape may change.
+	 */
+	requiresAdminSetup?: AdminSetupRequirement[];
 }
 /**
  * Fields shared by the OAuth2 Authorization Code variants (static and dynamic client).
@@ -5265,7 +5345,7 @@ export interface BaseOAuth2CodeAuthentication extends BaseOAuthAuthentication {
  *
  * @example
  * ```ts
- * pack.setUserAuthentication({
+ * connector.setUserAuthentication({
  *   type: sdk.AuthenticationType.OAuth2,
  *   // These URLs come from the API's developer documentation.
  *   authorizationUrl: "https://example.com/authorize",
@@ -5278,7 +5358,7 @@ export interface BaseOAuth2CodeAuthentication extends BaseOAuthAuthentication {
  */
 export interface OAuth2StaticCodeAuthentication extends BaseOAuth2CodeAuthentication {
 	/**
-	 * The URL to which the user will be redirected in order to authorize this pack.
+	 * The URL to which the user will be redirected in order to authorize this connector.
 	 * This is typically just a base url with no parameters. The platform will append the `scope`
 	 * parameter automatically. If the authorization flow requires additional parameters,
 	 * they may be specified using {@link additionalParams}.
@@ -5297,11 +5377,11 @@ export interface OAuth2StaticCodeAuthentication extends BaseOAuth2CodeAuthentica
 /**
  * OAuth2 authentication with Dynamic Client Registration (DCR) enabled.
  * `authorizationUrl` and `tokenUrl` are optional because they are automatically
- * discovered using the pack's declared MCP servers and network domains.
+ * discovered using the connector's declared MCP servers and network domains.
  */
 export interface OAuth2DynamicCodeAuthentication extends BaseOAuth2CodeAuthentication {
 	/**
-	 * The URL to which the user will be redirected in order to authorize this pack.
+	 * The URL to which the user will be redirected in order to authorize this connector.
 	 * Optional when using DCR, as it is automatically discovered.
 	 */
 	authorizationUrl?: string;
@@ -5311,7 +5391,7 @@ export interface OAuth2DynamicCodeAuthentication extends BaseOAuth2CodeAuthentic
 	 * Indicates that this OAuth provider supports Dynamic Client Registration.
 	 * When enabled, the platform will automatically discover authorization endpoints
 	 * and dynamically register OAuth client credentials (client ID and secret) using the
-	 * pack's declared MCP servers and network domains.
+	 * connector's declared MCP servers and network domains.
 	 *
 	 * See https://datatracker.ietf.org/doc/html/rfc7591 for more details.
 	 */
@@ -5319,14 +5399,14 @@ export interface OAuth2DynamicCodeAuthentication extends BaseOAuth2CodeAuthentic
 }
 /**
  * Authenticate using the OAuth2 Authorization Code flow. You must specify the authorization URL,
- * token exchange URL, and scopes here as part of the pack definition. You'll provide the
+ * token exchange URL, and scopes here as part of the connector definition. You'll provide the
  * application's client ID and client secret in the pack management UI, so that these can be stored
  * securely.
  *
  * The API must use a (largely) standards-compliant implementation of OAuth2.
  *
  * When `useDynamicClientRegistration` is `true`, `authorizationUrl` and `tokenUrl` become optional
- * as they are automatically discovered using the pack's declared MCP servers and network domains.
+ * as they are automatically discovered using the connector's declared MCP servers and network domains.
  *
  * @see [Authenticating using OAuth](https://docs.superhuman.com/packs/build/latest/guides/basics/authentication/oauth2/)
  * @see [Authentication samples - OAuth2](https://docs.superhuman.com/packs/build/latest/samples/topic/authentication/#oauth2)
@@ -5334,12 +5414,12 @@ export interface OAuth2DynamicCodeAuthentication extends BaseOAuth2CodeAuthentic
 export type OAuth2Authentication = OAuth2StaticCodeAuthentication | OAuth2DynamicCodeAuthentication;
 /**
  * Authenticate using the OAuth2 Client Credentials flow.
- * You must specify the token exchange URL here as part of the pack definition.
+ * You must specify the token exchange URL here as part of the connector definition.
  * You'll provide the application's client ID and client secret when authenticating.
  *
  * @example
  * ```ts
- * pack.setUserAuthentication({
+ * connector.setUserAuthentication({
  *   type: sdk.AuthenticationType.OAuth2ClientCredentials,
  *   // This URL comes from the API's developer documentation.
  *   tokenUrl: "https://api.example.com/token",
@@ -5357,6 +5437,38 @@ export interface OAuth2ClientCredentialsAuthentication extends BaseOAuthAuthenti
 	 * endpoint. Absolute URLs are always accepted, with or without `requiresEndpointUrl`.
 	 */
 	tokenUrl: string;
+}
+/**
+ * Something an organization's admin must supply in the pack configuration before members can
+ * connect. Used in {@link BaseOAuthAuthentication.requiresAdminSetup}.
+ *
+ * @hidden In early access, live in production but the shape may change.
+ */
+export declare enum AdminSetupRequirement {
+	/**
+	 * The client ID and client secret of an OAuth app the admin registers with the service. The pack
+	 * has no OAuth app of its own. With client credentials authentication, the organization shares
+	 * one connection made with them.
+	 */
+	OAuthClientIdAndSecret = "OAuthClientIdAndSecret",
+	/**
+	 * The authorization URL and token URL of the admin's OAuth app. Use this when the URLs in the
+	 * manifest are not right for every customer and can't be built from the endpoint URL. Only
+	 * accepted on {@link AuthenticationType.OAuth2}.
+	 */
+	OAuthUrls = "OAuthUrls"
+}
+/**
+ * Who supplies a pack's endpoint URL. Used in {@link BaseAuthentication.endpointSetBy}.
+ *
+ * @hidden In early access, live in production but the shape may change.
+ */
+export declare enum EndpointSetBy {
+	/**
+	 * An organization's admin sets the endpoint URL once in the pack configuration. Members are never
+	 * asked for it.
+	 */
+	Admin = "Admin"
 }
 /**
  * Where to pass the client credentials (client ID and client secret) when making the OAuth2 token
@@ -5385,7 +5497,7 @@ export declare enum TokenExchangeCredentialsLocation {
  *
  * @example
  * ```ts
- * pack.setUserAuthentication({
+ * connector.setUserAuthentication({
  *   type: sdk.AuthenticationType.WebBasic,
  * });
  * ```
@@ -5435,10 +5547,10 @@ export interface CustomAuthParameter {
  * required.
  *
  * Some APIs use non-standard authentication schemes which often require secret credentials to be put in specific places
- * in the request URL or request body. Custom authentication supports many of these cases by allowing you as the pack
- * author to define one or more secret values that the user or you as the pack author must provide (depending on
- * user or system authentication). When constructing a network request, you may indicate where these values should
- * be inserted by our fetcher service using the syntax described below (similar to templating engines).
+ * in the request URL or request body. Custom authentication supports many of these cases by allowing you as the
+ * connector author to define one or more secret values that the user or you as the connector author must provide
+ * (depending on user or system authentication). When constructing a network request, you may indicate where these
+ * values should be inserted by our fetcher service using the syntax described below (similar to templating engines).
  *
  * \{% raw %\}
  * To insert the credentials, simply put `{{<paramName>-<invocationToken>}}` as a string anywhere in your request,
@@ -5455,7 +5567,7 @@ export interface CustomAuthParameter {
  * // authentication configuration with two params:
  * // params: [{name: "secretId", description: "Secret id"},
  * //          {name: "secretValue", description: "Secret value"}])
- * // The user or the pack author will be prompted to specify a value for each
+ * // The user or the connector author will be prompted to specify a value for each
  * // of these when setting up an account.
  * // In the `execute` body of your formula, you can specify where those values
  * // are inserted in the request using the template replacement syntax shown
@@ -5495,7 +5607,7 @@ export interface CustomAuthentication extends BaseAuthentication {
 	/** Identifies this as Custom authentication. */
 	type: AuthenticationType.Custom;
 	/**
-	 * An array of parameters that must be provided for new connection accounts to authenticate this pack.
+	 * An array of parameters that must be provided for new connection accounts to authenticate this connector.
 	 * These parameters can then be referenced via the {@link CustomAuthParameter.name} property for template
 	 * replacement inside the constructed network request.
 	 */
@@ -5525,7 +5637,7 @@ export interface AWSAssumeRoleAuthentication extends BaseAuthentication {
 	service: string;
 }
 /**
- * Only for use by Superhuman-authored packs.
+ * Only for use by Superhuman-authored connectors.
  *
  * TODO(neal): Unhide.
  * @hidden
@@ -5536,7 +5648,7 @@ export interface GoogleDomainWideDelegationAuthentication extends BaseAuthentica
 	scopes: string[];
 }
 /**
- * Only for use by Superhuman-authored packs.
+ * Only for use by Superhuman-authored connectors.
  *
  * TODO(neal): Unhide.
  * @hidden
@@ -5547,7 +5659,7 @@ export interface GoogleServiceAccountAuthentication extends BaseAuthentication {
 	scopes: string[];
 }
 /**
- * Only for use by Superhuman-authored packs.
+ * Only for use by Superhuman-authored connectors.
  *
  * Scopes are granted on the Entra app registration by admin consent, so none are declared here.
  * The platform selects the token audience from the request host (Microsoft Graph or the
@@ -5560,7 +5672,7 @@ export interface EntraCertificateAuthentication extends BaseAuthentication {
 	type: AuthenticationType.EntraCertificate;
 }
 /**
- * Only for use by Superhuman-authored packs.
+ * Only for use by Superhuman-authored connectors.
  *
  * @hidden
  */
@@ -5595,21 +5707,22 @@ export type AsAuthDef<T extends BaseAuthentication> = Omit<T, "getConnectionName
 export type AllowedAuthenticationDef = AsAuthDef<HeaderBearerTokenAuthentication> | AsAuthDef<CodaApiBearerTokenAuthentication> | AsAuthDef<CustomHeaderTokenAuthentication> | AsAuthDef<MultiHeaderTokenAuthentication> | AsAuthDef<QueryParamTokenAuthentication> | AsAuthDef<MultiQueryParamTokenAuthentication> | AsAuthDef<OAuth2Authentication> | AsAuthDef<OAuth2ClientCredentialsAuthentication> | AsAuthDef<WebBasicAuthentication> | AsAuthDef<AWSAccessKeyAuthentication> | AsAuthDef<AWSAssumeRoleAuthentication> | AsAuthDef<GoogleDomainWideDelegationAuthentication> | AsAuthDef<GoogleServiceAccountAuthentication> | AsAuthDef<EntraCertificateAuthentication> | AsAuthDef<CustomAuthentication>;
 /**
  * The union of supported authentication definitions. These represent simplified configurations
- * a pack developer can specify when calling {@link PackDefinitionBuilder.setUserAuthentication} when using
- * a pack definition builder. The builder massages these definitions into the form of
+ * a connector developer can specify when calling {@link ConnectorDefinitionBuilder.setUserAuthentication} when using
+ * a connector definition builder. The builder massages these definitions into the form of
  * an {@link Authentication} value, which is the value the platform ultimately cares about.
  */
 export type AuthenticationDef = NoAuthentication | VariousAuthentication | AllowedAuthenticationDef;
 /**
  * The union of authentication methods that are supported for system authentication,
- * where the pack author provides credentials used in HTTP requests rather than the user.
+ * where the connector author provides credentials used in HTTP requests rather than the user.
  */
 export type SystemAuthentication = HeaderBearerTokenAuthentication | CustomHeaderTokenAuthentication | MultiHeaderTokenAuthentication | QueryParamTokenAuthentication | MultiQueryParamTokenAuthentication | WebBasicAuthentication | AWSAccessKeyAuthentication | AWSAssumeRoleAuthentication | GoogleServiceAccountAuthentication | CustomAuthentication | OAuth2ClientCredentialsAuthentication;
 /**
  * The union of supported system authentication definitions. These represent simplified
- * configurations a pack developer can specify when calling {@link PackDefinitionBuilder.setSystemAuthentication}
- * when using a pack definition builder. The builder massages these definitions into the form of
- * an {@link SystemAuthentication} value, which is the value the platform ultimately cares about.
+ * configurations a connector developer can specify when calling
+ * {@link ConnectorDefinitionBuilder.setSystemAuthentication} when using a connector definition builder. The builder
+ * massages these definitions into the form of an {@link SystemAuthentication} value, which is the value the platform
+ * ultimately cares about.
  */
 export type SystemAuthenticationDef = AsAuthDef<HeaderBearerTokenAuthentication> | AsAuthDef<CustomHeaderTokenAuthentication> | AsAuthDef<MultiHeaderTokenAuthentication> | AsAuthDef<QueryParamTokenAuthentication> | AsAuthDef<MultiQueryParamTokenAuthentication> | AsAuthDef<WebBasicAuthentication> | AsAuthDef<AWSAccessKeyAuthentication> | AsAuthDef<AWSAssumeRoleAuthentication> | AsAuthDef<GoogleServiceAccountAuthentication> | AsAuthDef<CustomAuthentication> | AsAuthDef<OAuth2ClientCredentialsAuthentication>;
 /**
@@ -5621,7 +5734,8 @@ export type VariousSupportedAuthentication = NoAuthentication | HeaderBearerToke
  * @hidden
  */
 export interface AdminAuthentication {
-	authentication: AllowedAuthentication;
+	/** {@link BaseOAuthAuthentication.requiresAdminSetup} is not supported here. */
+	authentication: DistributiveOmit<AllowedAuthentication, "requiresAdminSetup">;
 	/**
 	 * A unique identifier for this authentication configuration. The platform will pass it into formulas via
 	 * the execution context. Users will not see this value.
@@ -5645,31 +5759,31 @@ export interface AdminAuthentication {
 	description: string;
 }
 export interface AdminAuthenticationDef extends Omit<AdminAuthentication, "authentication"> {
-	authentication: AllowedAuthenticationDef;
+	authentication: DistributiveOmit<AllowedAuthenticationDef, "requiresAdminSetup">;
 }
 /**
  * Definition for a custom column type that users can apply to any column in any Superhuman Docs table.
  * A column format tells Superhuman Docs to interpret the value in a cell by executing a formula
  * using that value, typically looking up data related to that value from a third-party API.
- * For example, the Weather pack has a column format "Current Weather"; when applied to a column,
+ * For example, the Weather connector has a column format "Current Weather"; when applied to a column,
  * if you type a city or address into a cell in that column, that location will be used as the input
  * to a formula that fetches the current weather at that location, and the resulting object with
  * weather info will be shown in the cell.
  *
- * A column format is just a wrapper around a formula defined in the {@link PackVersionDefinition.formulas} section
- * of your pack definition. It tells Superhuman Docs to execute that particular formula using the value
+ * A column format is just a wrapper around a formula defined in the {@link ComponentVersionDefinition.formulas} section
+ * of your connector definition. It tells Superhuman Docs to execute that particular formula using the value
  * of the cell as input.
  *
  * The formula referenced by a format must have exactly one required parameter.
  *
  * You may optionally specify one or more {@link matchers}, which are regular expressions
  * that can be matched against values that users paste into table cells, to determine if
- * this Format is applicable to that value. Matchers help users realize that there is a pack
+ * this Format is applicable to that value. Matchers help users realize that there is a connector
  * format that may augment their experience of working with such values.
  *
- * For example, if you're building a Wikipedia pack, you may write a matcher regular expression
+ * For example, if you're building a Wikipedia connector, you may write a matcher regular expression
  * that looks for Wikipedia article URLs, if you have a formula that can fetch structured data
- * given an article URL. This would help users discover that there is a pack that can fetch
+ * given an article URL. This would help users discover that there is a connector that can fetch
  * structured data given only a url.
  *
  * At present, matchers will only be run on URLs and not other text values.
@@ -5683,7 +5797,7 @@ export interface Format {
 	formulaNamespace?: string;
 	/**
 	 * The name of the formula to invoke for values in columns using this format.
-	 * This must correspond to the name of a regular, public formula defined in this pack.
+	 * This must correspond to the name of a regular, public formula defined in this connector.
 	 */
 	formulaName: string;
 	/** @deprecated No longer needed, will be inferred from the referenced formula. */
@@ -5754,34 +5868,40 @@ export interface RateLimits {
 	overall?: RateLimit;
 	perConnection?: RateLimit;
 }
+/** @deprecated Use {@link BasicComponentDefinition}. */
+export type BasicPackDefinition = BasicComponentDefinition;
 /**
- * A pack definition without an author-defined semantic version, for use in the web
- * editor where the platform will manage versioning on behalf of the pack author.
+ * A definition without an author-defined semantic version, for use in the web
+ * editor where the platform will manage versioning on behalf of the author.
  */
-export type BasicPackDefinition = Omit<PackVersionDefinition, "version">;
+export type BasicComponentDefinition = Omit<PackVersionDefinition, "version">;
 /**
  * The types of tools that can be used in a skill.
  */
 export declare enum ToolType {
 	/**
-	 * Allows formulas within a pack to be used as tools.
+	 * Allows formulas within a connector to be used as tools.
 	 */
 	Pack = "Pack",
 	/**
 	 * Allows knowledge to be used as a tool.
+	 * @deprecated Skills are no longer used. Connectors should not set tools.
 	 */
 	Knowledge = "Knowledge",
 	/**
 	 * Allows screen annotations to be used as tools.
+	 * @deprecated Skills are no longer used. Connectors should not set tools.
 	 */
 	ScreenAnnotation = "ScreenAnnotation",
 	/**
 	 * Tool that provides access to MCP capabilities.
 	 * @internal
+	 * @deprecated Skills are no longer used. Connectors should not set tools.
 	 */
 	MCP = "MCP",
 	/**
 	 * Tool that provides access to contact resolution capabilities.
+	 * @deprecated Skills are no longer used. Connectors should not set tools.
 	 */
 	ContactResolution = "ContactResolution",
 	/**
@@ -5796,6 +5916,7 @@ export declare enum ToolType {
 	/**
 	 * Tool that allows creation of the content that can be embedded in the response.
 	 * @internal
+	 * @deprecated Skills are no longer used. Connectors should not set tools.
 	 */
 	EmbeddedContent = "EmbeddedContent",
 	/**
@@ -5812,13 +5933,14 @@ export interface BaseTool<T extends string> {
 	/** The type identifier for this tool. */
 	type: T;
 }
-/**
- * Tool that references formulas within a pack.
- */
-export interface PackTool extends BaseTool<ToolType.Pack> {
+/** @deprecated Use {@link ConnectorTool}. */
+export interface PackTool extends ConnectorTool {
+}
+/** Tool that references formulas within a connector. */
+export interface ConnectorTool extends BaseTool<ToolType.Pack> {
 	/**
-	 * The ID of the pack to use as a tool, if referencing a different pack.
-	 * Omit this to reference the current pack.
+	 * The ID of the connector to use as a tool, if referencing a different connector.
+	 * Omit this to reference the current connector.
 	 *
 	 * @hidden In development
 	 */
@@ -5842,6 +5964,7 @@ export interface PackTool extends BaseTool<ToolType.Pack> {
 }
 /**
  * The type of knowledge source to use.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export declare enum KnowledgeToolSourceType {
 	/**
@@ -5866,6 +5989,7 @@ export interface BaseKnowledgeToolSource<T extends KnowledgeToolSourceType> {
 }
 /**
  * Source for using knowledge from a specific pack.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export interface PackKnowledgeToolSource extends BaseKnowledgeToolSource<KnowledgeToolSourceType.Pack> {
 	/**
@@ -5884,10 +6008,12 @@ export interface GlobalKnowledgeToolSource extends BaseKnowledgeToolSource<Knowl
 }
 /**
  * Union of all supported knowledge tool sources.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export type KnowledgeToolSource = PackKnowledgeToolSource | GlobalKnowledgeToolSource;
 /**
  * Tool that provides access to ingested knowledge.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export interface KnowledgeTool extends BaseTool<ToolType.Knowledge> {
 	/**
@@ -5897,6 +6023,7 @@ export interface KnowledgeTool extends BaseTool<ToolType.Knowledge> {
 }
 /**
  * The type of screen annotation source to use.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export declare enum ScreenAnnotationType {
 	/**
@@ -5921,6 +6048,7 @@ export interface BaseScreenAnnotation<T extends ScreenAnnotationType> {
 }
 /**
  * Annotation for screen suggestions.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export interface RewriteScreenAnnotation extends BaseScreenAnnotation<ScreenAnnotationType.Rewrite> {
 }
@@ -5929,10 +6057,12 @@ export interface GuideScreenAnnotation extends BaseScreenAnnotation<ScreenAnnota
 }
 /**
  * Union of all supported screen annotation types.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export type ScreenAnnotation = RewriteScreenAnnotation | GuideScreenAnnotation;
 /**
  * Tool that provides access to screen annotation capabilities.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export interface ScreenAnnotationTool extends BaseTool<ToolType.ScreenAnnotation> {
 	/**
@@ -5942,6 +6072,7 @@ export interface ScreenAnnotationTool extends BaseTool<ToolType.ScreenAnnotation
 }
 /**
  * Tool that provides access to MCP capabilities.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export interface MCPTool extends BaseTool<ToolType.MCP> {
 	/**
@@ -5957,6 +6088,7 @@ export interface MCPTool extends BaseTool<ToolType.MCP> {
 }
 /**
  * Tool that provides access to contact resolution capabilities.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export interface ContactResolutionTool extends BaseTool<ToolType.ContactResolution> {
 }
@@ -5984,14 +6116,8 @@ export interface WebSearchTool extends BaseTool<ToolType.WebSearch> {
 	 * Maximum of 100 domains allowed.
 	 * @example
 	 * ```ts
-	 * pack.addSkill({
-	 *   // ...
-	 *   tools: [
-	 *     {
-	 *       type: sdk.ToolType.WebSearch,
-	 *       allowedDomains: ["docs.google.com", "stackoverflow.com"],
-	 *     },
-	 *   ],
+	 * agent.setTools({
+	 *   webSearch: {allowedDomains: ["docs.google.com", "stackoverflow.com"]},
 	 * });
 	 * ```
 	 */
@@ -6000,6 +6126,7 @@ export interface WebSearchTool extends BaseTool<ToolType.WebSearch> {
 /**
  * The type of the content that can be embedded in the response.
  * @hidden In development.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export declare enum EmbeddedContentType {
 	/**
@@ -6027,29 +6154,34 @@ export interface BaseEmbeddedContent<T extends EmbeddedContentType> {
 /**
  * Block of a content that can be copied or inserted in a document.
  * @hidden In development.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export interface CopyableBlockEmbeddedContent extends BaseEmbeddedContent<EmbeddedContentType.CopyableBlock> {
 }
 /**
  * Carousel of multiple slides.
  * @hidden In development.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export interface CarouselViewEmbeddedContent extends BaseEmbeddedContent<EmbeddedContentType.CarouselView> {
 }
 /**
  * Panel with multiple tabs.
  * @hidden In development.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export interface TabViewEmbeddedContent extends BaseEmbeddedContent<EmbeddedContentType.TabView> {
 }
 /**
  * Union of all supported embedded content classes.
  * @hidden In development.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export type EmbeddedContent = CopyableBlockEmbeddedContent | CarouselViewEmbeddedContent | TabViewEmbeddedContent;
 /**
  * Tool that enables creation of the content that can be embedded in the response.
  * @hidden In development.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export interface EmbeddedContentTool extends BaseTool<ToolType.EmbeddedContent> {
 	/**
@@ -6058,7 +6190,7 @@ export interface EmbeddedContentTool extends BaseTool<ToolType.EmbeddedContent> 
 	embeddedContent: EmbeddedContent;
 }
 /**
- * Definition of an MCP server that the pack can connect to.
+ * Definition of an MCP server that the connector can connect to.
  */
 export interface MCPServer {
 	/**
@@ -6080,6 +6212,7 @@ export interface MCPServer {
  * Map of tool types to their corresponding tool interfaces.
  * This interface can be extended via declaration merging to add custom tool types.
  * @hidden
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export interface ToolMap {
 	[ToolType.Pack]: PackTool;
@@ -6095,6 +6228,7 @@ export interface ToolMap {
 /**
  * Union of all supported tool types.
  * @hidden
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export type Tool = ToolMap[keyof ToolMap];
 /**
@@ -6104,6 +6238,7 @@ export type Tool = ToolMap[keyof ToolMap];
  * ```ts
  * models: [{model: SkillModel.OpenAIGPT4}]
  * ```
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export declare enum SkillModel {
 	/** OpenAI GPT-4 series models. */
@@ -6113,6 +6248,7 @@ export declare enum SkillModel {
 }
 /**
  * Configuration for a specific skill model.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export interface SkillModelConfiguration {
 	/** The LLM model to use. */
@@ -6126,6 +6262,7 @@ export interface SkillModelConfiguration {
 }
 /**
  * A prompt and set of tools that defines a specific skill this connector provides.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export interface Skill {
 	/** Stable identifier for the skill. */
@@ -6156,8 +6293,8 @@ export interface Skill {
 	models?: SkillModelConfiguration[];
 }
 /**
- * Input type for defining the default chat skill via {@link PackDefinitionBuilder.setChatSkill}
- * or bench initialization skill via {@link PackDefinitionBuilder.setBenchInitializationSkill}.
+ * Input type for defining the default chat skill via {@link ConnectorDefinitionBuilder.setChatSkill}
+ * or bench initialization skill via {@link ConnectorDefinitionBuilder.setBenchInitializationSkill}.
  *
  * All fields are optional, allowing you to override only the fields you care about.
  * Fields that are not provided will use default values at runtime.
@@ -6173,12 +6310,12 @@ export interface Skill {
  * @example
  * ```ts
  * // Override just the prompt — default tools are preserved
- * pack.setChatSkill({
+ * connector.setChatSkill({
  *   prompt: "You are a helpful assistant.",
  * });
  *
  * // Override tools — replaces the defaults entirely
- * pack.setChatSkill({
+ * connector.setChatSkill({
  *   tools: [
  *     { type: sdk.ToolType.Pack },
  *     { type: sdk.ToolType.ContactResolution },
@@ -6218,7 +6355,7 @@ export interface SkillEntrypoints {
  *
  * @example
  * ```ts
- * pack.addSuggestedPrompt({
+ * agent.addSuggestedPrompt({
  *   name: "ticketStatus",
  *   displayName: "Check ticket status",
  *   prompt: "Show me the status of all open support tickets"
@@ -6258,6 +6395,16 @@ export interface AgentDefinition {
 export type AgentTool = CodaDocsAndTablesTool | MailAndCalendarTool | WebSearchTool | (Omit<PackTool, "packId"> & {
 	packId: number;
 	mcpTools?: AgentConnectorMcpTool[];
+	/**
+	 * Whether the agent needs this connector. `true` means it needs this one. `{groupName}` means
+	 * it needs at least one of the connectors that share that group name. Absent means optional.
+	 * The group name only ties the members together; users never see it.
+	 *
+	 * @hidden Docs does not act on this yet, so nothing enforces it.
+	 */
+	required?: true | {
+		groupName: string;
+	};
 });
 /**
  * An MCP tool an agent can call on a connector pack, named as the MCP server lists it.
@@ -6275,6 +6422,21 @@ export interface AgentConnectorMcpTool {
 	 */
 	serverName?: string;
 }
+/**
+ * How an agent names a connector in `setTools`. Set exactly one of the two fields.
+ *
+ * @internal
+ * @hidden
+ */
+export type AgentConnectorId = {
+	/** The id of the connector. */
+	connectorId: number;
+	packId?: never;
+} | {
+	connectorId?: never;
+	/** @deprecated Use `connectorId`. */
+	packId: number;
+};
 /**
  * The tools an agent can use, as written on the builder.
  *
@@ -6297,13 +6459,10 @@ export interface AgentToolsDef {
 		allowedDomains?: string[];
 	};
 	/**
-	 * Connector packs this agent can call, one entry per pack.
+	 * Connectors this agent can call, one entry per connector. Name each connector with `connectorId`,
+	 * or with the deprecated `packId`, not both.
 	 */
-	connectors?: Array<{
-		/**
-		 * The id of the connector pack.
-		 */
-		packId: number;
+	connectors?: Array<AgentConnectorId & {
 		/**
 		 * The formulas to offer, if not all of them.
 		 */
@@ -6321,6 +6480,18 @@ export interface AgentToolsDef {
 		 * @hidden Experimental early access for internal users and approved external developers; the shape may change.
 		 */
 		useSuggestions?: boolean;
+		/**
+		 * Whether the agent needs this connector to do its job:
+		 *
+		 * - `true`: the agent needs this connector.
+		 * - `{groupName}`: the agent needs at least one of the connectors that share that group name.
+		 * - Omitted or `false`: the connector is optional.
+		 *
+		 * @hidden Docs does not act on this yet, so nothing enforces it.
+		 */
+		required?: boolean | {
+			groupName: string;
+		};
 	}>;
 }
 /**
@@ -6749,11 +6920,16 @@ export interface AgentRoutineDefinition {
 	/** The single trigger this routine runs on. Shares limits with plain default triggers. */
 	trigger: DefaultTriggerDefinition;
 }
+/** @deprecated Use {@link ComponentVersionDefinition}. */
+export interface PackVersionDefinition extends ComponentVersionDefinition {
+}
 /**
  * The definition of the contents of a Pack at a specific version. This is the
  * heart of the implementation of a Pack.
+ *
+ * A component is something a plugin exports, such as a connector or an agent.
  */
-export interface PackVersionDefinition {
+export interface ComponentVersionDefinition {
 	/**
 	 * The semantic version of the pack. This must be valid semantic version of the form `1`, `1.2`, or `1.2.3`.
 	 * When uploading a pack version, the semantic version must be greater than any previously uploaded version.
@@ -6805,6 +6981,7 @@ export interface PackVersionDefinition {
 	syncTables?: SyncTable[];
 	/**
 	 * Definitions of skills that can be executed within this pack.
+	 * @deprecated Skills are no longer used. Connectors should not set tools.
 	 */
 	skills?: Skill[];
 	/**
@@ -6814,14 +6991,14 @@ export interface PackVersionDefinition {
 	 * @example
 	 * ```ts
 	 * // Override just the tools
-	 * pack.setChatSkill({
+	 * connector.setChatSkill({
 	 *   tools: [
 	 *     { type: sdk.ToolType.Pack },
 	 *   ],
 	 * });
 	 *
 	 * // Override just the prompt
-	 * pack.setChatSkill({
+	 * connector.setChatSkill({
 	 *   prompt: "You are an expert in this pack.",
 	 * });
 	 * ```
@@ -6841,7 +7018,7 @@ export interface PackVersionDefinition {
 	skillEntrypoints?: SkillEntrypoints;
 	/**
 	 * Static suggested prompts that appear when the agent is opened in chat. Set them with
-	 * `addSuggestedPrompt()` on an agent. Connector packs no longer use this field.
+	 * `addSuggestedPrompt()` on an agent. Connectors no longer use this field.
 	 */
 	suggestedPrompts?: SuggestedPrompt[];
 	/**
@@ -6876,7 +7053,7 @@ export interface PackVersionDefinition {
 	defaultRoutines?: AgentRoutineDefinition[];
 }
 /**
- * @deprecated use `#PackVersionDefinition`
+ * @deprecated Use {@link ComponentVersionDefinition}.
  *
  * The legacy complete definition of a Pack including un-versioned metadata.
  * This should only be used by legacy pack implementations.
@@ -6956,6 +7133,7 @@ export interface EndpointSuggestionProvider {
 export type SuggestionProvider = EndpointSuggestionProvider;
 /**
  * Creates a new skeleton connector definition that can be added to.
+ * Returns a {@link PackDefinitionBuilder} for compatibility. Use as a {@link ConnectorDefinitionBuilder}.
  *
  * @example
  * ```
@@ -6985,8 +7163,8 @@ export declare function newPack(definition?: Partial<Omit<PackVersionDefinition,
  *
  * @example
  * ```
- * export const pack = newAgent();
- * pack.setInstructions('You help a team run async standups. Keep replies short.');
+ * export const agent = newAgent();
+ * agent.setInstructions('You help a team run async standups. Keep replies short.');
  * ```
  *
  * @internal
@@ -6995,11 +7173,11 @@ export declare function newPack(definition?: Partial<Omit<PackVersionDefinition,
 export declare function newAgent(): AgentDefinitionBuilder;
 declare class BaseDefinitionBuilder {
 	/**
-	 * See {@link PackVersionDefinition.version}.
+	 * See {@link ComponentVersionDefinition.version}.
 	 */
 	version?: string;
 	/**
-	 * Sets the semantic version of this pack version, e.g. `'1.2.3'`.
+	 * Sets the semantic version of this definition version, e.g. `'1.2.3'`.
 	 *
 	 * This is optional, and you only need to provide a version if you are manually doing
 	 * semantic versioning, or using the CLI. If using the web editor, you can omit this
@@ -7008,60 +7186,60 @@ declare class BaseDefinitionBuilder {
 	 *
 	 * @example
 	 * ```
-	 * pack.setVersion('1.2.3');
+	 * connector.setVersion('1.2.3');
 	 * ```
 	 */
 	setVersion(version: string): this;
 }
-/**
- * A class that assists in constructing a pack definition. Use {@link newConnector} to create one.
- */
-export declare class PackDefinitionBuilder extends BaseDefinitionBuilder implements BasicPackDefinition {
+/** A class that assists in constructing a connector definition. Use {@link newConnector} to create one. */
+export declare class ConnectorDefinitionBuilder extends BaseDefinitionBuilder implements BasicComponentDefinition {
 	/**
-	 * See {@link PackVersionDefinition.formulas}.
+	 * See {@link ComponentVersionDefinition.formulas}.
 	 */
 	formulas: Formula[];
 	/**
-	 * See {@link PackVersionDefinition.formats}.
+	 * See {@link ComponentVersionDefinition.formats}.
 	 */
 	formats: Format[];
 	/**
-	 * See {@link PackVersionDefinition.syncTables}.
+	 * See {@link ComponentVersionDefinition.syncTables}.
 	 */
 	syncTables: SyncTable[];
 	/**
-	 * See {@link PackVersionDefinition.skills}.
+	 * See {@link ComponentVersionDefinition.skills}.
+	 *
+	 * @deprecated Skills are no longer used. Connectors should not set tools.
 	 */
 	skills: Skill[];
 	/**
-	 * See {@link PackVersionDefinition.skillEntrypoints}.
+	 * See {@link ComponentVersionDefinition.skillEntrypoints}.
 	 * @deprecated No longer used, now that agents are connectors.
 	 */
 	skillEntrypoints?: SkillEntrypoints;
 	/**
-	 * See {@link PackVersionDefinition.chatSkill}.
+	 * See {@link ComponentVersionDefinition.chatSkill}.
 	 * @hidden
 	 * @deprecated No longer used, now that agents are connectors.
 	 */
 	chatSkill?: PartialSkillDef;
 	/**
-	 * See {@link PackVersionDefinition.benchInitializationSkill}.
+	 * See {@link ComponentVersionDefinition.benchInitializationSkill}.
 	 * @hidden
 	 * @deprecated No longer used, now that agents are connectors.
 	 */
 	benchInitializationSkill?: PartialSkillDef;
 	/**
-	 * See {@link PackVersionDefinition.suggestedPrompts}.
+	 * See {@link ComponentVersionDefinition.suggestedPrompts}.
 	 * @hidden
 	 * @deprecated No longer used, now that agents are connectors.
 	 */
 	suggestedPrompts: SuggestedPrompt[];
 	/**
-	 * See {@link PackVersionDefinition.networkDomains}.
+	 * See {@link ComponentVersionDefinition.networkDomains}.
 	 */
 	networkDomains: string[];
 	/**
-	 * See {@link PackVersionDefinition.mcpServers}.
+	 * See {@link ComponentVersionDefinition.mcpServers}.
 	 * @hidden
 	 */
 	mcpServers: MCPServer[];
@@ -7071,15 +7249,15 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	 */
 	suggestionProviders?: SuggestionProvider[];
 	/**
-	 * See {@link PackVersionDefinition.defaultAuthentication}.
+	 * See {@link ComponentVersionDefinition.defaultAuthentication}.
 	 */
 	defaultAuthentication?: Authentication;
 	/**
-	 * See {@link PackVersionDefinition.systemConnectionAuthentication}.
+	 * See {@link ComponentVersionDefinition.systemConnectionAuthentication}.
 	 */
 	systemConnectionAuthentication?: SystemAuthentication;
 	/**
-	 * See {@link PackVersionDefinition.adminAuthentications}.
+	 * See {@link ComponentVersionDefinition.adminAuthentications}.
 	 * @hidden
 	 */
 	adminAuthentications?: AdminAuthentication[];
@@ -7087,31 +7265,31 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	formulaNamespace?: string;
 	private _defaultConnectionRequirement;
 	/**
-	 * Constructs a {@link PackDefinitionBuilder}. However, `sdk.newConnector()` should be used instead
+	 * Constructs a {@link ConnectorDefinitionBuilder}. However, `sdk.newConnector()` should be used instead
 	 * rather than constructing a builder directly.
 	 */
 	constructor(definition?: Partial<Omit<PackVersionDefinition, "agent" | "defaultTriggers" | "defaultRoutines">>);
 	/**
-	 * Adds a formula definition to this pack.
+	 * Adds a formula definition to this connector.
 	 *
 	 * In the web editor, the `/Formula` shortcut will insert a snippet of a skeleton formula.
 	 *
 	 * @example
 	 * ```
-	 * pack.addFormula({
+	 * connector.addFormula({
 	 *   resultType: ValueType.String,
-	 *    name: 'MyFormula',
-	 *    description: 'My description.',
-	 *    parameters: [
-	 *      makeParameter({
-	 *        type: ParameterType.String,
-	 *        name: 'myParam',
-	 *        description: 'My param description.',
-	 *      }),
-	 *    ],
-	 *    execute: async ([param]) => {
-	 *      return `Hello ${param}`;
-	 *    },
+	 *   name: 'MyFormula',
+	 *   description: 'My description.',
+	 *   parameters: [
+	 *     makeParameter({
+	 *       type: ParameterType.String,
+	 *       name: 'myParam',
+	 *       description: 'My param description.',
+	 *     }),
+	 *   ],
+	 *   execute: async ([param]) => {
+	 *     return `Hello ${param}`;
+	 *   },
 	 * });
 	 * ```
 	 */
@@ -7119,13 +7297,13 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 		resultType: ResultT;
 	} & FormulaDefinitionOptions<ParamDefsT, ResultT, SchemaT>): this;
 	/**
-	 * Adds a sync table definition to this pack.
+	 * Adds a sync table definition to this connector.
 	 *
 	 * In the web editor, the `/SyncTable` shortcut will insert a snippet of a skeleton sync table.
 	 *
 	 * @example
 	 * ```
-	 * pack.addSyncTable({
+	 * connector.addSyncTable({
 	 *   name: 'MySyncTable',
 	 *   identityName: 'EntityName',
 	 *   schema: sdk.makeObjectSchema({
@@ -7139,13 +7317,13 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	 */
 	addSyncTable<K extends string, L extends string, ParamDefsT extends ParamDefs, SchemaT extends ObjectSchema<K, L>, ContextT extends SyncExecutionContext<any, any>, PermissionsContextT extends SyncPassthroughData>(definition: SyncTableOptions<K, L, ParamDefsT, SchemaT, ContextT, PermissionsContextT>): this;
 	/**
-	 * Adds a dynamic sync table definition to this pack.
+	 * Adds a dynamic sync table definition to this connector.
 	 *
 	 * In the web editor, the `/DynamicSyncTable` shortcut will insert a snippet of a skeleton sync table.
 	 *
 	 * @example
 	 * ```
-	 * pack.addDynamicSyncTable({
+	 * connector.addDynamicSyncTable({
 	 *   name: "MySyncTable",
 	 *   getName: async funciton (context) => {
 	 *     const response = await context.fetcher.fetch({method: "GET", url: context.sync.dynamicUrl});
@@ -7161,13 +7339,13 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	 */
 	addDynamicSyncTable<K extends string, L extends string, ParamDefsT extends ParamDefs, SchemaT extends ObjectSchemaDefinition<K, L>, ContextT extends SyncExecutionContext<any, any>, PermissionsContextT extends SyncPassthroughData>(definition: DynamicSyncTableOptions<K, L, ParamDefsT, SchemaT, ContextT, PermissionsContextT>): this;
 	/**
-	 * Adds a column format definition to this pack.
+	 * Adds a column format definition to this connector.
 	 *
 	 * In the web editor, the `/ColumnFormat` shortcut will insert a snippet of a skeleton format.
 	 *
 	 * @example
 	 * ```
-	 * pack.addColumnFormat({
+	 * connector.addColumnFormat({
 	 *   name: 'MyColumn',
 	 *   formulaName: 'MyFormula',
 	 * });
@@ -7177,13 +7355,13 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	 */
 	addColumnFormat(format: Format): this;
 	/**
-	 * Adds a skill definition to this pack.
+	 * Adds a skill definition to this connector.
 	 *
 	 * In the web editor, the `/Skill` shortcut will insert a snippet of a skeleton skill.
 	 *
 	 * @example
 	 * ```
-	 * pack.addSkill({
+	 * connector.addSkill({
 	 *   name: "MySkill",
 	 *   displayName: "My Display Name",
 	 *   description: "My description.",
@@ -7193,6 +7371,8 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	 *   ],
 	 * });
 	 * ```
+	 *
+	 * @deprecated Skills are no longer used. Connectors should not set tools.
 	 */
 	addSkill(skill: Skill): this;
 	/**
@@ -7201,11 +7381,11 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	 */
 	addSuggestionProvider(provider: SuggestionProvider): this;
 	/**
-	 * Adds an MCP server to this pack.
+	 * Adds an MCP server to this connector.
 	 *
 	 * @example
 	 * ```
-	 * pack.addMCPServer({name: 'MyMCPServer', endpointUrl: 'https://my-mcp-server.com'});
+	 * connector.addMCPServer({name: 'MyMCPServer', endpointUrl: 'https://my-mcp-server.com'});
 	 * ```
 	 *
 	 * Only supported in Superhuman Go.
@@ -7220,20 +7400,20 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	 * All fields are optional — omitted fields use defaults at runtime. When `tools` is omitted,
 	 * the agent automatically gets:
 	 *
-	 * - {@link ToolType.Pack} — the pack's own formulas
-	 * - {@link ToolType.Knowledge} — search over the pack's sync table data (when sync tables exist)
+	 * - {@link ToolType.Pack} — the connector's own formulas
+	 * - {@link ToolType.Knowledge} — search over the connector's sync table data (when sync tables exist)
 	 *
 	 * Specifying `tools` replaces these defaults entirely.
 	 *
 	 * @example
 	 * ```ts
 	 * // Override just the prompt — default tools are preserved
-	 * pack.setChatSkill({
+	 * connector.setChatSkill({
 	 *   prompt: "End every reply with 'Moo!'",
 	 * });
 	 *
 	 * // Override tools — replaces the defaults
-	 * pack.setChatSkill({
+	 * connector.setChatSkill({
 	 *   tools: [
 	 *     { type: sdk.ToolType.Pack },
 	 *     { type: sdk.ToolType.ContactResolution },
@@ -7250,7 +7430,7 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	 *
 	 * @example
 	 * ```ts
-	 * pack.setBenchInitializationSkill({
+	 * connector.setBenchInitializationSkill({
 	 *   prompt: `
 	 *     Say hello to the user, referencing the time of day and a friendly nickname.
 	 *     For example: 10AM, Kramer => "Good morning K-man!"
@@ -7263,11 +7443,11 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	 */
 	setBenchInitializationSkill(skill: PartialSkillDef): this;
 	/**
-	 * Maps entrypoints to skills in the Pack.
+	 * Maps entrypoints to skills in the connector.
 	 *
 	 * @example
 	 * ```
-	 * pack.setSkillEntrypoints({
+	 * connector.setSkillEntrypoints({
 	 *   defaultChat: { skillName: "MySkill" },
 	 * });
 	 * ```
@@ -7280,7 +7460,7 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	 *
 	 * @example
 	 * ```
-	 * pack.addSuggestedPrompt({
+	 * connector.addSuggestedPrompt({
 	 *   name: "TicketStatus",
 	 *   displayName: "Check ticket status",
 	 *   prompt: `
@@ -7294,32 +7474,32 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	addSuggestedPrompt(prompt: SuggestedPrompt): this;
 	private _wrapAuthenticationFunctions;
 	/**
-	 * Sets this pack to use authentication for individual users, using the
+	 * Sets this connector to use authentication for individual users, using the
 	 * authentication method is the given definition.
 	 *
-	 * Each user will need to register an account in order to use this pack.
+	 * Each user will need to register an account in order to use this connector.
 	 *
 	 * In the web editor, the `/UserAuthentication` shortcut will insert a snippet of a skeleton
 	 * authentication definition.
 	 *
 	 * By default, this will set a default connection (account) requirement, making a user account
-	 * required to invoke all formulas in this pack unless you specify differently on a particular
+	 * required to invoke all formulas in this connector unless you specify differently on a particular
 	 * formula. To change the default, you can pass a `defaultConnectionRequirement` option into
 	 * this method.
 	 *
 	 * @example
 	 * ```
-	 * pack.setUserAuthentication({
+	 * connector.setUserAuthentication({
 	 *   type: AuthenticationType.HeaderBearerToken,
 	 * });
 	 * ```
 	 */
 	setUserAuthentication(authDef: UserAuthenticationDef): this;
 	/**
-	 * Sets this pack to use authentication provided by you as the maker of this pack.
+	 * Sets this connector to use authentication provided by you as the maker of this connector.
 	 *
-	 * You will need to register credentials to use with this pack. When users use the
-	 * pack, their requests will be authenticated with those system credentials, they need
+	 * You will need to register credentials to use with this connector. When users use the
+	 * connector, their requests will be authenticated with those system credentials, they need
 	 * not register their own account.
 	 *
 	 * In the web editor, the `/SystemAuthentication` shortcut will insert a snippet of a skeleton
@@ -7327,7 +7507,7 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	 *
 	 * @example
 	 * ```
-	 * pack.setSystemAuthentication({
+	 * connector.setSystemAuthentication({
 	 *   type: AuthenticationType.HeaderBearerToken,
 	 * });
 	 * ```
@@ -7339,41 +7519,44 @@ export declare class PackDefinitionBuilder extends BaseDefinitionBuilder impleme
 	 */
 	addAdminAuthentication(adminAuth: AdminAuthenticationDef): this;
 	/**
-	 * Adds the domain that this pack makes HTTP requests to.
-	 * For example, if your pack makes HTTP requests to "api.example.com",
+	 * Adds the domain that this connector makes HTTP requests to.
+	 * For example, if your connector makes HTTP requests to "api.example.com",
 	 * use "example.com" as your network domain.
 	 *
-	 * If your pack make HTTP requests, it must declare a network domain,
-	 * for security purposes. The platform enforces that your pack cannot make requests to
+	 * If your connector makes HTTP requests, it must declare a network domain,
+	 * for security purposes. The platform enforces that your connector cannot make requests to
 	 * any undeclared domains.
 	 *
-	 * You are allowed one network domain per pack by default. If your pack needs
+	 * You are allowed one network domain per connector by default. If your connector needs
 	 * to connect to multiple domains, contact Superhuman for approval.
 	 *
 	 * @example
 	 * ```
-	 * pack.addNetworkDomain('example.com');
+	 * connector.addNetworkDomain('example.com');
 	 * ```
 	 */
 	addNetworkDomain(...domain: string[]): this;
 	private _setDefaultConnectionRequirement;
 }
+/** @deprecated Use {@link ConnectorDefinitionBuilder}. */
+export declare class PackDefinitionBuilder extends ConnectorDefinitionBuilder {
+}
 declare class AgentDefinitionBuilder extends BaseDefinitionBuilder {
 	/**
-	 * See {@link PackVersionDefinition.agent}. Set via {@link setInstructions} and {@link setTools}.
+	 * See {@link ComponentVersionDefinition.agent}. Set via {@link setInstructions} and {@link setTools}.
 	 */
 	readonly agent: DeepReadonly<Partial<AgentDefinition>>;
 	/**
-	 * See {@link PackVersionDefinition.defaultTriggers}. Set via {@link setDefaultWhileWritingTrigger},
+	 * See {@link ComponentVersionDefinition.defaultTriggers}. Set via {@link setDefaultWhileWritingTrigger},
 	 * {@link addDefaultMailEventTrigger}, {@link addDefaultSlackEventTrigger},
 	 * {@link addDefaultNotetakerEventTrigger}, and {@link setDefaultScheduleTrigger}.
 	 */
 	readonly defaultTriggers?: DeepReadonly<DefaultTriggerDefinition[]>;
 	/**
-	 * See {@link PackVersionDefinition.suggestedPrompts}. Set via {@link addSuggestedPrompt}.
+	 * See {@link ComponentVersionDefinition.suggestedPrompts}. Set via {@link addSuggestedPrompt}.
 	 */
 	readonly suggestedPrompts?: DeepReadonly<SuggestedPrompt[]>;
-	/** See {@link PackVersionDefinition.defaultRoutines}. Set via {@link addDefaultRoutine}. */
+	/** See {@link ComponentVersionDefinition.defaultRoutines}. Set via {@link addDefaultRoutine}. */
 	readonly defaultRoutines?: DeepReadonly<AgentRoutineDefinition[]>;
 	constructor();
 	/**
@@ -7381,7 +7564,7 @@ declare class AgentDefinitionBuilder extends BaseDefinitionBuilder {
 	 *
 	 * @example
 	 * ```
-	 * pack.addDefaultRoutine({
+	 * agent.addDefaultRoutine({
 	 *   name: 'Daily brief',
 	 *   instructions: 'Summarize overnight changes. Include source links.',
 	 *   trigger: {
@@ -7397,7 +7580,7 @@ declare class AgentDefinitionBuilder extends BaseDefinitionBuilder {
 	 *
 	 * @example
 	 * ```
-	 * pack.setInstructions('You help a team run async standups. Keep replies short.');
+	 * agent.setInstructions('You help a team run async standups. Keep replies short.');
 	 * ```
 	 */
 	setInstructions(instructions: string): this;
@@ -7406,9 +7589,17 @@ declare class AgentDefinitionBuilder extends BaseDefinitionBuilder {
 	 *
 	 * @example
 	 * ```
-	 * pack.setTools({docs: true, mail: true, webSearch: {allowedDomains: ['docs.example.com']}});
-	 * pack.setTools({connectors: [{packId: 1234, formulas: [{formulaName: 'CreateTask'}]}]});
-	 * pack.setTools({connectors: [{packId: 5678, mcpTools: [{toolName: 'search_issues'}]}]});
+	 * agent.setTools({docs: true, mail: true, webSearch: {allowedDomains: ['docs.example.com']}});
+	 * agent.setTools({connectors: [{connectorId: 1234, formulas: [{formulaName: 'CreateTask'}]}]});
+	 * agent.setTools({connectors: [{connectorId: 5678, mcpTools: [{toolName: 'search_issues'}]}]});
+	 * // Needs 1001, and either 2001 or 2002.
+	 * agent.setTools({
+	 *   connectors: [
+	 *     {connectorId: 1001, required: true},
+	 *     {connectorId: 2001, required: {groupName: 'email'}},
+	 *     {connectorId: 2002, required: {groupName: 'email'}},
+	 *   ],
+	 * });
 	 * ```
 	 */
 	setTools({ docs, mail, webSearch, connectors }: AgentToolsDef): this;
@@ -7417,7 +7608,7 @@ declare class AgentDefinitionBuilder extends BaseDefinitionBuilder {
 	 *
 	 * @example
 	 * ```
-	 * pack.addSuggestedPrompt({
+	 * agent.addSuggestedPrompt({
 	 *   name: 'ticketStatus',
 	 *   displayName: 'Check ticket status',
 	 *   prompt: 'Show me the status of all open support tickets',
@@ -7430,7 +7621,7 @@ declare class AgentDefinitionBuilder extends BaseDefinitionBuilder {
 	 *
 	 * @example
 	 * ```
-	 * pack.setDefaultWhileWritingTrigger({
+	 * agent.setDefaultWhileWritingTrigger({
 	 *   condition: 'Offer a citation when the user asserts a statistic',
 	 *   surfaces: [sdk.ContextualTriggerSurface.Docs, sdk.ContextualTriggerSurface.Email],
 	 * });
@@ -7442,7 +7633,7 @@ declare class AgentDefinitionBuilder extends BaseDefinitionBuilder {
 	 *
 	 * @example
 	 * ```
-	 * pack.addDefaultMailEventTrigger({
+	 * agent.addDefaultMailEventTrigger({
 	 *   mailEventType: sdk.MailEventType.MessageReceived,
 	 *   filters: {
 	 *     conditions: [
@@ -7462,7 +7653,7 @@ declare class AgentDefinitionBuilder extends BaseDefinitionBuilder {
 	 *
 	 * @example
 	 * ```
-	 * pack.addDefaultSlackEventTrigger({
+	 * agent.addDefaultSlackEventTrigger({
 	 *   eventType: sdk.SlackEventType.MessageKeyword,
 	 *   keywords: ['deploy', 'rollback'],
 	 * });
@@ -7476,7 +7667,7 @@ declare class AgentDefinitionBuilder extends BaseDefinitionBuilder {
 	 *
 	 * @example
 	 * ```
-	 * pack.addDefaultNotetakerEventTrigger({
+	 * agent.addDefaultNotetakerEventTrigger({
 	 *   eventType: sdk.NotetakerEventType.MeetingSummaryCompleted,
 	 *   filters: {
 	 *     conditions: [
@@ -7498,16 +7689,21 @@ declare class AgentDefinitionBuilder extends BaseDefinitionBuilder {
 	 *
 	 * @example
 	 * ```
-	 * pack.setDefaultScheduleTrigger({
+	 * agent.setDefaultScheduleTrigger({
 	 *   rruleString: 'DTSTART:20260101T090000\nRRULE:FREQ=WEEKLY;BYDAY=MO',
 	 * });
 	 * ```
 	 */
 	setDefaultScheduleTrigger(scheduleTrigger: Omit<ScheduleTriggerDefinition, "kind">): this;
 }
+/**
+ * @hidden
+ * @deprecated Use {@link SyncTableMetadata}.
+ */
+export type PackSyncTable = SyncTableMetadata;
 /** @hidden */
-export type PackSyncTable = Omit<SyncTable, "getter" | "getName" | "getSchema" | "listDynamicUrls" | "searchDynamicUrls" | "getDisplayUrl"> & {
-	getter: PackFormulaMetadata;
+export type SyncTableMetadata = Omit<SyncTable, "getter" | "getName" | "getSchema" | "listDynamicUrls" | "searchDynamicUrls" | "getDisplayUrl"> & {
+	getter: FormulaMetadata;
 	isDynamic?: boolean;
 	hasDynamicSchema?: boolean;
 	getSchema?: MetadataFormulaMetadata;
@@ -7516,11 +7712,20 @@ export type PackSyncTable = Omit<SyncTable, "getter" | "getName" | "getSchema" |
 	listDynamicUrls?: MetadataFormulaMetadata;
 	searchDynamicUrls?: MetadataFormulaMetadata;
 };
-/** @hidden */
-export interface PackFormatMetadata extends Omit<Format, "matchers"> {
-	matchers: string[];
+/**
+ * @hidden
+ * @deprecated Use {@link FormatMetadata}.
+ */
+export interface PackFormatMetadata extends FormatMetadata {
 }
 /** @hidden */
+export interface FormatMetadata extends Omit<Format, "matchers"> {
+	matchers: string[];
+}
+/**
+ * @hidden
+ * @deprecated Skills are no longer used. Connectors should not set tools.
+ */
 export type SkillMetadata = Omit<Skill, "prompt">;
 /**
  * An agent definition without its instructions, for the browser-facing metadata.
@@ -7540,58 +7745,114 @@ export type AuthenticationMetadata = DistributiveOmit<Authentication, "getConnec
 	postSetup?: PostSetupMetadata[];
 };
 /**
- * Resource descriptor carried in versioned Pack metadata.
+ * @hidden
+ * @deprecated Use {@link Resource}.
+ */
+export interface PackResource extends Resource {
+}
+/**
+ * Resource descriptor carried in versioned component metadata.
  * @hidden
  */
-export interface PackResource {
+export interface Resource {
 	key: string;
 	mimeType: "text/html;profile=mcp-app";
+}
+/**
+ * @hidden
+ * @deprecated Use {@link ResourceArtifact}.
+ */
+export interface PackResourceArtifact extends ResourceArtifact {
 }
 /**
  * Resource body submitted separately from metadata.
  * @hidden
  */
-export interface PackResourceArtifact {
+export interface ResourceArtifact {
 	resourceKey: string;
 	content: string;
 }
+/**
+ * @hidden
+ * @deprecated Use {@link ComponentVersionMetadata}.
+ */
+export type PackVersionMetadata = ComponentVersionMetadata;
 /** @hidden */
-export type PackVersionMetadata = Omit<PackVersionDefinition, "formulas" | "formats" | "defaultAuthentication" | "syncTables"> & {
-	formulas: PackFormulaMetadata[];
+export type ComponentVersionMetadata = Omit<PackVersionDefinition, "formulas" | "formats" | "defaultAuthentication" | "syncTables"> & {
+	formulas: FormulaMetadata[];
 	/**
 	 * Shared resources for top-level formula UIs.
 	 * @hidden
 	 */
 	resources?: PackResource[];
 	formats: PackFormatMetadata[];
-	syncTables: PackSyncTable[];
+	syncTables: SyncTableMetadata[];
 	defaultAuthentication?: AuthenticationMetadata;
 };
+/**
+ * @hidden
+ * @deprecated Use {@link ComponentMetadata}.
+ */
+export type PackMetadata = ComponentMetadata;
 /** @hidden */
-export type PackMetadata = PackVersionMetadata & Pick<PackDefinition, "id" | "name" | "shortDescription" | "description" | "permissionsDescription" | "category" | "logoPath" | "exampleImages" | "exampleVideoIds" | "minimumFeatureSet" | "quotas" | "rateLimits" | "isSystem">;
+export type ComponentMetadata = ComponentVersionMetadata & Pick<PackDefinition, "id" | "name" | "shortDescription" | "description" | "permissionsDescription" | "category" | "logoPath" | "exampleImages" | "exampleVideoIds" | "minimumFeatureSet" | "quotas" | "rateLimits" | "isSystem">;
 /** @hidden */
-export type ExternalPackAuthenticationType = AuthenticationType;
+export type ExternalAuthenticationType = AuthenticationType;
+/**
+ * @hidden
+ * @deprecated Use {@link ExternalFormulas}.
+ */
+export type ExternalPackFormulas = ExternalFormulas;
 /** @hidden */
-export type ExternalPackFormulas = PackFormulaMetadata[];
+export type ExternalFormulas = FormulaMetadata[];
+/**
+ * @hidden
+ * @deprecated Use {@link ExternalObjectFormula}.
+ */
+export type ExternalObjectPackFormula = ExternalObjectFormula;
 /** @hidden */
-export type ExternalObjectPackFormula = ObjectPackFormulaMetadata;
+export type ExternalObjectFormula = ObjectFormulaMetadata;
+/**
+ * @hidden
+ * @deprecated Use {@link ExternalFormula}.
+ */
+export type ExternalPackFormula = ExternalFormula;
 /** @hidden */
-export type ExternalPackFormula = PackFormulaMetadata;
+export type ExternalFormula = FormulaMetadata;
+/**
+ * @hidden
+ * @deprecated Use {@link ExternalFormat}.
+ */
+export type ExternalPackFormat = ExternalFormat;
 /** @hidden */
-export type ExternalPackFormat = Omit<Format, "matchers"> & {
+export type ExternalFormat = Omit<Format, "matchers"> & {
 	matchers?: string[];
 };
+/**
+ * @hidden
+ * @deprecated Use {@link ExternalFormatMetadata}.
+ */
+export type ExternalPackFormatMetadata = ExternalFormatMetadata & PackFormatMetadata;
 /** @hidden */
-export type ExternalPackFormatMetadata = PackFormatMetadata;
+export type ExternalFormatMetadata = FormatMetadata;
 /** @hidden */
-export type ExternalSyncTable = PackSyncTable;
-/** @hidden */
+export type ExternalSyncTable = SyncTableMetadata;
+/**
+ * @hidden
+ * @deprecated Skills are no longer used. Connectors should not set tools.
+ */
 export type ExternalSkill = SkillMetadata;
-export type BasePackVersionMetadata = Omit<PackVersionMetadata, "defaultAuthentication" | "systemConnectionAuthentication" | "formulas" | "formats" | "syncTables" | "skills" | "agent" | "defaultTriggers" | "defaultRoutines">;
+export type BasePackVersionMetadata = Omit<ComponentVersionMetadata, "defaultAuthentication" | "systemConnectionAuthentication" | "formulas" | "formats" | "syncTables" | "skills" | "agent" | "defaultTriggers" | "defaultRoutines">;
+/**
+ * @hidden
+ * @deprecated Use {@link ExternalComponentVersionMetadata}.
+ */
+export interface ExternalPackVersionMetadata extends ExternalComponentVersionMetadata {
+}
 /** @hidden */
-export interface ExternalPackVersionMetadata extends BasePackVersionMetadata {
+export interface ExternalComponentVersionMetadata extends BasePackVersionMetadata {
 	authentication: {
-		type: ExternalPackAuthenticationType;
+		type: ExternalAuthenticationType;
 		params?: Array<{
 			name: string;
 			description: string;
@@ -7609,17 +7870,31 @@ export interface ExternalPackVersionMetadata extends BasePackVersionMetadata {
 		endpointKey?: string;
 	};
 	instructionsUrl?: string;
-	formulas?: ExternalPackFormulas;
-	formats?: ExternalPackFormat[];
+	formulas?: ExternalFormulas;
+	formats?: ExternalFormat[];
 	syncTables?: ExternalSyncTable[];
+	/**
+	 * @deprecated Skills are no longer used. Connectors should not set tools.
+	 */
 	skills?: ExternalSkill[];
 	agent?: AgentMetadata;
 }
+/**
+ * @hidden
+ * @deprecated Use {@link ExternalComponentMetadata}.
+ */
+export type ExternalPackMetadata = ExternalComponentMetadata;
 /** @hidden */
-export type ExternalPackMetadata = ExternalPackVersionMetadata & Pick<PackMetadata, "id" | "name" | "shortDescription" | "description" | "permissionsDescription" | "category" | "logoPath" | "exampleImages" | "exampleVideoIds" | "minimumFeatureSet" | "quotas" | "rateLimits" | "isSystem">;
+export type ExternalComponentMetadata = ExternalPackVersionMetadata & Pick<ComponentMetadata, "id" | "name" | "shortDescription" | "description" | "permissionsDescription" | "category" | "logoPath" | "exampleImages" | "exampleVideoIds" | "minimumFeatureSet" | "quotas" | "rateLimits" | "isSystem">;
+/**
+ * @hidden
+ * @deprecated Use {@link ComponentUpload}.
+ */
+export interface PackUpload extends ComponentUpload {
+}
 /** @hidden */
-export interface PackUpload {
-	metadata: PackVersionMetadata | PackMetadata;
+export interface ComponentUpload {
+	metadata: ComponentVersionMetadata | ComponentMetadata;
 	/**
 	 * Resource bodies submitted separately from metadata.
 	 * @hidden
@@ -7663,7 +7938,7 @@ declare function join(...tokens: string[]): string;
 /**
  * A helper to extract properties fromKeys from a schema object. This is mostly useful
  * in processing the context.sync.schema in a sync formula, where the schema would only
- * include a subset of properties which were manually selected by the Pack user.
+ * include a subset of properties which were manually selected by the connector user.
  */
 export declare function getEffectivePropertyKeysFromSchema(schema: Schema): string[] | undefined;
 /** Constants for working with SVG images. */

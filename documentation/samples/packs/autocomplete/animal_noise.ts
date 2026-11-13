@@ -1,8 +1,8 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Returns the noise an animal makes. Ex) "cow" => "moo".
-pack.addFormula({
+connector.addFormula({
   name: "AnimalNoise",
   description: "Gets the noise than an animal makes.",
   parameters: [

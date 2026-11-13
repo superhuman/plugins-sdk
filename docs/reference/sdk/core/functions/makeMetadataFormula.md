@@ -17,7 +17,7 @@ It is uncommon to ever need to call this directly, normally you would just defin
 function implementation, and the platform will wrap it with this to generate a full metadata formula
 definition.
 
-All function-like behavior in a pack is ultimately implemented using formulas, like you would
+All function-like behavior in a connector is ultimately implemented using formulas, like you would
 define using [makeFormula](makeFormula.md). That is, a formula with a name, description, parameter list,
 and an `execute` function body. This includes supporting utilities like parameter autocomplete functions.
 This wrapper simply adds the surrounding boilerplate for a given JavaScript function so that
@@ -28,7 +28,7 @@ it is shaped like a formula to be used at runtime.
 | Type Parameter | Default type |
 | ------ | ------ |
 | `ContextT` *extends* [`ExecutionContext`](../interfaces/ExecutionContext.md) | - |
-| `ReturnT` *extends* [`PackFormulaResult`](../type-aliases/PackFormulaResult.md) | [`LegacyDefaultMetadataReturnType`](../type-aliases/LegacyDefaultMetadataReturnType.md) |
+| `ReturnT` *extends* [`FormulaResult`](../type-aliases/FormulaResult.md) | [`LegacyDefaultMetadataReturnType`](../type-aliases/LegacyDefaultMetadataReturnType.md) |
 
 ## Parameters
 

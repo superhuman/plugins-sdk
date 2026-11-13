@@ -1,7 +1,7 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addFormula({
+connector.addFormula({
   name: "Longest",
   description: "Given a list of strings, returns the longest one.",
   parameters: [

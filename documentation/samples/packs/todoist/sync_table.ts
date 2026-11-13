@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A schema defining the data in the sync table.
 const TaskSchema = sdk.makeObjectSchema({
@@ -29,7 +29,7 @@ const TaskSchema = sdk.makeObjectSchema({
   featuredProperties: ["description", "url"],
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   schema: TaskSchema,
   identityName: "Task",
@@ -74,11 +74,11 @@ pack.addSyncTable({
   },
 });
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 
 // Setup authentication using a Todoist API token.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });

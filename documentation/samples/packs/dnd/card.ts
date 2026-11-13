@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A schema defining the card, including all of metadata what specifically to
 // highlight in the card.
@@ -72,7 +72,7 @@ let SpellSchema = sdk.makeObjectSchema({
 // Formula that renders a card for a spell given its name. This will be shown
 // a "Card" in the Pack's list of building blocks, but is also a regular formula
 // that can be used elsewhere.
-pack.addFormula({
+connector.addFormula({
   name: "Spell",
   description: "Gets information about a spell, given its name.",
   parameters: [
@@ -112,7 +112,7 @@ pack.addFormula({
 });
 
 // Allow requests to the DND API.
-pack.addNetworkDomain("dnd5eapi.co");
+connector.addNetworkDomain("dnd5eapi.co");
 
 // Fetch a batch of spells from the API and return them formatted to match the
 // schema. This utility function is shared by the formula and sync table.

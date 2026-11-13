@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.throwOnDynamicSchemaWithJsOptionsFunction = exports.withIdentity = exports.makeReferenceSchemaFromObjectSchema = exports.normalizeObjectSchema = exports.normalizeSchema = exports.normalizePropertyValuePathIntoSchemaPath = exports.isCustomIndexDefinition = exports.isCategorizationIndexDefinition = exports.normalizeSchemaKeyPath = exports.normalizeSchemaKey = exports.makeObjectSchema = exports.makeSchema = exports.generateSchema = exports.maybeUnwrapArraySchema = exports.maybeSchemaOptionsValue = exports.unwrappedSchemaSupportsOptions = exports.isArray = exports.isObject = exports.makeAttributionNode = exports.AttributionNodeType = exports.PermissionType = exports.PrincipalType = exports.LifecycleBehavior = exports.PermissionsBehavior = exports.ContentCategorizationType = exports.IndexingStrategy = exports.PropertyLabelValueTemplate = exports.SimpleStringHintValueTypes = exports.DurationUnit = exports.ImageShapeStyle = exports.ImageCornerStyle = exports.ImageOutline = exports.LinkDisplayType = exports.EmailDisplayType = exports.ScaleIconSet = exports.CurrencyFormat = exports.AutocompleteHintValueTypes = exports.ObjectHintValueTypes = exports.BooleanHintValueTypes = exports.NumberHintValueTypes = exports.StringHintValueTypes = exports.ValueHintType = exports.ValueType = void 0;
+exports.throwOnDynamicSchemaWithJsOptionsFunction = exports.withIdentity = exports.makeReferenceSchemaFromObjectSchema = exports.normalizeObjectSchema = exports.normalizeSchema = exports.normalizePropertyValuePathIntoSchemaPath = exports.isCustomIndexDefinition = exports.isCategorizationIndexDefinition = exports.normalizeSchemaKeyPath = exports.normalizeSchemaKey = exports.makeObjectSchema = exports.makeSchema = exports.generateSchema = exports.maybeUnwrapArraySchema = exports.maybeSchemaOptionsValue = exports.unwrappedSchemaSupportsOptions = exports.isArray = exports.isObject = exports.makeAttributionNode = exports.AttributionNodeType = exports.PermissionType = exports.PrincipalType = exports.LifecycleBehavior = exports.PermissionsBehavior = exports.ContentCategorizationType = exports.IndexingStrategy = exports.PropertyLabelValueTemplate = exports.normalizeSchemaIdentities = exports.normalizeIdentity = exports.SimpleStringHintValueTypes = exports.DurationUnit = exports.ImageShapeStyle = exports.ImageCornerStyle = exports.ImageOutline = exports.LinkDisplayType = exports.EmailDisplayType = exports.ScaleIconSet = exports.CurrencyFormat = exports.AutocompleteHintValueTypes = exports.ObjectHintValueTypes = exports.BooleanHintValueTypes = exports.NumberHintValueTypes = exports.StringHintValueTypes = exports.ValueHintType = exports.ValueType = void 0;
 const ensure_1 = require("./helpers/ensure");
 const object_utils_1 = require("./helpers/object_utils");
 const ensure_2 = require("./helpers/ensure");
@@ -374,6 +374,29 @@ exports.SimpleStringHintValueTypes = [
     ValueHintType.Email,
     ValueHintType.CodaInternalRichText,
 ];
+/** @internal Resolve identity aliases without changing the author's input. */
+function normalizeIdentity(identity) {
+    var _a;
+    const connectorId = (_a = identity.connectorId) !== null && _a !== void 0 ? _a : identity.packId;
+    return connectorId === undefined ? { ...identity } : { ...identity, connectorId, packId: connectorId };
+}
+exports.normalizeIdentity = normalizeIdentity;
+function normalizeSchemaIdentities(schema) {
+    if (isArray(schema)) {
+        return { ...schema, ...(schema.items && { items: normalizeSchemaIdentities(schema.items) }) };
+    }
+    if (isObject(schema)) {
+        return {
+            ...schema,
+            ...(schema.identity && { identity: normalizeIdentity(schema.identity) }),
+            ...(schema.properties && {
+                properties: Object.fromEntries(Object.entries(schema.properties).map(([key, property]) => [key, normalizeSchemaIdentities(property)])),
+            }),
+        };
+    }
+    return { ...schema };
+}
+exports.normalizeSchemaIdentities = normalizeSchemaIdentities;
 /**
  * An identifier for the value of a property for use in the {@link PropertyIdentifierDetails.label} field.
  * When used, this will be substituted with the value of the property for the final output of the label.
@@ -476,7 +499,7 @@ var AttributionNodeType;
     AttributionNodeType[AttributionNodeType["Image"] = 3] = "Image";
 })(AttributionNodeType || (exports.AttributionNodeType = AttributionNodeType = {}));
 /**
- * A helper for constructing attribution text, links, or images that render along with a Pack value.
+ * A helper for constructing attribution text, links, or images that render along with a connector value.
  *
  * Many APIs have licensing requirements that ask for specific attribution to be included
  * when using their data. For example, a stock photo API may require attribution text
@@ -525,7 +548,7 @@ exports.maybeUnwrapArraySchema = maybeUnwrapArraySchema;
  * that describes it.
  *
  * It is vastly preferable to define a schema manually. A clear and accurate schema is one of the
- * fundamentals of a good pack. However, for data that is truly dynamic for which a schema can't
+ * fundamentals of a good connector. However, for data that is truly dynamic for which a schema can't
  * be known in advance nor can a function be written to generate a dynamic schema from other
  * inputs, it may be useful to us this helper to sniff the return value and generate a basic
  * inferred schema from it.

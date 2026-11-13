@@ -10,7 +10,7 @@ search:
 
 # Interface: MCPServer
 
-Definition of an MCP server that the pack can connect to.
+Definition of an MCP server that the connector can connect to.
 
 ## Properties
 

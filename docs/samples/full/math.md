@@ -16,7 +16,7 @@ This Pack contains a few mathematical formulas, including the [greatest common d
 === "pack.ts"
     ```ts
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
     // A "numbers" parameter shared by both formulas.
     const NumbersParameter = sdk.makeParameter({
@@ -25,7 +25,7 @@ This Pack contains a few mathematical formulas, including the [greatest common d
       description: "The numbers to perform the calculation on.",
     });
 
-    pack.addFormula({
+    connector.addFormula({
       name: "GCD",
       description: "Returns the greatest common divisor for a list of numbers.",
       parameters: [
@@ -54,7 +54,7 @@ This Pack contains a few mathematical formulas, including the [greatest common d
       },
     });
 
-    pack.addFormula({
+    connector.addFormula({
       name: "LCM",
       description: "Returns the least common multiple for a list of numbers.",
       parameters: [

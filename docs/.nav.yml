@@ -1,6 +1,7 @@
 append_unmatched: true
 nav:
   - index.md
+  - agents
   - guides
   - tutorials
   - samples

@@ -2,6 +2,8 @@ import type {Authentication} from '../types';
 import type {AuthenticationMetadata} from '../compiled_types';
 import {AuthenticationType} from '../types';
 import type {ExecutionContext} from '../api';
+import type {ExternalPackMetadata} from '../compiled_types';
+import type {ExternalPackVersionMetadata} from '../compiled_types';
 import type {Format} from '../types';
 import type {Formula} from '../api';
 import type {GenericSyncTable} from '../api';
@@ -19,8 +21,10 @@ import type {PackVersionMetadata} from '../compiled_types';
 import type {ParameterValidationResult} from '../api';
 import type {PostSetup} from '../types';
 import type {PostSetupMetadata} from '../compiled_types';
+import type {Schema} from '../schema';
 import type {TypedPackFormula} from '../api';
 import {isDynamicSyncTable} from '../api';
+import {normalizeSchemaIdentities} from '../schema';
 
 // Legacy metadata compilation kept around until we migrate first-party packs.
 export function compilePackMetadata(manifest: PackDefinition): PackMetadata;
@@ -43,7 +47,49 @@ export function compilePackMetadata(manifest: PackVersionDefinition): PackVersio
     skills,
   };
 
-  return metadata;
+  return normalizePackMetadataIdentities(metadata);
+}
+
+interface MetadataWithSchemas {
+  formulas?: PackFormulaMetadata[] | Record<string, PackFormulaMetadata[]>;
+  syncTables?: PackSyncTable[];
+}
+
+/** @internal Hydrate schema identity aliases in compiled or historically stored metadata. */
+export function normalizePackMetadataIdentities(metadata: PackMetadata): PackMetadata;
+export function normalizePackMetadataIdentities(metadata: PackVersionMetadata): PackVersionMetadata;
+export function normalizePackMetadataIdentities(metadata: ExternalPackMetadata): ExternalPackMetadata;
+export function normalizePackMetadataIdentities(metadata: ExternalPackVersionMetadata): ExternalPackVersionMetadata;
+export function normalizePackMetadataIdentities(metadata: MetadataWithSchemas): MetadataWithSchemas {
+  return {
+    ...metadata,
+    ...(metadata.formulas && {
+      formulas: Array.isArray(metadata.formulas)
+        ? metadata.formulas.map(withNormalizedSchema)
+        : Object.fromEntries(
+            Object.entries(metadata.formulas).map(([namespace, formulas]) => [
+              namespace,
+              formulas.map(withNormalizedSchema),
+            ]),
+          ),
+    }),
+    ...(metadata.syncTables && {
+      syncTables: metadata.syncTables.map(table => ({
+        ...withNormalizedSchema(table),
+        getter: withNormalizedSchema(table.getter),
+        ...(table.namedPropertyOptions && {
+          namedPropertyOptions: Object.fromEntries(
+            Object.entries(table.namedPropertyOptions).map(([name, formula]) => [name, withNormalizedSchema(formula)]),
+          ),
+        }),
+        ...(table.getSchema && {getSchema: withNormalizedSchema(table.getSchema)}),
+      })),
+    }),
+  };
+}
+
+function withNormalizedSchema<T extends {schema?: Schema}>(value: T): T {
+  return {...value, ...(value.schema && {schema: normalizeSchemaIdentities(value.schema)})};
 }
 
 function compileFormatsMetadata(formats: Format[]): PackFormatMetadata[] {

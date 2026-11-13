@@ -7,7 +7,7 @@ hide:
 
 # Sample code
 
-No need to start from scratch; we've got dozens of sample Packs for your to browse, copy, and learn from. Small Packs that demonstrate a single feature are organized by topic, while the larger and more complete Packs each have their own page.
+No need to start from scratch; we've got dozens of sample Packs for you to browse, copy, and learn from. Small Packs that demonstrate a single feature are organized by topic, while the larger and more complete Packs each have their own page.
 
 {% for section in page.parent.children|selectattr("is_section") %}
 

@@ -12,11 +12,11 @@ search:
 
 > **UserAuthenticationDef** = [`AuthenticationDef`](AuthenticationDef.md) & `object`
 
-A full definition of a pack's user authentication settings, used in
-[PackDefinitionBuilder.setUserAuthentication](../classes/PackDefinitionBuilder.md#setuserauthentication).
+A full definition of a connector's user authentication settings, used in
+[ConnectorDefinitionBuilder.setUserAuthentication](../classes/ConnectorDefinitionBuilder.md#setuserauthentication).
 
 ## Type Declaration
 
 | Name | Type | Description |
 | ------ | ------ | ------ |
-| `defaultConnectionRequirement?` | [`ConnectionRequirement`](../enumerations/ConnectionRequirement.md) | It can be annoying to set `connectionRequirement` on every building block in a Pack. Use this setting in your Pack's auth settings to quickly say "every building block in this Pack requires an account". Without a connectionRequirement, building blocks will be assumed to not need account connections. |
+| `defaultConnectionRequirement?` | [`ConnectionRequirement`](../enumerations/ConnectionRequirement.md) | It can be annoying to set `connectionRequirement` on every building block in a connector. Use this setting in your connector's auth settings to quickly say "every building block in this connector requires an account". Without a connectionRequirement, building blocks will be assumed to not need account connections. |

@@ -26,7 +26,7 @@ Column formats provided by Packs appear as choices in the **Column type** menu.
 A column format is just a thin wrapper around an existing formula in your Pack, instructing Superhuman Docs to run that formula on the column values before rendering them. The column format itself is just metadata, deferring the actual work of calculating the column value to the formula.
 
 ```ts
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Reversed Text",
   instructions: "Whatever text you enter into this column will be reversed.",
   // The formula specified below will be run on the content of the column to
@@ -35,7 +35,7 @@ pack.addColumnFormat({
   formulaName: "Reverse",
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "Reverse",
   // ...
 });
@@ -86,7 +86,7 @@ Column formats can use authentication to access private resources. The account u
 When creating a new column, Superhuman Docs tries to guess the type of the column based on the first data entered. Column formats from Packs can be included in this process by declaring matchers. Matchers are [regular expressions][mdn_regex] that define which cell values the column format should be applied to. If one of the regular expressions matches the cell value the column format will be applied automatically.
 
 ```ts
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Task",
   formulaName: "Task",
   // If the first values entered into a new column match these patterns then

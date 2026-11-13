@@ -69,7 +69,7 @@ This is not an issue for most APIs, but if you are using a `GET` request to retu
 To fully disable caching for a formula you must ensure you set the `cacheTtlSecs` to zero on the formula and on any fetcher requests used by the formula.
 
 ```{.ts hl_lines="3 8"}
-pack.addFormula({
+connector.addFormula({
   // ...
   cacheTtlSecs: 0, // Disable formula caching.
   execute: async function ([], context) {

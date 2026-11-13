@@ -1,11 +1,11 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Jira Cloud API, using OAuth2 with a
 // post-submit step to select the instance to connect to. Note that this code
 // isn't compatible with Jira Data Center.
 // See https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://auth.atlassian.com/authorize",
   tokenUrl: "https://auth.atlassian.com/oauth/token",
@@ -72,5 +72,5 @@ async function getUser(context: sdk.ExecutionContext) {
   return response.body;
 }
 
-// Allow the pack to make requests to Jira.
-pack.addNetworkDomain("atlassian.com");
+// Allow the connector to make requests to Jira.
+connector.addNetworkDomain("atlassian.com");

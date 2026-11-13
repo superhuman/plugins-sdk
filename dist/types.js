@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SuggestionProviderType = exports.HttpStatusCode = exports.NotetakerFilterField = exports.NotetakerEventType = exports.SlackEventType = exports.MailFilterField = exports.MailEventType = exports.FilterCombinator = exports.FilterOperator = exports.EventTriggerType = exports.DefaultTriggerKind = exports.ContextualTriggerSurface = exports.ContextualTriggerDecorationStyle = exports.ContextualTriggerSuggestionColor = exports.ContextualTriggerAssistMode = exports.SkillModel = exports.EmbeddedContentType = exports.ScreenAnnotationType = exports.KnowledgeToolSourceType = exports.ToolType = exports.SyncInterval = exports.QuotaLimitType = exports.FeatureSet = exports.ReservedAuthenticationNames = exports.TokenExchangeCredentialsLocation = exports.PostSetupType = exports.AuthenticationType = exports.PackCategory = void 0;
+exports.SuggestionProviderType = exports.HttpStatusCode = exports.NotetakerFilterField = exports.NotetakerEventType = exports.SlackEventType = exports.MailFilterField = exports.MailEventType = exports.FilterCombinator = exports.FilterOperator = exports.EventTriggerType = exports.DefaultTriggerKind = exports.ContextualTriggerSurface = exports.ContextualTriggerDecorationStyle = exports.ContextualTriggerSuggestionColor = exports.ContextualTriggerAssistMode = exports.SkillModel = exports.EmbeddedContentType = exports.ScreenAnnotationType = exports.KnowledgeToolSourceType = exports.ToolType = exports.SyncInterval = exports.QuotaLimitType = exports.FeatureSet = exports.ReservedAuthenticationNames = exports.TokenExchangeCredentialsLocation = exports.EndpointSetBy = exports.AdminSetupRequirement = exports.PostSetupType = exports.AuthenticationType = exports.PackCategory = void 0;
 /**
  * @deprecated
  */
@@ -25,7 +25,7 @@ var PackCategory;
     PackCategory["Weather"] = "Weather";
 })(PackCategory || (exports.PackCategory = PackCategory = {}));
 /**
- * Authentication types supported by Packs.
+ * Authentication types supported by Connectors.
  *
  * @see [Authenticating with other services](https://docs.superhuman.com/packs/build/latest/guides/basics/authentication/)
  * @see [Authentication samples](https://docs.superhuman.com/packs/build/latest/samples/topic/authentication/)
@@ -33,7 +33,7 @@ var PackCategory;
 var AuthenticationType;
 (function (AuthenticationType) {
     /**
-     * Indicates this pack does not use authentication. You may also omit an authentication declaration entirely.
+     * Indicates this connector does not use authentication. You may also omit an authentication declaration entirely.
      */
     AuthenticationType["None"] = "None";
     /**
@@ -117,7 +117,7 @@ var AuthenticationType;
      */
     AuthenticationType["CodaApiHeaderBearerToken"] = "CodaApiHeaderBearerToken";
     /**
-     * Only for use by Superhuman-authored packs.
+     * Only for use by Superhuman-authored connectors.
      *
      * @see {@link GoogleDomainWideDelegationAuthentication}
      * TODO(neal): Unhide.
@@ -125,7 +125,7 @@ var AuthenticationType;
      */
     AuthenticationType["GoogleDomainWideDelegation"] = "GoogleDomainWideDelegation";
     /**
-     * Only for use by Superhuman-authored packs.
+     * Only for use by Superhuman-authored connectors.
      *
      * @see {@link GoogleServiceAccountAuthentication}
      * TODO(neal): Unhide.
@@ -133,19 +133,19 @@ var AuthenticationType;
      */
     AuthenticationType["GoogleServiceAccount"] = "GoogleServiceAccount";
     /**
-     * Only for use by Superhuman-authored packs.
+     * Only for use by Superhuman-authored connectors.
      *
      * App-only Microsoft Entra authentication with a customer-provided certificate. The connection
      * stores the directory (tenant) id, one or more application (client) ids, the certificate, and
      * its private key. The platform signs a client assertion and mints access tokens per request
-     * audience; the pack never sees the private key.
+     * audience; the connector never sees the private key.
      *
      * @see {@link EntraCertificateAuthentication}
      * @hidden
      */
     AuthenticationType["EntraCertificate"] = "EntraCertificate";
     /**
-     * Only for use by Superhuman-authored packs.
+     * Only for use by Superhuman-authored connectors.
      *
      * @see {@link VariousAuthentication}
      * @hidden
@@ -162,6 +162,40 @@ var PostSetupType;
      */
     PostSetupType["SetEndpoint"] = "SetEndPoint";
 })(PostSetupType || (exports.PostSetupType = PostSetupType = {}));
+/**
+ * Something an organization's admin must supply in the pack configuration before members can
+ * connect. Used in {@link BaseOAuthAuthentication.requiresAdminSetup}.
+ *
+ * @hidden In early access, live in production but the shape may change.
+ */
+var AdminSetupRequirement;
+(function (AdminSetupRequirement) {
+    /**
+     * The client ID and client secret of an OAuth app the admin registers with the service. The pack
+     * has no OAuth app of its own. With client credentials authentication, the organization shares
+     * one connection made with them.
+     */
+    AdminSetupRequirement["OAuthClientIdAndSecret"] = "OAuthClientIdAndSecret";
+    /**
+     * The authorization URL and token URL of the admin's OAuth app. Use this when the URLs in the
+     * manifest are not right for every customer and can't be built from the endpoint URL. Only
+     * accepted on {@link AuthenticationType.OAuth2}.
+     */
+    AdminSetupRequirement["OAuthUrls"] = "OAuthUrls";
+})(AdminSetupRequirement || (exports.AdminSetupRequirement = AdminSetupRequirement = {}));
+/**
+ * Who supplies a pack's endpoint URL. Used in {@link BaseAuthentication.endpointSetBy}.
+ *
+ * @hidden In early access, live in production but the shape may change.
+ */
+var EndpointSetBy;
+(function (EndpointSetBy) {
+    /**
+     * An organization's admin sets the endpoint URL once in the pack configuration. Members are never
+     * asked for it.
+     */
+    EndpointSetBy["Admin"] = "Admin";
+})(EndpointSetBy || (exports.EndpointSetBy = EndpointSetBy = {}));
 /**
  * Where to pass the client credentials (client ID and client secret) when making the OAuth2 token
  * exchange request. Used in {@link OAuth2StaticCodeAuthentication.credentialsLocation}.
@@ -237,24 +271,28 @@ var SyncInterval;
 var ToolType;
 (function (ToolType) {
     /**
-     * Allows formulas within a pack to be used as tools.
+     * Allows formulas within a connector to be used as tools.
      */
     ToolType["Pack"] = "Pack";
     /**
      * Allows knowledge to be used as a tool.
+     * @deprecated Skills are no longer used. Connectors should not set tools.
      */
     ToolType["Knowledge"] = "Knowledge";
     /**
      * Allows screen annotations to be used as tools.
+     * @deprecated Skills are no longer used. Connectors should not set tools.
      */
     ToolType["ScreenAnnotation"] = "ScreenAnnotation";
     /**
      * Tool that provides access to MCP capabilities.
      * @internal
+     * @deprecated Skills are no longer used. Connectors should not set tools.
      */
     ToolType["MCP"] = "MCP";
     /**
      * Tool that provides access to contact resolution capabilities.
+     * @deprecated Skills are no longer used. Connectors should not set tools.
      */
     ToolType["ContactResolution"] = "ContactResolution";
     /**
@@ -269,6 +307,7 @@ var ToolType;
     /**
      * Tool that allows creation of the content that can be embedded in the response.
      * @internal
+     * @deprecated Skills are no longer used. Connectors should not set tools.
      */
     ToolType["EmbeddedContent"] = "EmbeddedContent";
     /**
@@ -279,6 +318,7 @@ var ToolType;
 })(ToolType || (exports.ToolType = ToolType = {}));
 /**
  * The type of knowledge source to use.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 var KnowledgeToolSourceType;
 (function (KnowledgeToolSourceType) {
@@ -294,6 +334,7 @@ var KnowledgeToolSourceType;
 })(KnowledgeToolSourceType || (exports.KnowledgeToolSourceType = KnowledgeToolSourceType = {}));
 /**
  * The type of screen annotation source to use.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 var ScreenAnnotationType;
 (function (ScreenAnnotationType) {
@@ -310,6 +351,7 @@ var ScreenAnnotationType;
 /**
  * The type of the content that can be embedded in the response.
  * @hidden In development.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 var EmbeddedContentType;
 (function (EmbeddedContentType) {
@@ -333,6 +375,7 @@ var EmbeddedContentType;
  * ```ts
  * models: [{model: SkillModel.OpenAIGPT4}]
  * ```
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 var SkillModel;
 (function (SkillModel) {

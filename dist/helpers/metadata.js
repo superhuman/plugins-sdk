@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.compileMetadataFormulaMetadata = exports.compileSyncTable = exports.compileFormulaMetadata = exports.compileFormulasMetadata = exports.compilePackMetadata = void 0;
+exports.compileMetadataFormulaMetadata = exports.compileSyncTable = exports.compileFormulaMetadata = exports.compileFormulasMetadata = exports.normalizePackMetadataIdentities = exports.compilePackMetadata = void 0;
 const types_1 = require("../types");
 const api_1 = require("../api");
+const schema_1 = require("../schema");
 function compilePackMetadata(manifest) {
     const { formats, formulas, formulaNamespace, syncTables, defaultAuthentication, skills, ...definition } = manifest;
     const compiledFormats = compileFormatsMetadata(formats || []);
@@ -20,9 +21,36 @@ function compilePackMetadata(manifest) {
         // Skills can be passed through as they are pure JSON.
         skills,
     };
-    return metadata;
+    return normalizePackMetadataIdentities(metadata);
 }
 exports.compilePackMetadata = compilePackMetadata;
+function normalizePackMetadataIdentities(metadata) {
+    return {
+        ...metadata,
+        ...(metadata.formulas && {
+            formulas: Array.isArray(metadata.formulas)
+                ? metadata.formulas.map(withNormalizedSchema)
+                : Object.fromEntries(Object.entries(metadata.formulas).map(([namespace, formulas]) => [
+                    namespace,
+                    formulas.map(withNormalizedSchema),
+                ])),
+        }),
+        ...(metadata.syncTables && {
+            syncTables: metadata.syncTables.map(table => ({
+                ...withNormalizedSchema(table),
+                getter: withNormalizedSchema(table.getter),
+                ...(table.namedPropertyOptions && {
+                    namedPropertyOptions: Object.fromEntries(Object.entries(table.namedPropertyOptions).map(([name, formula]) => [name, withNormalizedSchema(formula)])),
+                }),
+                ...(table.getSchema && { getSchema: withNormalizedSchema(table.getSchema) }),
+            })),
+        }),
+    };
+}
+exports.normalizePackMetadataIdentities = normalizePackMetadataIdentities;
+function withNormalizedSchema(value) {
+    return { ...value, ...(value.schema && { schema: (0, schema_1.normalizeSchemaIdentities)(value.schema) }) };
+}
 function compileFormatsMetadata(formats) {
     return formats.map(format => {
         return {

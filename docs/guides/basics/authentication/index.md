@@ -67,7 +67,7 @@ There are two supported forms of authentication: per-user and system-wide.
 User authentication requires that users of the Pack provide their own credentials. This is the most common form of authentication, as it allows the Pack to access the private data of each user. To add per-user authentication use the `setUserAuthentication()` method:
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   // A variety of different authentication types are supported.
   type: sdk.AuthenticationType.HeaderBearerToken,
   // Additional settings...
@@ -81,7 +81,7 @@ The types of authentication supported, as well as the additional settings, are d
 System authentication requires the Pack maker to provide a single set of credentials that all users will share. This form of authentication is often used for APIs that require an API key or token, but don't provide access to private data. To add system-wide authentication use the `setSystemAuthentication()` method:
 
 ```ts
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   // A variety of different authentication types are supported.
   type: sdk.AuthenticationType.HeaderBearerToken,
   // Additional settings...
@@ -119,7 +119,7 @@ Many APIs use tokens or keys for authentication. Per-user tokens are typically g
     Can be implemented using:
 
     ```ts
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.HeaderBearerToken,
     });
     ```
@@ -139,7 +139,7 @@ Many APIs use tokens or keys for authentication. Per-user tokens are typically g
     Can be implemented using:
 
     ```ts
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.CustomHeaderToken,
       headerName: "X-API-Key",
     });
@@ -161,7 +161,7 @@ Many APIs use tokens or keys for authentication. Per-user tokens are typically g
     Can be implemented using:
 
     ```ts
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.MultiHeaderToken,
       headers: [
         { name: "X-API-Key", description: "The key." },
@@ -184,7 +184,7 @@ Many APIs use tokens or keys for authentication. Per-user tokens are typically g
     Can be implemented using:
 
     ```ts
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.QueryParamToken,
       paramName: "key",
     });
@@ -204,7 +204,7 @@ Many APIs use tokens or keys for authentication. Per-user tokens are typically g
     Can be implemented using:
 
     ```ts
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.MultiQueryParamToken,
       params: [
         { name: "key", description: "The key." },
@@ -224,7 +224,7 @@ When using per-user authentication, the user will be prompted to enter their tok
 !!! tip "Set an instructions URL"
     It may not be obvious to users where they can find their API token. You can set the `instructionsUrl` field of the authentication configuration to a relevant help center article, or in some cases directly to the screen within the application that lists the API token. The platform will link to this URL in the dialog.
     ```ts
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.HeaderBearerToken,
       instructionsUrl: "https://help.example.com/where-is-my-api-token",
     });
@@ -254,7 +254,7 @@ Content-Type: application/json
 This can be accomplished using a `Custom` authentication configuration like:
 
 ```ts
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.Custom,
   params: [
     { name: "key", description: "The API key" },
@@ -273,7 +273,7 @@ Unlike with other authentication types where the values are added to your fetch 
 
 {% raw %}
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   execute: async function ([], context) {
     let invocationToken = context.invocationToken;
@@ -314,7 +314,7 @@ Authorization: Basic <base64 encoded username & password>
 You can support this by using [`WebBasic`][WebBasic] authentication in your Pack:
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.WebBasic,
 });
 ```
@@ -326,7 +326,7 @@ pack.setUserAuthentication({
 !!! tip "Customize the dialog"
     Sometimes Basic authentication is used for other types of identifiers and secrets, and the terms "Username" and "Password" in the dialog can be misleading. You can customize the dialog using the `uxConfig` field of the authentication configuration.
     ```ts
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.WebBasic,
       uxConfig: {
         placeholderUsername: "Account ID",
@@ -354,7 +354,7 @@ Authorization: Bearer <token>
 Can be implemented using:
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.CodaApiHeaderBearerToken,
 });
 ```
@@ -374,16 +374,16 @@ Amazon Web Services (AWS) use a proprietary authentication scheme, and the platf
 If a Pack includes any form of user authentication then by default all of the building blocks within that Pack are assumed to require a connected account. You can set the `connectionRequirement` property on individual formulas or sync tables to make an account optional or not used.
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   // ...
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "NeedsAuthFormula",
   // ...
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "NoAuthNeededFormula",
   // ...
   connectionRequirement: sdk.ConnectionRequirement.None,
@@ -393,19 +393,19 @@ pack.addFormula({
 Alternatively, you can set the `defaultConnectionRequirement` field of the authentication configuration to specify a different default, and then opt-in formulas or sync tables as needed.
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   // ...
   defaultConnectionRequirement: sdk.ConnectionRequirement.None,
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "NeedsAuthFormula",
   // ...
   connectionRequirement: sdk.ConnectionRequirement.Required,
   // ...
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "NoAuthNeededFormula",
   // ...
 });
@@ -417,7 +417,7 @@ pack.addFormula({
 By default the accounts that users connect to will be given the same name as their Superhuman account. While this works fine the majority of the time, if they are connecting to a team account or multiple accounts it is not very helpful. Therefore we strongly recommend that you implement a [`getConnectionName`][getConnectionName] function in your authentication configuration to set a more meaningful account name. This is typically done by making a Fetcher request to a user information endpoint in the API and then returning the name of the account.
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   // ...
   getConnectionName: async function(context) {
     let response = await context.fetcher.fetch({
@@ -444,7 +444,7 @@ Some services host a unique domain or subdomain for each account, and require th
 The endpoint URL is determined using one of the methods in the sections below. Once set it's available in your formulas and functions via `context.endpoint`.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   execute: async function ([], context) {
     // Retrieve the endpoint that the user set.
@@ -458,7 +458,7 @@ pack.addFormula({
 Alternatively you can use a relative URL, and it will have the endpoint URL automatically prepended.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   execute: async function ([], context) {
     // The endpoint URL will be automatically prepended.
@@ -474,7 +474,7 @@ pack.addFormula({
 To require the user to enter the endpoint URL, set the `requiresEndpointUrl` field to `true`. If you are expecting a subdomain, for additional validation set the `endpointDomain` field to the root domain that all subdomains share.
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   // ...
   requiresEndpointUrl: true,
   endpointDomain: "example.com",
@@ -506,7 +506,7 @@ Some APIs that use OAuth2 authentication return the endpoint URL during the toke
 You can automatically extract this value and use it as the endpoint URL by setting the `endpointKey` field of the authentication configuration.
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   // ...
   endpointKey: "site_url",
@@ -520,7 +520,7 @@ pack.setUserAuthentication({
 If the service allows the same user account to access multiple endpoints, and those endpoints can be determined with an API call, then you can prompt the user to select the endpoint they wish to connect to. This is accomplished using a `postSetup` step of the type `SetEndpoint`.
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   // After approving access, the user should select which instance they want to
   // connect to.
   postSetup: [{

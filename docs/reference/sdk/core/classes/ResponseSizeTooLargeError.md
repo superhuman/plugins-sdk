@@ -11,7 +11,7 @@ search:
 # Class: ResponseSizeTooLargeError
 
 An error that will be thrown by [Fetcher.fetch](../interfaces/Fetcher.md#fetch) when the response body from the external system
-exceeds packs platform limits
+exceeds platform limits
 
 This error can be caught and retried by requesting less data from the external system through
 a smaller page size or omitting large fields.

@@ -1,8 +1,8 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Formula that converts slices of a pizza into a percentage eaten.
-pack.addFormula({
+connector.addFormula({
   name: "PizzaEaten",
   description: "Calculates what percentage of a pizza was eaten.",
   parameters: [

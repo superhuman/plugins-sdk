@@ -52,7 +52,7 @@ See [`ParamDef`][ParamDef] for the full set of properties you can define for a p
 At runtime, the values set by the user are passed to the formula's `execute` function as the first argument, bundled up as an array.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   parameters: [
     sdk.makeParameter({
@@ -223,7 +223,7 @@ By default all parameters you define are required. To make a parameter optional 
 
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   name: "TotalCost",
   // ...
   parameters: [
@@ -255,7 +255,7 @@ pack.addFormula({
 Optional parameters that have not been set by the user will default to the JavaScript value `undefined` in your `execute` function. When you initialize your parameter variables in the `execute` function you can assign a default value that will get used when the parameter has not been explicitly set by the user.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   execute: async function ([cost, quantity = 1, taxRate = 0], context) {
     // ...
@@ -316,7 +316,7 @@ Foo("A", "B", "C")        # A string variable argument parameter.
 They are defined using the `varargParameters` property and accept the same parameter objects. The values set by the user are passed in to the `execute` just like normal parameters, only there is an unknown number of them. The easiest way to access them is by using [JavaScript's "rest" syntax][mdn_rest], which captures the remaining values into an array.
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   // ...
   parameters: [
     sdk.makeParameter({
@@ -368,7 +368,7 @@ Often parameters have a limited set of values that they support, such as a range
 You can provide a better user experience by validating the parameters before you use them. A common way to do that is to check the values at the start of the `execute` function and throw a user-visible error if a problem is found.
 
 ```{.ts hl_lines="23-28"}
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Orders",
   description: "List the open orders.",
   identityName: "Order",
@@ -407,7 +407,7 @@ This approach works well in a doc, where the user can quickly determine if there
 For sync tables only, you can instead use the [`validateParameters`][validateparameters] function. This function is run before the `execute` function begins, and the connector setup process won't complete until it passes. In it you can validate all of the parameter values and return an object containing the full set of errors to show to the user.
 
 ```{.ts hl_lines="5-30"}
-pack.addSyncTable({
+connector.addSyncTable({
   // ...
   formula: {
     // ...
@@ -458,7 +458,7 @@ const ProjectParam = sdk.makeParameter({
   description: "The ID of the project.",
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "Project",
   description: "Get a project.",
   parameters: [
@@ -467,7 +467,7 @@ pack.addFormula({
   // ...
 });
 
-pack.addFormula({
+connector.addFormula({
   name: "Task",
   description: "Get a task within a project.",
   parameters: [

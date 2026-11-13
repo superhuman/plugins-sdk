@@ -1,8 +1,8 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Returns HTML with every other word of the input text bolded.
-pack.addFormula({
+connector.addFormula({
   name: "AlternatingBold",
   description: "Bold every other word.",
   parameters: [

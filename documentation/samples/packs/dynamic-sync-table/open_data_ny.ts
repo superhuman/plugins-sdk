@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // The domain to connect to. Can be swapped for other domains hosting Socrata.
 const Domain = "data.ny.gov";
@@ -69,17 +69,17 @@ const BaseRowSchema = sdk.makeObjectSchema({
 
 
 // Allow requests to the domain.
-pack.addNetworkDomain(Domain);
+connector.addNetworkDomain(Domain);
 
 // Use a system-wide application token to get additional quota.
 // https://dev.socrata.com/docs/app-tokens.html
-pack.setSystemAuthentication({
+connector.setSystemAuthentication({
   type: sdk.AuthenticationType.CustomHeaderToken,
   headerName: "X-App-Token",
 });
 
 // A dynamic sync table for the rows of a dataset.
-pack.addDynamicSyncTable({
+connector.addDynamicSyncTable({
   name: "PublicDataset",
   identityName: "DatasetRow",
   entityName: "Row",

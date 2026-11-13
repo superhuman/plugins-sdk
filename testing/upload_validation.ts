@@ -2,6 +2,7 @@ import type {AWSAccessKeyAuthentication} from '../types';
 import type {AWSAssumeRoleAuthentication} from '../types';
 import type {AdminAuthentication} from '../types';
 import type {AdminAuthenticationTypes} from '../types';
+import {AdminSetupRequirement} from '../types';
 import type {AgentConnectorMcpTool} from '../types';
 import type {AgentDefinition} from '../types';
 import type {AgentRoutineDefinition} from '../types';
@@ -44,6 +45,7 @@ import {EmailDisplayType} from '../schema';
 import type {EmailSchema} from '../schema';
 import type {EmbeddedContentTool} from '../types';
 import {EmbeddedContentType} from '../types';
+import {EndpointSetBy} from '../types';
 import type {EndpointSuggestionProvider} from '../types';
 import type {EntraCertificateAuthentication} from '../types';
 import {EventTriggerType} from '../types';
@@ -181,10 +183,11 @@ import {isDeepStrictEqual} from 'util';
 import {isDefined} from '../helpers/object_utils';
 import {isNil} from '../helpers/object_utils';
 import {isObject} from '../schema';
-import {isSyncPackFormula} from '../api';
+import {isSyncFormula} from '../api';
 import {makeSchema} from '../schema';
 import {maybeSchemaOptionsValue} from '../schema';
 import {maybeUnwrapArraySchema} from '../schema';
+import {normalizeIdentity} from '../schema';
 import {normalizePropertyValuePathIntoSchemaPath} from '../schema';
 import {objectSchemaHelper} from '../helpers/migration';
 import {parse} from 'parse5';
@@ -732,6 +735,7 @@ function getNonUniqueElements<T extends string>(items: T[]): T[] {
  * Normalizes a tool for comparison by sorting any arrays within it.
  * This ensures that tools with the same content but different array ordering
  * are considered equal.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export function normalizeTool(tool: Tool): Tool {
   const normalized = {...tool};
@@ -754,6 +758,7 @@ export function normalizeTool(tool: Tool): Tool {
 /**
  * Finds duplicate tools in an array by comparing normalized versions.
  * Returns information about each duplicate found.
+ * @deprecated Skills are no longer used. Connectors should not set tools.
  */
 export function findDuplicateTools(tools: Tool[]): Array<{index: number; originalIndex: number; tool: Tool}> {
   const duplicates: Array<{index: number; originalIndex: number; tool: Tool}> = [];
@@ -929,6 +934,14 @@ function buildMetadataSchema({sdkVersion}: BuildMetadataSchemaArgs): {
         'The `networkDomain` in setUserAuthentication() cannot contain spaces. Use an array for multiple domains.',
     });
 
+  const requiresAdminSetupValidator = z
+    .array(z.nativeEnum(AdminSetupRequirement))
+    .min(1, 'requiresAdminSetup must list at least one requirement; omit it when there are none')
+    .refine(requirements => new Set(requirements).size === requirements.length, {
+      message: 'requiresAdminSetup must not contain duplicates',
+    })
+    .optional();
+
   const baseAuthenticationValidators = {
     // TODO(jonathan): Remove these after fixing/exporting types for Authentication metadata, as they're only present
     // in the full bundle, not the metadata.
@@ -936,6 +949,7 @@ function buildMetadataSchema({sdkVersion}: BuildMetadataSchemaArgs): {
     getConnectionUserId: z.unknown().optional(),
     instructionsUrl: z.string().optional(),
     requiresEndpointUrl: z.boolean().optional(),
+    endpointSetBy: z.nativeEnum(EndpointSetBy).optional(),
     endpointDomain: z.string().optional(),
     // The items are technically a discriminated union type but that union currently only has one member.
     postSetup: z.array(setEndpointPostSetupValidator).optional(),
@@ -1024,10 +1038,23 @@ function buildMetadataSchema({sdkVersion}: BuildMetadataSchemaArgs): {
       nestedResponseKey: z.string().optional(),
       credentialsLocation: z.nativeEnum(TokenExchangeCredentialsLocation).optional(),
       useDynamicClientRegistration: z.boolean().optional(),
+      requiresAdminSetup: requiresAdminSetupValidator,
       ...baseAuthenticationValidators,
     }).superRefine((authDef, context) => {
-      const {requiresEndpointUrl, endpointKey, authorizationUrl, tokenUrl, resource, useDynamicClientRegistration} =
-        authDef;
+      const {
+        requiresEndpointUrl,
+        endpointKey,
+        authorizationUrl,
+        tokenUrl,
+        resource,
+        useDynamicClientRegistration,
+        requiresAdminSetup,
+      } = authDef;
+      validateRequiresAdminSetup(
+        requiresAdminSetup,
+        {allowOAuthUrls: true, usesDcr: useDynamicClientRegistration === true},
+        context,
+      );
       if (useDynamicClientRegistration !== true) {
         if (!authorizationUrl) {
           context.addIssue({
@@ -1083,8 +1110,10 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
       scopeParamName: z.string().optional(),
       nestedResponseKey: z.string().optional(),
       credentialsLocation: z.nativeEnum(TokenExchangeCredentialsLocation).optional(),
+      requiresAdminSetup: requiresAdminSetupValidator,
       ...baseAuthenticationValidators,
-    }).superRefine(({requiresEndpointUrl, tokenUrl}, context) => {
+    }).superRefine(({requiresEndpointUrl, tokenUrl, requiresAdminSetup}, context) => {
+      validateRequiresAdminSetup(requiresAdminSetup, {allowOAuthUrls: false, usesDcr: false}, context);
       const isValid = requiresEndpointUrl
         ? isRootRelativeUrl(tokenUrl) || isAbsoluteUrlOfAnyScheme(tokenUrl)
         : isAbsoluteUrlOfAnyScheme(tokenUrl);
@@ -1221,6 +1250,15 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
       }),
     displayName: z.string().min(1).max(Limits.BuildingBlockName),
     description: z.string().min(1).max(Limits.BuildingBlockDescription),
+  }).superRefine(({authentication}, context) => {
+    // Org OAuth configuration is never used for named admin authentications, so the requirement can't take effect.
+    if (authentication?.requiresAdminSetup !== undefined) {
+      context.addIssue({
+        code: 'custom',
+        path: ['authentication', 'requiresAdminSetup'],
+        message: 'requiresAdminSetup is not supported on admin authentications',
+      });
+    }
   });
 
   const primitiveUnion = z.union([z.number(), z.string(), z.boolean(), z.date()]);
@@ -1795,12 +1833,13 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
   const indexSchema = z.union([customIndexSchema, categorizationIndexSchema]);
 
   const identitySchema = zodCompleteObject<Identity>({
+    connectorId: z.number().optional(),
     packId: z.number().optional(),
     name: z.string().nonempty(),
     dynamicUrl: z.string().optional(),
     attribution: attributionSchema,
     mergeKey: z.string().optional(),
-  });
+  }).transform(identity => normalizeIdentity(identity));
 
   const parentSchema = zodCompleteStrictObject<ParentDefinition>({
     parentIdProperty: propertySchema,
@@ -2614,7 +2653,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
   });
 
   const agentPackToolSchema = packToolSchema.extend({
-    packId: z.number(),
+    packId: z.number().int().min(1).max(2147483647),
     mcpTools: z
       .array(agentConnectorMcpToolSchema)
       .min(1, 'List at least one MCP tool, or leave mcpTools out to offer all of them.')
@@ -2632,6 +2671,9 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
           seen.add(key);
         });
       })
+      .optional(),
+    required: z
+      .union([z.literal(true), z.strictObject({groupName: z.string().min(1).max(Limits.BuildingBlockName)})])
       .optional(),
   });
 
@@ -3247,7 +3289,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
           const {getter} = syncTable;
           let {allowedAuthenticationNames} = getter;
           // TODO(patrick): Better typing
-          if (!isSyncPackFormula(getter as GenericSyncFormula)) {
+          if (!isSyncFormula(getter as GenericSyncFormula)) {
             continue;
           }
           const {supportsGetPermissions} = getter as GenericSyncFormula;
@@ -3547,6 +3589,14 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
     })
     .superRefine((untypedData, context) => {
       const data = untypedData as PackVersionMetadata;
+      validateEndpointSetBy(data.defaultAuthentication, ['defaultAuthentication'], context);
+      validateEndpointSetBy(data.systemConnectionAuthentication, ['systemConnectionAuthentication'], context);
+      data.adminAuthentications?.forEach(({authentication}, i) =>
+        validateEndpointSetBy(authentication, ['adminAuthentications', i, 'authentication'], context),
+      );
+    })
+    .superRefine((untypedData, context) => {
+      const data = untypedData as PackVersionMetadata;
       if (!data.mcpServers?.length) {
         return;
       }
@@ -3558,8 +3608,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
       const requiresEndpointUrl = auth && 'requiresEndpointUrl' in auth ? auth.requiresEndpointUrl : undefined;
       const endpointKey = auth && 'endpointKey' in auth ? auth.endpointKey : undefined;
       const postSetup = auth && 'postSetup' in auth ? auth.postSetup : undefined;
-      const hasSetEndpointStep = postSetup?.some(step => step.type === PostSetupType.SetEndpoint);
-      const canResolveRelativeUrl = Boolean(requiresEndpointUrl || endpointKey || hasSetEndpointStep);
+      const canResolveRelativeUrl = Boolean(requiresEndpointUrl || endpointKey || hasSetEndpointStep(postSetup));
       data.mcpServers.forEach((server, i) => {
         if (!server.endpointUrl || isAbsoluteUrl(server.endpointUrl)) {
           return;
@@ -4079,6 +4128,50 @@ function validateUrlParsesIfAbsolute(url: string) {
     return true;
   }
   return Boolean(parseDomainName(url));
+}
+
+function validateRequiresAdminSetup(
+  requiresAdminSetup: readonly AdminSetupRequirement[] | undefined,
+  {allowOAuthUrls, usesDcr}: {allowOAuthUrls: boolean; usesDcr: boolean},
+  context: z.RefinementCtx,
+) {
+  const adminSetup = new Set(requiresAdminSetup);
+  const addIssue = (message: string) => context.addIssue({code: 'custom', path: ['requiresAdminSetup'], message});
+  const requiresClientIdAndSecret = adminSetup.has(AdminSetupRequirement.OAuthClientIdAndSecret);
+  if (usesDcr && requiresClientIdAndSecret) {
+    addIssue('OAuthClientIdAndSecret cannot be combined with useDynamicClientRegistration');
+  }
+  if (adminSetup.has(AdminSetupRequirement.OAuthUrls)) {
+    if (!allowOAuthUrls) {
+      addIssue('OAuthUrls is only supported on OAuth2 authentication');
+    } else if (!requiresClientIdAndSecret) {
+      addIssue('OAuthUrls requires OAuthClientIdAndSecret');
+    }
+  }
+}
+
+function hasSetEndpointStep(postSetup: ReadonlyArray<{type: PostSetupType}> | undefined): boolean {
+  return Boolean(postSetup?.some(step => step.type === PostSetupType.SetEndpoint));
+}
+
+function validateEndpointSetBy(
+  authentication: AuthenticationMetadata | undefined,
+  path: Array<string | number>,
+  context: z.RefinementCtx,
+) {
+  if (!authentication || !('endpointSetBy' in authentication) || authentication.endpointSetBy === undefined) {
+    return;
+  }
+  const addIssue = (message: string) => context.addIssue({code: 'custom', path: [...path, 'endpointSetBy'], message});
+  if (!authentication.requiresEndpointUrl) {
+    addIssue('endpointSetBy requires requiresEndpointUrl');
+  }
+  if ('endpointKey' in authentication && authentication.endpointKey) {
+    addIssue('endpointSetBy cannot be combined with endpointKey');
+  }
+  if (hasSetEndpointStep(authentication.postSetup)) {
+    addIssue('endpointSetBy cannot be combined with a SetEndpoint postSetup step');
+  }
 }
 
 /**

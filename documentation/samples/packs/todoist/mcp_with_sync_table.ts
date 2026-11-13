@@ -1,13 +1,13 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // The REST API and MCP server are hosted on different domains.
 // Note: Connecting to multiple domains requires approval.
-pack.addNetworkDomain("todoist.com");
-pack.addNetworkDomain("todoist.net");
+connector.addNetworkDomain("todoist.com");
+connector.addNetworkDomain("todoist.net");
 
 // The REST API and MCP server use the same OAuth credentials.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   useDynamicClientRegistration: true,
 
@@ -24,7 +24,7 @@ pack.setUserAuthentication({
   },
 });
 
-pack.addMCPServer({
+connector.addMCPServer({
   name: "Todoist",
   endpointUrl: "https://ai.todoist.net/mcp",
 });
@@ -77,7 +77,7 @@ const TaskSchema = sdk.makeObjectSchema({
 });
 
 // Index tasks into the knowledge layer.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   schema: TaskSchema,
   identityName: "Task",

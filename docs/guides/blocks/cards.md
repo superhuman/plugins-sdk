@@ -188,7 +188,7 @@ To enable this feature for your Pack, add a [column format][column_format] point
 
 
 ```ts
-pack.addFormula({
+connector.addFormula({
   name: "Product",
   description: "...",
   parameters: [
@@ -203,7 +203,7 @@ pack.addFormula({
   // ...
 });
 
-pack.addColumnFormat({
+connector.addColumnFormat({
   name: "Product",
   formulaName: "Product",
   matchers: [

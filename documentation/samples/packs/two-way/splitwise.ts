@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 const CategorySchema = sdk.makeObjectSchema({
   properties: {
@@ -110,7 +110,7 @@ const ExpenseSchema = sdk.makeObjectSchema({
   ],
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Expenses",
   description: "Lists your expenses.",
   identityName: "Expense",
@@ -207,7 +207,7 @@ async function updateExpense(context: sdk.ExecutionContext,
   }
 }
 
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://secure.splitwise.com/oauth/authorize",
   tokenUrl: "https://secure.splitwise.com/oauth/token",
@@ -221,4 +221,4 @@ pack.setUserAuthentication({
   },
 });
 
-pack.addNetworkDomain("splitwise.com");
+connector.addNetworkDomain("splitwise.com");

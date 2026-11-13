@@ -10,7 +10,7 @@ search:
 
 # Interface: NoAuthentication
 
-A pack or formula which does not use authentication.
+A connector or formula which does not use authentication.
 
 ## Properties
 

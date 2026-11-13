@@ -1,7 +1,7 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addFormula({
+connector.addFormula({
   name: "SameDigit",
   description: "Determines if a date and time only contain a single digit." +
     "For example, 1/1/11 1:11.",

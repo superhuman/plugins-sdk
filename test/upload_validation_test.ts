@@ -1,4 +1,5 @@
 import {testHelper} from './test_helper';
+import {AdminSetupRequirement} from '../types';
 import type {AgentTool} from '../types';
 import type {AllToolTypes} from '../types';
 import type {AllowedAuthentication} from '../types';
@@ -17,6 +18,7 @@ import type {DefaultTriggerDefinition} from '../types';
 import {DefaultTriggerKind} from '../types';
 import {DurationUnit} from '..';
 import {EmbeddedContentType} from '../types';
+import {EndpointSetBy} from '../types';
 import {EventTriggerType} from '../types';
 import {FilterCombinator} from '../types';
 import {FilterOperator} from '../types';
@@ -5364,6 +5366,242 @@ describe('Pack metadata Validation', async () => {
       await validateJson(metadata);
     });
 
+    describe('requiresAdminSetup', () => {
+      const endpointOAuth = {
+        type: AuthenticationType.OAuth2,
+        authorizationUrl: '/oauth/authorize',
+        tokenUrl: '/oauth/token',
+        requiresEndpointUrl: true,
+      } as const;
+
+      async function assertAdminSetupFails(defaultAuthentication: any, message: string) {
+        const metadata = createFakePackVersionMetadata({defaultAuthentication});
+        const err = await validateJsonAndAssertFails(metadata);
+        assert.deepEqual(err.validationErrors, [{message, path: 'defaultAuthentication.requiresAdminSetup'}]);
+      }
+
+      it('accepts client credentials with an admin-set endpoint', async () => {
+        const metadata = createFakePackVersionMetadata({
+          defaultAuthentication: {
+            ...endpointOAuth,
+            endpointSetBy: EndpointSetBy.Admin,
+            requiresAdminSetup: [AdminSetupRequirement.OAuthClientIdAndSecret],
+          },
+        });
+        await validateJson(metadata);
+      });
+
+      it('accepts client credentials with admin OAuth URLs', async () => {
+        const metadata = createFakePackVersionMetadata({
+          defaultAuthentication: {
+            ...endpointOAuth,
+            requiresAdminSetup: [AdminSetupRequirement.OAuthClientIdAndSecret, AdminSetupRequirement.OAuthUrls],
+          },
+        });
+        await validateJson(metadata);
+      });
+
+      it('rejects client credentials with DCR', async () => {
+        await assertAdminSetupFails(
+          {
+            type: AuthenticationType.OAuth2,
+            useDynamicClientRegistration: true,
+            requiresAdminSetup: [AdminSetupRequirement.OAuthClientIdAndSecret],
+          },
+          'OAuthClientIdAndSecret cannot be combined with useDynamicClientRegistration',
+        );
+      });
+
+      it('rejects OAuth URLs without client credentials', async () => {
+        await assertAdminSetupFails(
+          {...endpointOAuth, requiresAdminSetup: [AdminSetupRequirement.OAuthUrls]},
+          'OAuthUrls requires OAuthClientIdAndSecret',
+        );
+      });
+
+      it('rejects duplicate requirements', async () => {
+        await assertAdminSetupFails(
+          {
+            ...endpointOAuth,
+            requiresAdminSetup: [
+              AdminSetupRequirement.OAuthClientIdAndSecret,
+              AdminSetupRequirement.OAuthClientIdAndSecret,
+            ],
+          },
+          'requiresAdminSetup must not contain duplicates',
+        );
+      });
+
+      it('rejects an empty list', async () => {
+        await assertAdminSetupFails(
+          {...endpointOAuth, requiresAdminSetup: []},
+          'requiresAdminSetup must list at least one requirement; omit it when there are none',
+        );
+      });
+
+      it('rejects it on non-OAuth authentication', async () => {
+        const metadata = createFakePackVersionMetadata({
+          defaultAuthentication: {
+            type: AuthenticationType.HeaderBearerToken,
+            requiresAdminSetup: [AdminSetupRequirement.OAuthClientIdAndSecret],
+          } as any,
+        });
+        const err = await validateJsonAndAssertFails(metadata);
+        assert.deepEqual(err.validationErrors, [
+          {path: 'defaultAuthentication', message: 'Unrecognized key: "requiresAdminSetup"'},
+        ]);
+      });
+
+      it('rejects an unknown requirement', async () => {
+        const metadata = createFakePackVersionMetadata({
+          defaultAuthentication: {...endpointOAuth, requiresAdminSetup: ['ClientCertificate'] as any},
+        });
+        const err = await validateJsonAndAssertFails(metadata);
+        assert.deepEqual(err.validationErrors, [
+          {
+            path: 'defaultAuthentication.requiresAdminSetup[0]',
+            message: 'Invalid option: expected one of "OAuthClientIdAndSecret"|"OAuthUrls"',
+          },
+        ]);
+      });
+
+      describe('on OAuth2ClientCredentials', () => {
+        const clientCredentials = {
+          type: AuthenticationType.OAuth2ClientCredentials,
+          tokenUrl: '/oauth/token',
+          requiresEndpointUrl: true,
+        } as const;
+
+        it('accepts admin client credentials with an admin-set endpoint', async () => {
+          const metadata = createFakePackVersionMetadata({
+            defaultAuthentication: {
+              ...clientCredentials,
+              endpointSetBy: EndpointSetBy.Admin,
+              requiresAdminSetup: [AdminSetupRequirement.OAuthClientIdAndSecret],
+            },
+          });
+          await validateJson(metadata);
+        });
+
+        it('accepts it on the system connection', async () => {
+          const metadata = createFakePackVersionMetadata({
+            systemConnectionAuthentication: {
+              ...clientCredentials,
+              endpointSetBy: EndpointSetBy.Admin,
+              requiresAdminSetup: [AdminSetupRequirement.OAuthClientIdAndSecret],
+            },
+          });
+          await validateJson(metadata);
+        });
+
+        it('rejects OAuth URLs', async () => {
+          await assertAdminSetupFails(
+            {
+              ...clientCredentials,
+              requiresAdminSetup: [AdminSetupRequirement.OAuthClientIdAndSecret, AdminSetupRequirement.OAuthUrls],
+            },
+            'OAuthUrls is only supported on OAuth2 authentication',
+          );
+        });
+      });
+    });
+
+    describe('endpointSetBy', () => {
+      async function assertEndpointSetByFails(defaultAuthentication: any, messages: string[]) {
+        const metadata = createFakePackVersionMetadata({defaultAuthentication});
+        const err = await validateJsonAndAssertFails(metadata);
+        assert.deepEqual(
+          err.validationErrors,
+          messages.map(message => ({message, path: 'defaultAuthentication.endpointSetBy'})),
+        );
+      }
+
+      it('accepts an admin-set endpoint on token authentication', async () => {
+        const metadata = createFakePackVersionMetadata({
+          defaultAuthentication: {
+            type: AuthenticationType.HeaderBearerToken,
+            requiresEndpointUrl: true,
+            endpointSetBy: EndpointSetBy.Admin,
+          },
+        });
+        await validateJson(metadata);
+      });
+
+      it('rejects it without requiresEndpointUrl', async () => {
+        await assertEndpointSetByFails(
+          {type: AuthenticationType.HeaderBearerToken, endpointSetBy: EndpointSetBy.Admin},
+          ['endpointSetBy requires requiresEndpointUrl'],
+        );
+      });
+
+      it('rejects it with endpointKey', async () => {
+        await assertEndpointSetByFails(
+          {
+            type: AuthenticationType.OAuth2,
+            authorizationUrl: 'https://example.com/authorize',
+            tokenUrl: 'https://example.com/token',
+            requiresEndpointUrl: true,
+            endpointKey: 'instance_url',
+            endpointSetBy: EndpointSetBy.Admin,
+          },
+          ['endpointSetBy cannot be combined with endpointKey'],
+        );
+      });
+
+      it('rejects it with a SetEndpoint postSetup step', async () => {
+        await assertEndpointSetByFails(
+          {
+            type: AuthenticationType.HeaderBearerToken,
+            requiresEndpointUrl: true,
+            endpointSetBy: EndpointSetBy.Admin,
+            postSetup: [
+              {type: PostSetupType.SetEndpoint, name: 'setEndpoint', description: 'some description', getOptions: {}},
+            ],
+          },
+          ['endpointSetBy cannot be combined with a SetEndpoint postSetup step'],
+        );
+      });
+
+      it('reports each conflict separately', async () => {
+        await assertEndpointSetByFails(
+          {
+            type: AuthenticationType.OAuth2,
+            authorizationUrl: 'https://example.com/authorize',
+            tokenUrl: 'https://example.com/token',
+            endpointKey: 'instance_url',
+            endpointSetBy: EndpointSetBy.Admin,
+          },
+          ['endpointSetBy requires requiresEndpointUrl', 'endpointSetBy cannot be combined with endpointKey'],
+        );
+      });
+
+      it('accepts it with dynamic client registration', async () => {
+        const metadata = createFakePackVersionMetadata({
+          defaultAuthentication: {
+            type: AuthenticationType.OAuth2,
+            useDynamicClientRegistration: true,
+            requiresEndpointUrl: true,
+            endpointSetBy: EndpointSetBy.Admin,
+          },
+        });
+        await validateJson(metadata);
+      });
+
+      it('rejects an unknown value', async () => {
+        const metadata = createFakePackVersionMetadata({
+          defaultAuthentication: {
+            type: AuthenticationType.HeaderBearerToken,
+            requiresEndpointUrl: true,
+            endpointSetBy: 'Member' as any,
+          },
+        });
+        const err = await validateJsonAndAssertFails(metadata);
+        assert.deepEqual(err.validationErrors, [
+          {path: 'defaultAuthentication.endpointSetBy', message: 'Invalid input: expected "Admin"'},
+        ]);
+      });
+    });
+
     it('OAuth2 without DCR, missing authorizationUrl', async () => {
       const metadata = createFakePackVersionMetadata({
         defaultAuthentication: {
@@ -6222,6 +6460,38 @@ describe('Pack metadata Validation', async () => {
     });
 
     describe('Admin authentication', () => {
+      const adminAuthentications: AllowedAuthentication[] = [
+        {
+          type: AuthenticationType.OAuth2,
+          authorizationUrl: '/oauth/authorize',
+          tokenUrl: '/oauth/token',
+          requiresEndpointUrl: true,
+          requiresAdminSetup: [AdminSetupRequirement.OAuthClientIdAndSecret],
+        },
+        {
+          type: AuthenticationType.OAuth2ClientCredentials,
+          tokenUrl: '/oauth/token',
+          requiresEndpointUrl: true,
+          requiresAdminSetup: [AdminSetupRequirement.OAuthClientIdAndSecret],
+        },
+      ];
+      for (const authentication of adminAuthentications) {
+        it(`rejects requiresAdminSetup on an ${authentication.type} admin authentication`, async () => {
+          const metadata = createFakePackVersionMetadata({
+            adminAuthentications: [
+              {authentication, name: 'AdminAuth', displayName: 'Admin Auth', description: 'Admin authentication'},
+            ],
+          });
+          const err = await validateJsonAndAssertFails(metadata);
+          assert.deepEqual(err.validationErrors, [
+            {
+              message: 'requiresAdminSetup is not supported on admin authentications',
+              path: 'adminAuthentications[0].authentication.requiresAdminSetup',
+            },
+          ]);
+        });
+      }
+
       it('validates name', async () => {
         const metadata = createFakePackVersionMetadata({
           adminAuthentications: [
@@ -6590,6 +6860,55 @@ describe('Pack metadata Validation', async () => {
   });
 
   describe('validateSyncTableSchema', () => {
+    it('validates the effective identity ID and returns both aliases', () => {
+      for (const identity of [
+        {packId: 42},
+        {connectorId: 42},
+        {connectorId: 42, packId: 42},
+        {connectorId: 42, packId: 7},
+        {connectorId: undefined, packId: 42},
+        {connectorId: 0, packId: 42},
+        {connectorId: -1.5},
+      ]) {
+        const input = {
+          type: ValueType.Object,
+          identity: {name: 'Other', ...identity},
+          properties: {id: {type: ValueType.String}},
+          idProperty: 'id',
+          displayProperty: 'id',
+        };
+        const before = JSON.stringify(input);
+        const result = validateSyncTableSchema(input, {sdkVersion: codaPacksSDKVersion});
+        assert.deepEqual((result.items as ObjectSchemaDefinition<string, string>).identity, {
+          name: 'Other',
+          connectorId: identity.connectorId ?? identity.packId,
+          packId: identity.connectorId ?? identity.packId,
+        });
+        assert.equal(JSON.stringify(input), before);
+      }
+      for (const identity of [
+        {packId: 'bad'},
+        {connectorId: 'bad', packId: 42},
+        {connectorId: 42, packId: 'bad'},
+        {connectorId: null},
+        {connectorId: null, packId: 42},
+        {packId: null},
+      ]) {
+        assert.throws(() =>
+          validateSyncTableSchema(
+            {
+              type: ValueType.Object,
+              identity: {name: 'Other', ...identity},
+              properties: {id: {type: ValueType.String}},
+              idProperty: 'id',
+              displayProperty: 'id',
+            },
+            {sdkVersion: codaPacksSDKVersion},
+          ),
+        );
+      }
+    });
+
     function validateAndAssertFails(schema: any, details?: string): PackMetadataValidationError | undefined {
       try {
         validateSyncTableSchema(schema, {sdkVersion: codaPacksSDKVersion});
@@ -6701,6 +7020,25 @@ describe('Pack metadata Validation', async () => {
       assert.ok(arraySchemaResult);
       const objectSchemaResult = validateSyncTableSchema(itemSchema, {sdkVersion: codaPacksSDKVersion});
       assert.ok(objectSchemaResult);
+      const preferredSchema = {
+        ...itemSchema,
+        identity: {name: 'Identity name with spaces', connectorId: 1090, packId: 42},
+      };
+      const preferredResult = validateSyncTableSchema(preferredSchema, {sdkVersion: codaPacksSDKVersion});
+      assert.deepEqual(preferredResult.items.identity, {
+        name: 'Identity name with spaces',
+        connectorId: 1090,
+        packId: 1090,
+      });
+      assert.throws(() =>
+        validateSyncTableSchema(
+          {
+            ...itemSchema,
+            identity: {name: 'Identity name with spaces', connectorId: 42, packId: 1090},
+          },
+          {sdkVersion: codaPacksSDKVersion},
+        ),
+      );
     });
 
     it('rejects formula names that are too long', async () => {
@@ -8901,6 +9239,85 @@ describe('Pack metadata Validation', async () => {
         }),
       );
       assert.lengthOf(result.agent!.tools, 2);
+    });
+
+    describe('required connectors', () => {
+      function agentWithTools(tools: any[]) {
+        return createFakeAgentMetadata({agent: {instructions: 'Do a thing.', tools}});
+      }
+
+      // A union reports one error per branch it tried, often at the same path.
+      function errorPaths(err: PackMetadataValidationError) {
+        return [...new Set(err.validationErrors?.map(error => error.path))];
+      }
+
+      for (const packId of [1.5, 0, 2147483648]) {
+        it(`rejects connector pack id ${packId}`, async () => {
+          const err = await validateJsonAndAssertFails(agentWithTools([{type: ToolType.Pack, packId}]));
+          assert.deepEqual(errorPaths(err), ['agent.tools[0].packId']);
+        });
+      }
+
+      it('keeps a required connector and a group on the tools', async () => {
+        const tools: AgentTool[] = [
+          {type: ToolType.Pack, packId: 1001, required: true},
+          {type: ToolType.Pack, packId: 2001, required: {groupName: 'email'}},
+          {type: ToolType.Pack, packId: 3001},
+          {type: ToolType.Pack, packId: 2002, required: {groupName: 'email'}},
+        ];
+        const result = await validateJson(agentWithTools(tools));
+        assert.deepEqual(result.agent?.tools, tools);
+      });
+
+      it('takes a group name at the length limit', async () => {
+        const required = {groupName: 'a'.repeat(50)};
+        const result = await validateJson(agentWithTools([{type: ToolType.Pack, packId: 1001, required}]));
+        assert.deepEqual(result.agent?.tools, [{type: ToolType.Pack, packId: 1001, required}]);
+      });
+
+      it('rejects a group name over the length limit', async () => {
+        const err = await validateJsonAndAssertFails(
+          agentWithTools([{type: ToolType.Pack, packId: 1001, required: {groupName: 'a'.repeat(51)}}]),
+        );
+        assert.deepEqual(
+          err.validationErrors?.map(error => error.path),
+          ['agent.tools[0].required.groupName'],
+        );
+      });
+
+      it('rejects an empty group name', async () => {
+        const err = await validateJsonAndAssertFails(
+          agentWithTools([{type: ToolType.Pack, packId: 1001, required: {groupName: ''}}]),
+        );
+        assert.deepEqual(
+          err.validationErrors?.map(error => error.path),
+          ['agent.tools[0].required.groupName'],
+        );
+      });
+
+      it('rejects required: false', async () => {
+        const err = await validateJsonAndAssertFails(
+          agentWithTools([{type: ToolType.Pack, packId: 1001, required: false}]),
+        );
+        assert.deepEqual(errorPaths(err), ['agent.tools[0].required']);
+      });
+
+      it('rejects keys a group does not have', async () => {
+        const err = await validateJsonAndAssertFails(
+          agentWithTools([{type: ToolType.Pack, packId: 1001, required: {group: 'email'}}]),
+        );
+        assert.deepEqual(errorPaths(err), ['agent.tools[0].required', 'agent.tools[0].required.groupName']);
+      });
+
+      it('rejects required on a tool that is not a connector', async () => {
+        const err = await validateJsonAndAssertFails(
+          agentWithTools([{type: ToolType.CodaDocsAndTables, required: true}]),
+        );
+        assert.deepEqual(
+          err.validationErrors?.map(error => error.path),
+          ['agent.tools[0]'],
+        );
+      });
     });
 
     it('leaves ordinary packs alone', async () => {

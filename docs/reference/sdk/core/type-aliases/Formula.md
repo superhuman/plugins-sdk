@@ -10,13 +10,13 @@ search:
 
 # Type Alias: Formula\<ParamDefsT, ResultT, SchemaT\>
 
-> **Formula**\<`ParamDefsT`, `ResultT`, `SchemaT`\> = `ResultT` *extends* [`String`](../enumerations/ValueType.md#string) ? [`StringPackFormula`](StringPackFormula.md)\<`ParamDefsT`\> : `ResultT` *extends* [`Number`](../enumerations/ValueType.md#number) ? [`NumericPackFormula`](NumericPackFormula.md)\<`ParamDefsT`\> : `ResultT` *extends* [`Boolean`](../enumerations/ValueType.md#boolean) ? [`BooleanPackFormula`](BooleanPackFormula.md)\<`ParamDefsT`\> : `ResultT` *extends* [`Array`](../enumerations/ValueType.md#array) ? [`ObjectPackFormula`](ObjectPackFormula.md)\<`ParamDefsT`, [`ArraySchema`](../interfaces/ArraySchema.md)\<`SchemaT`\>\> : [`ObjectPackFormula`](ObjectPackFormula.md)\<`ParamDefsT`, `SchemaT`\>
+> **Formula**\<`ParamDefsT`, `ResultT`, `SchemaT`\> = `ResultT` *extends* [`String`](../enumerations/ValueType.md#string) ? [`StringFormula`](StringFormula.md)\<`ParamDefsT`\> : `ResultT` *extends* [`Number`](../enumerations/ValueType.md#number) ? [`NumericFormula`](NumericFormula.md)\<`ParamDefsT`\> : `ResultT` *extends* [`Boolean`](../enumerations/ValueType.md#boolean) ? [`BooleanFormula`](BooleanFormula.md)\<`ParamDefsT`\> : `ResultT` *extends* [`Array`](../enumerations/ValueType.md#array) ? [`ObjectFormula`](ObjectFormula.md)\<`ParamDefsT`, [`ArraySchema`](../interfaces/ArraySchema.md)\<`SchemaT`\>\> : [`ObjectFormula`](ObjectFormula.md)\<`ParamDefsT`, `SchemaT`\>
 
-A pack formula, complete with metadata about the formula like its name, description, and parameters,
+A formula, complete with metadata about the formula like its name, description, and parameters,
 as well as the implementation of that formula.
 
 This is the type for an actual user-facing formula, rather than other formula-shaped resources within a
-pack, like an autocomplete metadata formula or a sync getter formula.
+connector, like an autocomplete metadata formula or a sync getter formula.
 
 ## Type Parameters
 

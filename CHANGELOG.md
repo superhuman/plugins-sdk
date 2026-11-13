@@ -4,6 +4,26 @@ This changelog keeps track of all changes to the Packs SDK. We follow convention
 
 ## [Unreleased]
 
+### Added
+
+- Schema identities and agent `setTools()` connectors accept `connectorId` in place of `packId`.
+- Types now have Connector, Component, and Formula names that match `newConnector()`, such as `ConnectorDefinitionBuilder`, `ComponentVersionDefinition`, `FormulaDef`, and `ConnectorTool`. Code that uses the Pack names keeps compiling.
+
+### Changed
+
+- `upload`, `build`, `validate`, `setOption`, `extensions`, and `whoami` now print the same `key: value` success output as `create`, `link`, `clone`, and `register`, so scripts and agents can parse every command the same way. `validate` prints `valid`. Update any script that matches the old messages.
+- `packs init --agent` now scaffolds an agent that exports `agent` and calls `agent.setInstructions()`. Agents that export `pack` keep working, so you do not need to rename an existing export.
+
+### Deprecated
+
+- `packId` in schema identities and agent `setTools()` connectors is deprecated. It keeps working. Use `connectorId` in new code.
+- The Pack type names, such as `PackDefinitionBuilder`, `PackVersionDefinition`, `PackFormulaDef`, and `PackTool`, are deprecated. They keep working. Use the matching Connector, Component, or Formula name in new code.
+- Connector skills and `addSkill()` are deprecated. Connectors should no longer set tools.
+
+### Fixed
+
+- Fixed a security vulnerability in `packs release --git-tag`. Release notes in the git tag message are no longer run as shell commands.
+
 ## [1.20.0] - 2026-11-06
 
 ### Added

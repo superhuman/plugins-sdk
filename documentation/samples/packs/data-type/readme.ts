@@ -1,8 +1,8 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Returns the contents of GitHub repo's README.md file as markdown.
-pack.addFormula({
+connector.addFormula({
   name: "GetReadme",
   description: "Gets the content of a GitHub repo's README.md file.",
   parameters: [
@@ -25,4 +25,4 @@ pack.addFormula({
   },
 });
 
-pack.addNetworkDomain("raw.githubusercontent.com");
+connector.addNetworkDomain("raw.githubusercontent.com");

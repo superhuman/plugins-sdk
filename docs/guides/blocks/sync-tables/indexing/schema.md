@@ -18,7 +18,7 @@ See the sections below for more information.
     In addition to the schema fields above, for [dynamic sync tables][dynamic_sync_tables] you also need to set [`indexing.default`][indexing] to `Include` on the table definition.
 
     ```{.ts hl_lines="4-6"}
-    pack.addDynamicSyncTable({
+    connector.addDynamicSyncTable({
       name: "Tasks",
       // ...
       indexing: {
@@ -235,7 +235,7 @@ getSchema: async function (context) {
 
 ## Contacts {:#contacts}
 
-In addition to indexing the records themselves, the platform can separately index the people associated with those records. For example, the assignee of a ticket or the attendees of an event. Once indexed, every other connector the user has installed can access these contacts using the [Contact resolution tool][contact_resolution_tool].
+In addition to indexing the records themselves, the platform can separately index the people associated with those records. For example, the assignee of a ticket or the attendees of an event. Once indexed, every other connector the user has installed can access these contacts using the contact resolution tool.
 
 To be indexed, a contact must have both a name and an email address. It's not currently possible to index additional information about a contact, such as a phone number or mailing address.
 
@@ -277,5 +277,4 @@ If you are upgrading an existing Pack, you'll need to denormalize any data you w
 [schemas]: ../../../advanced/schemas.md
 [dynamic_sync_tables]: ../dynamic.md
 [indexing]: ../../../../reference/sdk/core/interfaces/DynamicSyncTableOptions.md#indexing
-[contact_resolution_tool]: ../../skills.md#contacts
 [person]: ../../../../reference/sdk/core/enumerations/ValueHintType.md#person

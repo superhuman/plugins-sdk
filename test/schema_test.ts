@@ -51,7 +51,43 @@ describe('Schema', () => {
     });
   });
 
+  describe('normalizeIdentity', () => {
+    it('mirrors the effective ID over a conflicting packId', () => {
+      assert.deepEqual(schema.normalizeIdentity({name: 'Product', connectorId: 42, packId: 7}), {
+        name: 'Product',
+        connectorId: 42,
+        packId: 42,
+      });
+      assert.deepEqual(schema.normalizeIdentity({name: 'Product'}), {name: 'Product'});
+    });
+  });
+
+  describe('normalizeSchemaIdentities', () => {
+    it('leaves missing properties and items absent', () => {
+      const objectSchema = {type: ValueType.Object, identity: {name: 'Other', connectorId: 42}} as any;
+      assert.deepEqual<unknown>(schema.normalizeSchemaIdentities(objectSchema), {
+        type: ValueType.Object,
+        identity: {name: 'Other', connectorId: 42, packId: 42},
+      });
+      assert.deepEqual<unknown>(schema.normalizeSchemaIdentities({type: ValueType.Array} as any), {
+        type: ValueType.Array,
+      });
+    });
+  });
+
   describe('makeObjectSchema', () => {
+    it('preserves literal identity fields in its input and return type', () => {
+      const input = {
+        identity: {name: 'Other', connectorId: 42, packId: 7},
+        properties: {id: {type: ValueType.String}},
+      } as const;
+      const result = makeObjectSchema(input);
+      const connectorId: 42 = result.identity.connectorId;
+      const packId: 7 = result.identity.packId;
+      assert.deepEqual(result.identity, {name: 'Other', connectorId, packId});
+      assert.deepEqual(input.identity, {name: 'Other', connectorId: 42, packId: 7});
+    });
+
     it('requires for codaType.Reference', async () => {
       const baseReferenceSchema = {
         type: ValueType.Object,

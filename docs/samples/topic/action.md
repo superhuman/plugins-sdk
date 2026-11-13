@@ -16,7 +16,7 @@ The basic structure of an action. This sample takes in a single string parameter
 
 ```ts
 {% raw %}
-pack.addFormula({
+connector.addFormula({
   name: "MyAction",
   description: "My description.",
   parameters: [
@@ -39,11 +39,11 @@ A formula that returns a random value. This sample rolls virtual dice and return
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Rolls virtual dice and returns the resulting numbers. Use it with a button in
 // table and store the results in another column.
-pack.addFormula({
+connector.addFormula({
   name: "RollDice",
   description: "Roll some virtual dice.",
   parameters: [
@@ -82,10 +82,10 @@ A formula that posts data to an external API. This sample creates a new task in 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Action formula (for buttons and automations) that adds a new task in Todoist.
-pack.addFormula({
+connector.addFormula({
   name: "AddTask",
   description: "Add a new task.",
   parameters: [
@@ -115,11 +115,11 @@ pack.addFormula({
   },
 });
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 
 // Setup authentication using a Todoist API token.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });
@@ -131,7 +131,7 @@ A formula that updates an item on the server, and the existing row in a sync tab
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A schema defining the data in the sync table.
 const TaskSchema = sdk.makeObjectSchema({
@@ -163,7 +163,7 @@ const TaskSchema = sdk.makeObjectSchema({
 
 // Action formula (for buttons and automations) that updates an existing task,
 // and by returning the schema also updates the existing row in the sync table.
-pack.addFormula({
+connector.addFormula({
   name: "UpdateTask",
   description: "Updates the name of a task.",
   parameters: [
@@ -214,7 +214,7 @@ pack.addFormula({
   },
 });
 
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Tasks",
   schema: TaskSchema,
   identityName: "Task",
@@ -245,11 +245,11 @@ pack.addSyncTable({
   },
 });
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 
 // Setup authentication using a Todoist API token.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });

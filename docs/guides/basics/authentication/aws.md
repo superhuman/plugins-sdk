@@ -15,7 +15,7 @@ The SDK supports two different ways of authenticating with an AWS service: acces
 The simplest method of authentication requires that the user provides an access key and secret associated with an AWS user. The platform will use these values to sign outgoing requests. Simply set the authentication type to [`AWSAccessKey`][sdk_awsaccesskey] and specify the AWS service you are connecting to.
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.AWSAccessKey,
   service: "s3",
 });
@@ -37,7 +37,7 @@ A more secure way to authenticate is by using the [`AssumeRole` feature][awsdocs
 To use this form of authentication, simply set the authentication type to [`AWSAssumeRole`][sdk_awsassumerole] and specify the AWS service you are connecting to.
 
 ```ts
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.AWSAssumeRole,
   service: "s3",
 });

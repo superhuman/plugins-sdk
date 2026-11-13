@@ -1,9 +1,9 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Per-user authentication to the Todoist API, using an OAuth2 flow.
 // See https://developer.todoist.com/guides/#oauth
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://app.todoist.com/oauth/authorize",
   tokenUrl: "https://api.todoist.com/oauth/access_token",
@@ -19,5 +19,5 @@ pack.setUserAuthentication({
   },
 });
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");

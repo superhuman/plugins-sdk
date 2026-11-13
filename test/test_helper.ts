@@ -1,3 +1,6 @@
+import {join} from 'path';
+import * as ts from 'typescript';
+
 export const testHelper = {
   /**
    * Asserts that the provided promise is rejected by wrapping it with another and rejecting if it's fulfilled. A
@@ -33,5 +36,34 @@ export const testHelper = {
       assert.match(error, matcher, 'Promise was rejected with unexpected error.');
     }
     return error as ErrorT;
+  },
+
+  /**
+   * Type-checks `source` as a consumer file in this directory against the built declarations in
+   * `dist/`, and fails on any compiler error. Run `make compile` first.
+   */
+  checkConsumer(source: string) {
+    const filename = join(__dirname, 'consumer_probe.ts');
+    const options: ts.CompilerOptions = {
+      noEmit: true,
+      strict: true,
+      skipLibCheck: false,
+      target: ts.ScriptTarget.ES2020,
+      module: ts.ModuleKind.CommonJS,
+      moduleResolution: ts.ModuleResolutionKind.NodeJs,
+      esModuleInterop: true,
+      types: [],
+    };
+    const host = ts.createCompilerHost(options);
+    const getSourceFile = host.getSourceFile.bind(host);
+    host.getSourceFile = (path, languageVersion, onError) =>
+      path === filename
+        ? ts.createSourceFile(path, source, languageVersion)
+        : getSourceFile(path, languageVersion, onError);
+    const errors = ts.getPreEmitDiagnostics(ts.createProgram([filename], options, host));
+    assert.deepEqual(
+      errors.map(error => ts.flattenDiagnosticMessageText(error.messageText, '\n')),
+      [],
+    );
   },
 };

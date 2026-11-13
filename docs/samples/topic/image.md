@@ -17,13 +17,13 @@ A formula that takes an image as a parameter. This sample returns the file size 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Regular expression that matches Superhuman-hosted images.
 const HostedImageUrlRegex = new RegExp("^https://(?:[^/]*\.)?codahosted.io/.*");
 
 // Formula that calculates the file size of an image.
-pack.addFormula({
+connector.addFormula({
   name: "FileSize",
   description: "Gets the file size of an image, in bytes.",
   parameters: [
@@ -63,10 +63,10 @@ A formula that return an external image. This sample returns a random photo of a
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Formula that fetches a random cat photo, with various options.
-pack.addFormula({
+connector.addFormula({
   name: "CatPhoto",
   description: "Gets a random cat image.",
   parameters: [
@@ -105,8 +105,8 @@ pack.addFormula({
   },
 });
 
-// Allow the pack to make requests to Cat-as-a-service API.
-pack.addNetworkDomain("cataas.com");
+// Allow the connector to make requests to Cat-as-a-service API.
+connector.addNetworkDomain("cataas.com");
 {% endraw %}
 ```
 ## Image result from temporary URL
@@ -115,11 +115,11 @@ A formula that returns an image uploaded to &#x60;temporaryBlobStorage&#x60;. Th
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
-pack.addNetworkDomain("boringavatars.com");
+connector.addNetworkDomain("boringavatars.com");
 
-pack.addFormula({
+connector.addFormula({
   name: "BoringAvatar",
   description: "Get a boring avatar image.",
   parameters: [
@@ -154,7 +154,7 @@ An action that downloads images from Superhuman Docs and uploads them to another
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Regular expression that matches Superhuman-hosted images.
 const HostedImageUrlRegex = new RegExp("^https://(?:[^/]*\.)?codahosted.io/.*");
@@ -166,7 +166,7 @@ interface ImageData {
 }
 
 // Action that uploads a list of images to Google Photos.
-pack.addFormula({
+connector.addFormula({
   name: "Upload",
   description: "Uploads images to Google Photos.",
   parameters: [
@@ -304,7 +304,7 @@ async function addImages(uploadTokens: string[],
   return urls;
 }
 
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
   tokenUrl: "https://oauth2.googleapis.com/token",
@@ -317,7 +317,7 @@ pack.setUserAuthentication({
   },
 });
 
-pack.addNetworkDomain("googleapis.com");
+connector.addNetworkDomain("googleapis.com");
 {% endraw %}
 ```
 ## Attach image data
@@ -326,7 +326,7 @@ A sync table that includes images sourced from raw data. This sample syncs files
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Schema defining the fields to sync for each file.
 const FileSchema = sdk.makeObjectSchema({
@@ -352,7 +352,7 @@ const FileSchema = sdk.makeObjectSchema({
 });
 
 // Sync table for files.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Files",
   identityName: "File",
   schema: FileSchema,
@@ -509,7 +509,7 @@ async function getFileUrls(fileIds, context: sdk.ExecutionContext):
 }
 
 // Set per-user authentication using Dropbox's OAuth2.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://www.dropbox.com/oauth2/authorize",
   tokenUrl: "https://api.dropbox.com/oauth2/token",
@@ -520,7 +520,7 @@ pack.setUserAuthentication({
 });
 
 // Allow access to the Dropbox domain.
-pack.addNetworkDomain("dropboxapi.com");
+connector.addNetworkDomain("dropboxapi.com");
 {% endraw %}
 ```
 ## Attach private images
@@ -529,7 +529,7 @@ A sync table that includes images sourced from private URLs. This sample syncs f
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Schema defining the fields to sync for each file.
 const FileSchema = sdk.makeObjectSchema({
@@ -554,7 +554,7 @@ const FileSchema = sdk.makeObjectSchema({
 });
 
 // Sync table for files.
-pack.addSyncTable({
+connector.addSyncTable({
   name: "Files",
   identityName: "File",
   schema: FileSchema,
@@ -622,7 +622,7 @@ pack.addSyncTable({
 });
 
 // Set per-user authentication using Google's OAuth2.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.OAuth2,
   authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
   tokenUrl: "https://oauth2.googleapis.com/token",
@@ -638,9 +638,9 @@ pack.setUserAuthentication({
 
 // Allow access to the Google domains.
 // Note: Using multiple domains in a Pack requires approval from Superhuman.
-pack.addNetworkDomain("googleapis.com");
-pack.addNetworkDomain("docs.google.com");
-pack.addNetworkDomain("googleusercontent.com");
+connector.addNetworkDomain("googleapis.com");
+connector.addNetworkDomain("docs.google.com");
+connector.addNetworkDomain("googleusercontent.com");
 {% endraw %}
 ```
 ## Generated SVG
@@ -649,10 +649,10 @@ A formula that generated an SVG, and returns it as a data URI. This sample gener
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A formula that generates an image using some input text.
-pack.addFormula({
+connector.addFormula({
   name: "TextToImage",
   description: "Generates an image using the text provided.",
   parameters: [
@@ -697,11 +697,11 @@ A formula that generates an SVG that adapts if dark mode is enabled. This sample
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A formula that demonstrates how to generate an SVG that adapts to the user's
 // dark mode setting in Superhuman Docs.
-pack.addFormula({
+connector.addFormula({
   name: "HelloDarkMode",
   description: "Generates an image that adapts to the dark mode setting.",
   parameters: [],
@@ -742,10 +742,10 @@ A formula that takes an file as a parameter. This sample uploads the file to an 
 ```ts
 {% raw %}
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Action that uploads a file to Amazon S3.
-pack.addFormula({
+connector.addFormula({
   name: "Upload",
   description: "Upload a file to AWS S3.",
   parameters: [
@@ -818,15 +818,15 @@ function getFilename(contentDisposition) {
 }
 
 // Set per-user authentication using AWS Signature Version 4 with an access key.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.AWSAccessKey,
   service: "s3",
   requiresEndpointUrl: true,
   endpointDomain: "amazonaws.com",
 });
 
-// Allow the pack to make requests to AWS.
-pack.addNetworkDomain("amazonaws.com");
+// Allow the connector to make requests to AWS.
+connector.addNetworkDomain("amazonaws.com");
 {% endraw %}
 ```
 

@@ -18,13 +18,13 @@ This Pack allows you to fetch information about spells in th game Dungeons and D
 === "pack.ts"
     ```ts
     import * as sdk from "@superhuman/plugins-sdk";
-    export const pack = sdk.newPack();
+    export const connector = sdk.newConnector();
 
     // How many spells to fetch in each sync formula execution.
     const BATCH_SIZE = 20;
 
     // Allow requests to the DND API.
-    pack.addNetworkDomain("dnd5eapi.co");
+    connector.addNetworkDomain("dnd5eapi.co");
 
     // Schema that defines the metadata to return for each spell. Shared by the
     // formula, column format, and sync table.
@@ -106,7 +106,7 @@ This Pack allows you to fetch information about spells in th game Dungeons and D
     }
 
     // A formula that looks up a spell given a name, returning the first result.
-    pack.addFormula({
+    connector.addFormula({
       name: "Spell",
       description: "Gets information about a spell, given its name.",
       parameters: [
@@ -147,14 +147,14 @@ This Pack allows you to fetch information about spells in th game Dungeons and D
 
     // A column format that displays information about the spell with the given
     // name.
-    pack.addColumnFormat({
+    connector.addColumnFormat({
       name: "Spell",
       instructions: "Displays information about the spell with this name.",
       formulaName: "Spell",
     });
 
     // A sync table that displays all spells available in the API.
-    pack.addSyncTable({
+    connector.addSyncTable({
       name: "Spells",
       identityName: "Spell",
       schema: SpellSchema,

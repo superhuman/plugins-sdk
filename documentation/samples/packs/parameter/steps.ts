@@ -1,10 +1,10 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // Takes an unknown number of steps and labels and outputs a simple diagram.
 // Example: Steps("Idea", "Experiment", "Prototype", "Refine", "Product")
 // Result: Idea --Experiment--> Prototype --Refine--> Product
-pack.addFormula({
+connector.addFormula({
   name: "Steps",
   description: "Draws a simple step diagram using text.",
   parameters: [

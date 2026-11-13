@@ -13,7 +13,7 @@ search:
 An identifier for a schema, allowing other schemas to reference it.
 
 You may optionally specify an [ObjectSchemaDefinition.identity](ObjectSchemaDefinition.md#identity) when defining an object schema.
-This signals that this schema represents an important named entity in the context of your pack.
+This signals that this schema represents an important named entity in the context of your connector.
 Schemas with identities may be referenced by other schemas, in which case Superhuman Docs
 will render such values as @-references in the doc, allowing you to create relationships
 between entities.
@@ -38,6 +38,14 @@ See [ObjectSchemaDefinition.attribution](ObjectSchemaDefinition.md#attribution)
 
 ***
 
+### connectorId?
+
+> `optional` **connectorId**: `number`
+
+The ID of another connector when referencing its values. Takes precedence over [packId](#packid).
+
+***
+
 ### dynamicUrl?
 
 > `optional` **dynamicUrl**: `string`
@@ -56,13 +64,17 @@ you wish to reference, again to distinguish which table instance you are trying 
 
 > **name**: `string`
 
-The name of this entity. This is an arbitrary name but should be unique within your pack.
+The name of this entity. This is an arbitrary name but should be unique within your connector.
 For example, if you are defining a schema that represents a user object, "User" would be a good identity name.
 
 ***
 
-### packId?
+### ~~packId?~~
 
 > `optional` **packId**: `number`
 
-The ID of another pack, if you are trying to reference a value from different pack.
+The ID of another connector when referencing its values.
+
+#### Deprecated
+
+Use [connectorId](#connectorid) instead.

@@ -1,5 +1,5 @@
 import * as sdk from "@superhuman/plugins-sdk";
-export const pack = sdk.newPack();
+export const connector = sdk.newConnector();
 
 // A schema defining the card, including all of metadata what specifically to
 // highlight in the card.
@@ -42,7 +42,7 @@ const TaskSchema = sdk.makeObjectSchema({
 // Formula that renders a card for a task given its URL. This will be shown a
 // "Card" in the Pack's list of building blocks, but is also a regular formula
 // that can be used elsewhere.
-pack.addFormula({
+connector.addFormula({
   name: "Task",
   description: "Gets a Todoist task by URL",
   parameters: [
@@ -85,7 +85,7 @@ const TaskUrlPatterns: RegExp[] = [
 
 // Add a column format for the Task formula, to define which URLs it should
 // trigger for. This also makes it easier to use the formula in a table column.
-pack.addColumnFormat({
+connector.addColumnFormat({
   // How the option will show in the link and column type dialogs.
   name: "Task",
   // The formula that generates the card.
@@ -105,11 +105,11 @@ function extractTaskId(taskUrl: string) {
   throw new sdk.UserVisibleError("Invalid task URL: " + taskUrl);
 }
 
-// Allow the pack to make requests to Todoist.
-pack.addNetworkDomain("todoist.com");
+// Allow the connector to make requests to Todoist.
+connector.addNetworkDomain("todoist.com");
 
 // Setup authentication using a Todoist API token.
-pack.setUserAuthentication({
+connector.setUserAuthentication({
   type: sdk.AuthenticationType.HeaderBearerToken,
   instructionsUrl: "https://todoist.com/app/settings/integrations",
 });

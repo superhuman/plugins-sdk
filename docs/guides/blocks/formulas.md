@@ -63,12 +63,12 @@ Formulas can use [authentication][authentication] to fetch private data. When us
 
 === "Code"
     ```ts
-    pack.setUserAuthentication({
+    connector.setUserAuthentication({
       type: sdk.AuthenticationType.HeaderBearerToken,
       instructionsUrl: "https://todoist.com/app/settings/integrations",
     });
 
-    pack.addFormula({
+    connector.addFormula({
       name: "Task",
       description: "Gets a Todoist task by URL",
       parameters: [
@@ -126,7 +126,7 @@ Superhuman Docs automatically generates user documentation for your formulas bas
 === "Code"
 
     ```ts
-    pack.addFormula({
+    connector.addFormula({
       name: "ToUSD",
       description: "Convert from a different currency to US dollars.",
       parameters: [
@@ -170,8 +170,8 @@ examples: [
 [fetcher_cache]: ../basics/fetcher.md#caching
 [fetcher_rate_limits]: ../basics/fetcher.md#rate-limits
 [authentication]: ../basics/authentication/index.md
-[system_auth]: ../../reference/sdk/core/classes/PackDefinitionBuilder.md#setsystemauthentication
-[user_auth]: ../../reference/sdk/core/classes/PackDefinitionBuilder.md#setuserauthentication
+[system_auth]: ../../reference/sdk/core/classes/ConnectorDefinitionBuilder.md#setsystemauthentication
+[user_auth]: ../../reference/sdk/core/classes/ConnectorDefinitionBuilder.md#setuserauthentication
 [connectionRequirement]: ../../reference/sdk/core/interfaces/PackFormulaDef.md#connectionrequirement
 [sync_formula]: sync-tables/index.md#formula
 [navigation_connector_maker_tools]: ../../support/navigation.md#connector-maker-tools
