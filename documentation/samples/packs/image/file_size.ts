@@ -2,7 +2,7 @@ import * as sdk from "@superhuman/plugins-sdk";
 export const connector = sdk.newConnector();
 
 // Regular expression that matches Superhuman-hosted images.
-const HostedImageUrlRegex = new RegExp("^https://(?:[^/]*\.)?codahosted.io/.*");
+const HostedImageUrlRegex = /^https:\/\/(?:[a-z0-9-]+\.)*codahosted\.io\//i;
 
 // Formula that calculates the file size of an image.
 connector.addFormula({
