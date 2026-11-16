@@ -16,7 +16,7 @@ built with `sdk.newConnector()`.
 Install a skill with the [`skills` CLI](https://github.com/vercel-labs/skills):
 
 ```bash
-bunx skills add superhuman/plugins-sdk --skill create-agent-pack --global
+npx skills add superhuman/plugins-sdk --skill create-agent-pack --global
 ```
 
 See the [bundle guide](.agents/README.md) to install all four skills from a checkout or contribute changes.
