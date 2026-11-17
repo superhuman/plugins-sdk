@@ -17,7 +17,7 @@ module.exports = {
   npm: {publish: false},
   github: {release: false},
   hooks: {
-    'after:bump': 'node .github/releases/plugin-version.cjs',
+    'after:bump': 'node .github/releases/release.cjs plugin-version',
     'before:git:beforeRelease': [
       'git switch -c sdk-release/v${version}',
       '.pnpm_install/bin/pnpm install --frozen-lockfile',

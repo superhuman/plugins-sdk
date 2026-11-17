@@ -3,6 +3,7 @@ const {execFileSync} = require('node:child_process');
 const fs = require('node:fs');
 const REPOSITORY = 'superhuman/plugins-sdk';
 const PNPM = '.pnpm_install/bin/pnpm';
+const PLUGIN_MANIFEST = '.agents/plugin.json';
 
 function command(program, args, options = {}) {
   return execFileSync(program, args, {encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, ...options}).trim();
@@ -34,9 +35,31 @@ function releaseIt(args, env, identity = {}) {
     throw error;
   }
 }
+function checkPluginVersion(env) {
+  if (!env.PLUGIN_VERSION) return undefined;
+  assert.match(
+    env.PLUGIN_VERSION,
+    /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/,
+    'plugin-version must be stable, for example 0.3.0',
+  );
+  const manifest = readJson(PLUGIN_MANIFEST);
+  const current = manifest.version.split('.').map(BigInt);
+  const next = env.PLUGIN_VERSION.split('.').map(BigInt);
+  const changed = current.findIndex((part, i) => part !== next[i]);
+  assert(changed !== -1 && next[changed] > current[changed], `plugin-version must be above ${manifest.version}`);
+  return manifest;
+}
+async function pluginVersion(env) {
+  const manifest = checkPluginVersion(env);
+  if (!manifest) return;
+  manifest.version = env.PLUGIN_VERSION;
+  // The monorepo release import accepts only canonical two-space JSON.
+  fs.writeFileSync(PLUGIN_MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`);
+}
 async function prepare(env) {
   assert.equal(env.SYNC_CONFIRMED, 'true', 'sync confirmation is required');
   assert.equal(git('status', '--porcelain'), '', 'checkout must be clean');
+  checkPluginVersion(env);
   const originalVersion = readJson('package.json').version;
   releaseIt(
     ['--ci', '--quiet', '--config', '.github/releases/prepare.config.cjs', `--increment=${env.RELEASE_VERSION}`],
@@ -110,6 +133,7 @@ async function publish(env) {
 async function main(env = process.env) {
   if (process.argv[2] === 'publish') return publish(env);
   if (process.argv[2] === 'inspect') return inspect(env);
+  if (process.argv[2] === 'plugin-version') return pluginVersion(env);
   assert.equal(process.argv[2], 'prepare', 'unknown release command');
   return prepare(env);
 }
