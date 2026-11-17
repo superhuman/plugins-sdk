@@ -7,6 +7,8 @@
 2. Run **Prepare SDK release** on `main` with the new stable version. Confirm the
    exported changes and approve `sdk-release`. Leave `dry-run` unchecked (the
    default) to push a `sdk-release/v<version>` branch and open a release PR.
+   If the release changes `.agents/`, also enter a higher `plugin-version`;
+   otherwise leave it empty.
 3. Review the changelog and diff, then merge after CI passes.
 
 For an optional preview, check `dry-run`. The job prepares the version, changelog
