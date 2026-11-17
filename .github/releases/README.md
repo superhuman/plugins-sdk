@@ -7,6 +7,12 @@
 2. Run **Prepare SDK release** on `main` with the new stable version. Confirm the
    exported changes and approve `sdk-release`. Leave `dry-run` unchecked (the
    default) to push a `sdk-release/v<version>` branch and open a release PR.
+   If the release ships changes to `.agents/`, also enter `plugin-version`: a
+   stable version above the current `version` in `.agents/plugin.json`. Clients
+   refresh the coding-agent plugin only when that version goes up. Leave it empty
+   to keep the current version. The internal release import accepts the new
+   version only once `.agents/plugin.json` on `main` is two-space JSON, which
+   arrives with the next SDK export.
 3. Review the changelog and diff, then merge after CI passes.
 
 For an optional preview, check `dry-run`. The job prepares the version, changelog

@@ -6,6 +6,11 @@ on:
         description: 'Exact stable version, for example 1.17.7 (--version)'
         required: true
         type: string
+      plugin-version:
+        description: 'Optional higher stable coding-agent plugin version for .agents/plugin.json, for example 0.2.0. Leave empty to keep the current version.'
+        required: false
+        default: ''
+        type: string
       sync-confirmed:
         description: 'I have confirmed that all changes intended for release have been exported to this repository and merged to main.'
         required: true
@@ -42,5 +47,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_VERSION: ${{ inputs.version }}
+          PLUGIN_VERSION: ${{ inputs.plugin-version }}
           SYNC_CONFIRMED: ${{ inputs.sync-confirmed }}
           RELEASE_DRY_RUN: ${{ inputs.dry-run }}
