@@ -7,7 +7,7 @@ on:
         required: true
         type: string
       plugin-version:
-        description: 'Optional higher stable coding-agent plugin version for .agents/plugin.json, for example 0.2.0. Leave empty to keep the current version.'
+        description: 'Optional new .agents/plugin.json version, for example 0.2.0'
         required: false
         default: ''
         type: string
