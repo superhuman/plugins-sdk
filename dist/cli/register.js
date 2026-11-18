@@ -4,28 +4,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleRegister = exports.getApiTokenCreationUrl = void 0;
-const config_storage_1 = require("./config_storage");
 const confirm_1 = require("./confirm");
 const helpers_1 = require("./helpers");
 const helpers_2 = require("./helpers");
+const helpers_3 = require("./helpers");
 const errors_1 = require("./errors");
 const confirm_2 = require("./confirm");
 const coda_1 = require("../helpers/external-api/coda");
 const confirm_3 = require("./confirm");
 const open_1 = __importDefault(require("open"));
-const helpers_3 = require("../testing/helpers");
 const helpers_4 = require("../testing/helpers");
-const config_storage_2 = require("./config_storage");
+const helpers_5 = require("../testing/helpers");
+const config_storage_1 = require("./config_storage");
 const errors_2 = require("./errors");
-const DEFAULT_ACCOUNT_ENDPOINT = 'https://docs.superhuman.com';
-function getApiTokenCreationUrl(apiEndpoint) {
-    const normalizedEndpoint = apiEndpoint.replace(/\/+$/, '');
-    const accountEndpoint = normalizedEndpoint === config_storage_1.DEFAULT_API_ENDPOINT ? DEFAULT_ACCOUNT_ENDPOINT : normalizedEndpoint;
-    return `${accountEndpoint}/account?openDialog=CREATE_API_TOKEN&scopeType=pack#apiSettings`;
+function getApiTokenCreationUrl(formattedEndpoint) {
+    return `${(0, helpers_2.deriveBrowserEndpoint)(formattedEndpoint)}/account?openDialog=CREATE_API_TOKEN&scopeType=pack#apiSettings`;
 }
 exports.getApiTokenCreationUrl = getApiTokenCreationUrl;
 async function handleRegister({ apiToken, apiEndpoint, open: openBrowser, yes, }) {
-    const formattedEndpoint = (0, helpers_2.formatEndpoint)(apiEndpoint);
+    const formattedEndpoint = (0, helpers_3.formatEndpoint)(apiEndpoint);
     const tokenUrl = getApiTokenCreationUrl(formattedEndpoint);
     if (!apiToken) {
         if (openBrowser || ((0, confirm_2.isInteractive)() && !yes)) {
@@ -39,7 +36,7 @@ async function handleRegister({ apiToken, apiEndpoint, open: openBrowser, yes, }
             await (0, open_1.default)(tokenUrl);
         }
         if ((0, confirm_2.isInteractive)()) {
-            apiToken = (0, helpers_4.promptForInput)('Please paste the token here: ', { mask: true });
+            apiToken = (0, helpers_5.promptForInput)('Please paste the token here: ', { mask: true });
         }
         if (!apiToken) {
             return (0, confirm_3.missingFlagError)('No API token specified.', 'packs register --apiToken <token>', `Create a token at ${tokenUrl}`);
@@ -51,12 +48,12 @@ async function handleRegister({ apiToken, apiEndpoint, open: openBrowser, yes, }
     }
     catch (err) {
         if ((0, coda_1.isResponseError)(err)) {
-            return (0, helpers_3.printAndExit)(`Invalid API token provided: ${await (0, errors_1.formatResponseError)(err)}`);
+            return (0, helpers_4.printAndExit)(`Invalid API token provided: ${await (0, errors_1.formatResponseError)(err)}`);
         }
         const errors = [`Unexpected error while checking validity of API token: ${err}`, (0, errors_2.tryParseSystemError)(err)];
-        return (0, helpers_3.printAndExit)(errors.join('\n'));
+        return (0, helpers_4.printAndExit)(errors.join('\n'));
     }
-    (0, config_storage_2.storeCodaApiKey)(apiToken, process.env.PWD, apiEndpoint);
-    (0, helpers_3.printAndExit)(`registered\nendpoint: ${formattedEndpoint}`, 0);
+    (0, config_storage_1.storeCodaApiKey)(apiToken, process.env.PWD, apiEndpoint);
+    (0, helpers_4.printAndExit)(`registered\nendpoint: ${formattedEndpoint}`, 0);
 }
 exports.handleRegister = handleRegister;

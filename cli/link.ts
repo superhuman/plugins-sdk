@@ -3,6 +3,7 @@ import {assertApiToken} from './helpers';
 import {assertPackIdOrUrl} from './helpers';
 import {confirmOrFail} from './confirm';
 import {createCodaClient} from './helpers';
+import {deriveBrowserEndpoint} from './helpers';
 import {formatEndpoint} from './helpers';
 import {formatResponseError} from './errors';
 import {getPackId} from './config_storage';
@@ -10,11 +11,17 @@ import {isResponseError} from '../helpers/external-api/coda';
 import {printAndExit} from '../testing/helpers';
 import {storePackId} from './config_storage';
 
-// Regular expression that matches coda.io/p/<packId> or <packId>.
-const PackEditUrlRegex = /^https:\/\/(?:[^/]*)coda.io(?:\:[0-9]+)?\/p\/([0-9]+)(:?[^0-9].*)?$/;
-const PackGalleryUrlRegex = /^https:\/\/(?:[^/]*)coda.io(?:\:[0-9]+)?\/packs\/[^/]*-([0-9]+)$/;
+const CodaPackHost = /[^/]*coda.io/;
+const DocsPackHost = /(?:[^/]*\.)?docs\.(?:superhuman\.com|pp-sh\.io|qa-sh\.io)/;
+const PackEditPath = /\/p\/([0-9]+)(:?[^0-9].*)?$/;
+const PackGalleryPath = /\/packs\/[^/]*-([0-9]+)$/;
 const PackPlainIdRegex = /^([0-9]+)$/;
-const PackRegexes = [PackEditUrlRegex, PackGalleryUrlRegex, PackPlainIdRegex];
+const PackRegexes = [
+  ...[CodaPackHost, DocsPackHost].flatMap(host =>
+    [PackEditPath, PackGalleryPath].map(path => new RegExp(`^https://${host.source}(?::[0-9]+)?${path.source}`)),
+  ),
+  PackPlainIdRegex,
+];
 
 interface LinkArgs {
   manifestDir: string;
@@ -28,6 +35,7 @@ export async function handleLink({manifestDir, apiEndpoint, packIdOrUrl, apiToke
   // TODO(dweitzman): Add a download command to fetch the latest code from
   // the server and ask people if they want to download after linking.
   const formattedEndpoint = formatEndpoint(apiEndpoint);
+  const webEndpoint = deriveBrowserEndpoint(formattedEndpoint);
   apiToken = assertApiToken(apiEndpoint, apiToken);
   const packId = assertPackIdOrUrl(packIdOrUrl);
 
@@ -55,21 +63,18 @@ export async function handleLink({manifestDir, apiEndpoint, packIdOrUrl, apiToke
   const existingPackId = getPackId(manifestDir, apiEndpoint);
   if (existingPackId) {
     if (existingPackId === packId) {
-      return printAndExit(
-        `already linked pack_id: ${existingPackId}\nurl: ${formattedEndpoint}/p/${existingPackId}`,
-        0,
-      );
+      return printAndExit(`already linked pack_id: ${existingPackId}\nurl: ${webEndpoint}/p/${existingPackId}`, 0);
     }
 
     confirmOrFail({
       yes,
-      prompt: `Overwrite existing deploy to pack https://coda.io/p/${existingPackId} with https://coda.io/p/${packId} instead? (y/N): `,
+      prompt: `Overwrite existing deploy to pack ${webEndpoint}/p/${existingPackId} with ${webEndpoint}/p/${packId} instead? (y/N): `,
       example: `packs link ${manifestDir} ${packId} --yes`,
     });
   }
 
   storePackId(manifestDir, packId, apiEndpoint);
-  return printAndExit(`linked pack_id: ${packId}\nurl: ${formattedEndpoint}/p/${packId}`, 0);
+  return printAndExit(`linked pack_id: ${packId}\nurl: ${webEndpoint}/p/${packId}`, 0);
 }
 
 export function parsePackIdOrUrl(packIdOrUrl: string): number | null {

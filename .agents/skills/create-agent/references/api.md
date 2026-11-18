@@ -1,6 +1,6 @@
-# Agent plugin builder API reference
+# Agent builder API reference
 
-These are the calls `sdk.newAgent()` returns for an agent plugin. Connector plugins use the sync-table, formula, and `newConnector()` builder APIs.
+These are the calls `sdk.newAgent()` returns for an agent. Connectors use the sync-table, formula, and `newConnector()` builder APIs.
 
 Examples use the current SDK's `agent` export. If the agent skill selected the older-SDK `pack` export, use `pack` for these builder calls while keeping `sdk.newAgent()`.
 
@@ -33,25 +33,24 @@ agent.setTools({
 - `mail: true` → Mail & Calendar (Superhuman Mail) access.
 - `webSearch: true | {allowedDomains: string[]}` → web search, optionally domain-restricted.
 - `connectors: Array<{connectorId: number, formulas?: Array<{formulaName: string}>}>` → grants access to
-  connector plugins (e.g. Slack) by plugin ID, optionally narrowed to specific formulas. Set
+  connectors (e.g. Slack) by connector ID, optionally narrowed to specific formulas. Set
   `connectorId`, not the deprecated `packId`; a connector takes one or the other, never both.
 
 Use `connectorId` for the current SDK. To check an older installation, run `node -p "const a = require('@superhuman/plugins-sdk').newAgent(); a.setTools({connectors: [{connectorId: 1}]}); a.agent.tools[0].packId"` from the plugin's directory. If it prints `undefined`, the installed SDK predates `connectorId`: write `packId` in place of `connectorId` in every connector, or upgrade with `npm install @superhuman/plugins-sdk@latest`.
 
-### Finding a connector plugin's ID
+### Finding a connector's ID
 
-Browse https://superhuman.com/store/connectors, open the connector's listing, and read its plugin ID off
-the listing page.
+Browse https://superhuman.com/store/connectors and open the connector's listing. The connector ID is the
+number at the end of the listing URL: `https://superhuman.com/store/connectors/airtable-11262` is connector `11262`.
 
-Use `setTools` above, `addDefaultRoutine` for named jobs, and the plain trigger setters below when a
-wake-up needs no separate name or per-run instructions.
+Use `setTools` above for access and `addDefaultRoutine` below for every wake-up path.
 
 ## `addDefaultRoutine({name?, instructions?, trigger})`
 
 Adds one named job: a label and/or per-run instructions wrapped around a single trigger. Call it
-once per job. A routine needs a non-blank `name` or `instructions` (or both). Prefer this over a
-plain trigger setter when the agent has more than one wake-up path, or when a wake-up should do
-something different from `setInstructions`. Routines are still **one agent with many jobs** — they
+once per job. A routine needs a non-blank `name` or `instructions` (or both). When the base
+`setInstructions` already cover a wake-up, give the routine a short `name` and omit `instructions`.
+Routines are still **one agent with many jobs** — they
 do not hand work to another custom agent or grant a different tool set.
 
 ```typescript
@@ -92,29 +91,20 @@ agent.addDefaultRoutine({
 - `name` — optional label in the agent builder (max 80 characters).
 - `instructions` — optional text appended for that routine's run (max 20,000 characters). Omit when
   the base `setInstructions` already cover the job.
-- `trigger` — one `DefaultTriggerDefinition`: schedule (`kind: Schedule` + `rruleString`),
-  while-writing (`kind: WhileWriting` + `condition` / `surfaces`), or a plugin-declarable event
+- `trigger` — one `DefaultTriggerDefinition`: schedule (`kind: Schedule` + `rruleString`; see
+  [Schedule triggers](#schedule-triggers)), while-writing (`kind: WhileWriting` + `condition`, a
+  natural-language string describing when to fire, and `surfaces`, an array of
+  `sdk.ContextualTriggerSurface` values such as `Docs` or `Email`), or a plugin-declarable event
   (`kind: Event` + mail `message_received` / `message_sent` or Slack `message_keyword`). Docs
-  events and Slack `agent_mentioned` are builder-only and are not plugin-declarable.
+  events and Slack `agent_mentioned` are builder-only and are not plugin-declarable. Slack
+  `keywords` is optional: omit it, or pass `[]`, to fire on every top-level message in the
+  channels the installer binds.
 
-Routines share the one-schedule and event-count caps with plain `defaultTriggers`. Docs folds each
+An agent can have one schedule routine and one while-writing routine, and event routines share a count limit. Docs folds each
 routine into the matching installed-agent default on release (name and instruction ride on that
 trigger). Metadata still copies at install time — see [Installation refresh](#installation-refresh).
 
-## `setDefaultScheduleTrigger({rruleString})`
-
-Use when the schedule only wakes the agent and the base instructions already cover that run. For a
-named daily brief (or any schedule whose action differs from the base prompt), prefer
-`addDefaultRoutine` with a schedule trigger instead.
-
-```typescript
-agent.setDefaultScheduleTrigger({
-  rruleString: [
-    "DTSTART;TZID=America/New_York:20260101T090000",
-    "RRULE:FREQ=WEEKLY;BYDAY=MO;BYHOUR=9;BYMINUTE=0",
-  ].join("\n"),
-});
-```
+### Schedule triggers
 
 `rruleString` is one `DTSTART` line (optional) plus one `RRULE` line, RFC 5545 style. The schedule
 trigger accepts:
@@ -143,38 +133,25 @@ RRULE:FREQ=MONTHLY;BYDAY=-1FR;BYSETPOS=-1;BYMONTH=3;WKST=SU;COUNT=10
 
 Use the accepted/rejected parts above when choosing test cases.
 
-## `setDefaultWhileWritingTrigger({condition, surfaces})`
-
-Use when while-writing assistance should just wake the agent under the base instructions. Prefer
-`addDefaultRoutine` when that assist needs its own name or per-run instructions.
-
-```typescript
-agent.setDefaultWhileWritingTrigger({
-  condition: "Offer a citation when the user asserts a statistic",
-  surfaces: [sdk.ContextualTriggerSurface.Docs, sdk.ContextualTriggerSurface.Email],
-});
-```
-
-`condition` is a natural-language string describing when the trigger should fire. `surfaces` is an
-array of `sdk.ContextualTriggerSurface` values (e.g. `Docs`, `Email`) naming where it's active.
-
 ## Installation refresh
 
 Triggers, routines, and tool grants are copied at install time; later uploads do not live-sync them.
 To verify a changed definition in the builder, reinstall the agent if the product surface
-supports refreshing an install. Otherwise create a fresh agent plugin in a new directory and install it:
+supports refreshing an install. Otherwise create a fresh agent in a new directory and install it:
 
 1. Copy `pack.ts` into the new directory and install the published SDK there.
 2. Confirm credentials with `whoami`; register only if no parent credentials are available.
 3. Validate, create with a distinct name, and upload using the main workflow.
 4. Install the new agent and inspect its tools/triggers.
 
-Creating a fresh agent plugin is the default when installation refresh is unavailable.
+Creating a fresh agent is the default when installation refresh is unavailable.
 
 ## Build debugging
 
+If the installed SDK predates 1.20.0, use `npx packs` for the command below.
+
 ```bash
-npx packs build pack.ts
+npx plugins build pack.ts
 ```
 
 Build only bundles TypeScript; it does not execute `pack.ts` or detect a missing `sdk.newAgent`.
@@ -183,10 +160,12 @@ Use it to diagnose bundling failures, then return to validation before uploading
 ## Release
 
 An uploaded-but-unreleased agent can run for its installer. Release a version only when
-it should become broadly installable:
+it should become broadly installable.
+
+If the installed SDK predates 1.20.0, use `npx packs` for the release command.
 
 ```bash
-npx packs release pack.ts <version> --notes "<release notes>"
+npx plugins release pack.ts <version> --notes "<release notes>"
 ```
 
 Choose an uploaded version greater than the latest release. If the plugin directory is a git

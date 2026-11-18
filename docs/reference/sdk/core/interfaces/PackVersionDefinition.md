@@ -25,6 +25,18 @@ Use [ComponentVersionDefinition](ComponentVersionDefinition.md).
 
 ## Properties
 
+### ~~agent?~~
+
+> `optional` **agent**: [`AgentDefinition`](AgentDefinition.md)
+
+The agent this pack defines. Create it with `sdk.newAgent()`.
+
+#### Inherited from
+
+[`ComponentVersionDefinition`](ComponentVersionDefinition.md).[`agent`](ComponentVersionDefinition.md#agent)
+
+***
+
 ### ~~benchInitializationSkill?~~
 
 > `optional` **benchInitializationSkill**: `Partial`\<[`Skill`](Skill.md)\>
@@ -84,6 +96,18 @@ If specified, the user must provide personal authentication credentials before u
 #### Inherited from
 
 [`ComponentVersionDefinition`](ComponentVersionDefinition.md).[`defaultAuthentication`](ComponentVersionDefinition.md#defaultauthentication)
+
+***
+
+### ~~defaultRoutines?~~
+
+> `optional` **defaultRoutines**: [`AgentRoutineMetadata`](AgentRoutineMetadata.md)[]
+
+Default routines for this agent. Add them with `sdk.newAgent().addDefaultRoutine()`.
+
+#### Inherited from
+
+[`ComponentVersionDefinition`](ComponentVersionDefinition.md).[`defaultRoutines`](ComponentVersionDefinition.md#defaultroutines)
 
 ***
 

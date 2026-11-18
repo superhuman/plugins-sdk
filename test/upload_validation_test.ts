@@ -9,13 +9,11 @@ import {AuthenticationType} from '../types';
 import {ConnectionRequirement} from '../api_types';
 import {ContentCategorizationType} from '../schema';
 import {ContextualTriggerAssistMode} from '../types';
-import {ContextualTriggerDecorationStyle} from '../types';
-import {ContextualTriggerSuggestionColor} from '../types';
 import {ContextualTriggerSurface} from '../types';
 import {CurrencyFormat} from '..';
 import {DataIndexing} from '../api_types';
-import type {DefaultTriggerDefinition} from '../types';
 import {DefaultTriggerKind} from '../types';
+import type {DefaultTriggerMetadata} from '../types';
 import {DurationUnit} from '..';
 import {EmbeddedContentType} from '../types';
 import {EndpointSetBy} from '../types';
@@ -9326,7 +9324,7 @@ describe('Pack metadata Validation', async () => {
     });
 
     it('validates a default while-writing trigger', async () => {
-      const contextualTrigger: DefaultTriggerDefinition = {
+      const contextualTrigger: DefaultTriggerMetadata = {
         kind: DefaultTriggerKind.WhileWriting,
         condition: 'Offer a citation when the user asserts a statistic',
       };
@@ -9364,12 +9362,10 @@ describe('Pack metadata Validation', async () => {
     });
 
     it('validates one naming assist mode, surfaces, and blocked domains', async () => {
-      const contextualTrigger: DefaultTriggerDefinition = {
+      const contextualTrigger: DefaultTriggerMetadata = {
         kind: DefaultTriggerKind.WhileWriting,
         condition: 'Offer a citation when the user asserts a statistic',
         assistMode: ContextualTriggerAssistMode.OnDemand,
-        suggestionColor: ContextualTriggerSuggestionColor.Purple,
-        decorationStyle: ContextualTriggerDecorationStyle.Underline,
         surfaces: [ContextualTriggerSurface.Docs, ContextualTriggerSurface.Email],
         blockedDomains: ['internal.example.com'],
       };
@@ -9383,7 +9379,7 @@ describe('Pack metadata Validation', async () => {
 
     for (const assistMode of Object.values(ContextualTriggerAssistMode)) {
       it(`preserves ${assistMode} through JSON upload validation`, async () => {
-        const trigger: DefaultTriggerDefinition = {
+        const trigger: DefaultTriggerMetadata = {
           kind: DefaultTriggerKind.WhileWriting,
           condition: 'Offer a citation when the user asserts a statistic',
           assistMode,
@@ -9434,8 +9430,19 @@ describe('Pack metadata Validation', async () => {
       assert.isNotEmpty(err.validationErrors);
     });
 
+    it('accepts removed suggestionColor and decorationStyle fields in default triggers and routines', async () => {
+      const trigger: DefaultTriggerMetadata = {
+        kind: DefaultTriggerKind.WhileWriting,
+        condition: 'Do a thing.',
+      };
+      Object.assign(trigger, {suggestionColor: 'purple', decorationStyle: 'underline'});
+      for (const fields of [{defaultTriggers: [trigger]}, {defaultRoutines: [{name: 'Citations', trigger}]}]) {
+        await validateJson(createFakeAgentMetadata({agent: {instructions: 'Do a thing.', tools: []}, ...fields}));
+      }
+    });
+
     it('rejects two default triggers of the same kind', async () => {
-      const contextualTrigger: DefaultTriggerDefinition = {
+      const contextualTrigger: DefaultTriggerMetadata = {
         kind: DefaultTriggerKind.WhileWriting,
         condition: 'Do a thing.',
       };
@@ -9452,7 +9459,7 @@ describe('Pack metadata Validation', async () => {
     });
 
     it('validates a default schedule trigger', async () => {
-      const scheduleTrigger: DefaultTriggerDefinition = {
+      const scheduleTrigger: DefaultTriggerMetadata = {
         kind: DefaultTriggerKind.Schedule,
         rruleString: 'DTSTART:20260105T090000Z\nRRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE;BYHOUR=9;BYMINUTE=0',
       };
@@ -9498,7 +9505,7 @@ describe('Pack metadata Validation', async () => {
     });
 
     it('reports a duplicate kind alongside a broken trigger', async () => {
-      const contextualTrigger: DefaultTriggerDefinition = {
+      const contextualTrigger: DefaultTriggerMetadata = {
         kind: DefaultTriggerKind.WhileWriting,
         condition: 'Do a thing.',
       };
@@ -9541,7 +9548,7 @@ describe('Pack metadata Validation', async () => {
     });
 
     it('takes a schedule trigger and a while-writing trigger together', async () => {
-      const defaultTriggers: DefaultTriggerDefinition[] = [
+      const defaultTriggers: DefaultTriggerMetadata[] = [
         {kind: DefaultTriggerKind.Schedule, rruleString: 'DTSTART:20260101T090000Z\nRRULE:FREQ=DAILY'},
         {kind: DefaultTriggerKind.WhileWriting, condition: 'Do a thing.'},
       ];
@@ -9554,7 +9561,7 @@ describe('Pack metadata Validation', async () => {
     });
 
     it('validates a default mail event trigger', async () => {
-      const mailTrigger: DefaultTriggerDefinition = {
+      const mailTrigger: DefaultTriggerMetadata = {
         kind: DefaultTriggerKind.Event,
         type: EventTriggerType.Mail,
         mailEventType: MailEventType.MessageReceived,
@@ -9608,7 +9615,7 @@ describe('Pack metadata Validation', async () => {
     });
 
     it('takes more than one event trigger', async () => {
-      const defaultTriggers: DefaultTriggerDefinition[] = [
+      const defaultTriggers: DefaultTriggerMetadata[] = [
         {
           kind: DefaultTriggerKind.Event,
           type: EventTriggerType.Mail,
@@ -9740,7 +9747,7 @@ describe('Pack metadata Validation', async () => {
     });
 
     it('takes a full event budget alongside the other kinds', async () => {
-      const mailTrigger: DefaultTriggerDefinition = {
+      const mailTrigger: DefaultTriggerMetadata = {
         kind: DefaultTriggerKind.Event,
         type: EventTriggerType.Mail,
         mailEventType: MailEventType.MessageReceived,
@@ -9748,7 +9755,7 @@ describe('Pack metadata Validation', async () => {
           conditions: [{field: MailFilterField.From, operator: FilterOperator.TextContains, value: '@example.com'}],
         },
       };
-      const defaultTriggers: DefaultTriggerDefinition[] = [
+      const defaultTriggers: DefaultTriggerMetadata[] = [
         ...new Array(Limits.MaxDefaultEventTriggers).fill(mailTrigger),
         {kind: DefaultTriggerKind.Schedule, rruleString: 'DTSTART:20260101T090000Z\nRRULE:FREQ=DAILY'},
         {kind: DefaultTriggerKind.WhileWriting, condition: 'Do a thing.'},
@@ -9762,7 +9769,7 @@ describe('Pack metadata Validation', async () => {
     });
 
     it('validates a default slack keyword trigger', async () => {
-      const slackTrigger: DefaultTriggerDefinition = {
+      const slackTrigger: DefaultTriggerMetadata = {
         kind: DefaultTriggerKind.Event,
         type: EventTriggerType.Slack,
         eventType: SlackEventType.MessageKeyword,
@@ -9812,21 +9819,56 @@ describe('Pack metadata Validation', async () => {
       assert.isNotEmpty(err.validationErrors);
     });
 
-    it('rejects slack keywords that are empty, which would match every message', async () => {
-      const err = await validateJsonAndAssertFails(
-        createFakeAgentMetadata({
-          agent: {instructions: 'Do a thing.', tools: []},
-          defaultTriggers: [
-            {
-              kind: DefaultTriggerKind.Event,
-              type: EventTriggerType.Slack,
-              eventType: SlackEventType.MessageKeyword,
-              keywords: [],
-            } as any,
-          ],
-        }),
-      );
-      assert.isNotEmpty(err.validationErrors);
+    it('validates a slack trigger with empty keywords, which matches every message', async () => {
+      const slackTrigger: DefaultTriggerMetadata = {
+        kind: DefaultTriggerKind.Event,
+        type: EventTriggerType.Slack,
+        eventType: SlackEventType.MessageKeyword,
+        keywords: [],
+      };
+      const metadata = createFakeAgentMetadata({
+        agent: {instructions: 'Do a thing.', tools: []},
+        defaultTriggers: [slackTrigger],
+      });
+      const result = await validateJson(metadata);
+      assert.deepEqual(result.defaultTriggers, [slackTrigger]);
+    });
+
+    it('validates a slack trigger without keywords, which matches every message', async () => {
+      const slackTrigger: DefaultTriggerMetadata = {
+        kind: DefaultTriggerKind.Event,
+        type: EventTriggerType.Slack,
+        eventType: SlackEventType.MessageKeyword,
+      };
+      const metadata = createFakeAgentMetadata({
+        agent: {instructions: 'Do a thing.', tools: []},
+        defaultTriggers: [slackTrigger],
+      });
+      const result = await validateJson(metadata);
+      assert.deepEqual(result.defaultTriggers, [slackTrigger]);
+    });
+
+    it('rejects blank, too many, or too long slack keywords', async () => {
+      for (const keywords of [
+        [''],
+        new Array(Limits.MaxKeywords + 1).fill('deploy'),
+        ['k'.repeat(Limits.KeywordLength + 1)],
+      ]) {
+        const err = await validateJsonAndAssertFails(
+          createFakeAgentMetadata({
+            agent: {instructions: 'Do a thing.', tools: []},
+            defaultTriggers: [
+              {
+                kind: DefaultTriggerKind.Event,
+                type: EventTriggerType.Slack,
+                eventType: SlackEventType.MessageKeyword,
+                keywords,
+              },
+            ],
+          }),
+        );
+        assert.isNotEmpty(err.validationErrors);
+      }
     });
 
     it('rejects a slack workspace, which is bound at install', async () => {
@@ -10101,7 +10143,7 @@ describe('Pack metadata Validation', async () => {
     });
 
     it('takes a meeting type filter', async () => {
-      const trigger: DefaultTriggerDefinition = {
+      const trigger: DefaultTriggerMetadata = {
         kind: DefaultTriggerKind.Event,
         type: EventTriggerType.Notetaker,
         eventType: NotetakerEventType.MeetingSummaryCompleted,
@@ -10120,7 +10162,7 @@ describe('Pack metadata Validation', async () => {
     });
 
     it('takes a project tag filter', async () => {
-      const trigger: DefaultTriggerDefinition = {
+      const trigger: DefaultTriggerMetadata = {
         kind: DefaultTriggerKind.Event,
         type: EventTriggerType.Notetaker,
         eventType: NotetakerEventType.MeetingSummaryCompleted,
@@ -10139,7 +10181,7 @@ describe('Pack metadata Validation', async () => {
     });
 
     it('takes one trigger of every event type at once', async () => {
-      const defaultTriggers: DefaultTriggerDefinition[] = [
+      const defaultTriggers: DefaultTriggerMetadata[] = [
         {
           kind: DefaultTriggerKind.Event,
           type: EventTriggerType.Mail,
@@ -10171,21 +10213,21 @@ describe('Pack metadata Validation', async () => {
 
     describe('default routines', () => {
       const routineAgentMetadata = () => createFakeAgentMetadata({agent: {instructions: 'Base.', tools: []}});
-      const schedule: DefaultTriggerDefinition = {
+      const schedule: DefaultTriggerMetadata = {
         kind: DefaultTriggerKind.Schedule,
         rruleString: 'DTSTART;TZID=America/New_York:20261012T090000\nRRULE:FREQ=DAILY',
       };
-      const writing: DefaultTriggerDefinition = {
+      const writing: DefaultTriggerMetadata = {
         kind: DefaultTriggerKind.WhileWriting,
         condition: 'When writing statistics',
       };
-      const slack: DefaultTriggerDefinition = {
+      const slack: DefaultTriggerMetadata = {
         kind: DefaultTriggerKind.Event,
         type: EventTriggerType.Slack,
         eventType: SlackEventType.MessageKeyword,
         keywords: ['deploy'],
       };
-      const mail: DefaultTriggerDefinition = {
+      const mail: DefaultTriggerMetadata = {
         kind: DefaultTriggerKind.Event,
         type: EventTriggerType.Mail,
         mailEventType: MailEventType.MessageReceived,
@@ -10193,7 +10235,7 @@ describe('Pack metadata Validation', async () => {
           conditions: [{field: MailFilterField.From, operator: FilterOperator.TextContains, value: '@example.com'}],
         },
       };
-      const notetaker: DefaultTriggerDefinition = {
+      const notetaker: DefaultTriggerMetadata = {
         kind: DefaultTriggerKind.Event,
         type: EventTriggerType.Notetaker,
         eventType: NotetakerEventType.MeetingSummaryCompleted,
@@ -10238,10 +10280,24 @@ describe('Pack metadata Validation', async () => {
         }
       });
 
+      it('accepts routines whose slack trigger omits keywords or passes an empty list', async () => {
+        const watchAll: DefaultTriggerMetadata = {
+          kind: DefaultTriggerKind.Event,
+          type: EventTriggerType.Slack,
+          eventType: SlackEventType.MessageKeyword,
+        };
+        const defaultRoutines = [
+          {name: 'Watch all', trigger: watchAll},
+          {name: 'Watch', trigger: {...slack, keywords: []}},
+        ];
+        const validated = await validateJson({...routineAgentMetadata(), defaultRoutines});
+        assert.deepEqual(validated.defaultRoutines, defaultRoutines);
+      });
+
       it('validates nested trigger configuration and rejects unknown routine keys', async () => {
         for (const routine of [
           {name: 'Brief', trigger: {...schedule, rruleString: 'RRULE:FREQ=DAILY'}},
-          {name: 'Watch', trigger: {...slack, keywords: []}},
+          {name: 'Watch', trigger: {...slack, keywords: ['']}},
           {name: 'Brief', instruction: 'Wrong field.', trigger: schedule},
           {name: 'Brief', trigger: {...writing, instruction: 'Wrong level.'}},
           {name: 'Chat', trigger: {kind: 'chat'}},

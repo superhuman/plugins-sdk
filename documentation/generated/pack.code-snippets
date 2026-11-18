@@ -95,6 +95,12 @@
     "body": "// When registering your app in the API's developer console set the redirect URL\n// to: https://docs.superhuman.com/packsAuth/oauth2/{PACK ID}\n// After building your Pack, remember to visit the Settings tab to set your\n// client ID and secret.\nconnector.setUserAuthentication({\n  type: sdk.AuthenticationType.OAuth2,\n  // The following two URLs will be found in the API's documentation.\n  authorizationUrl: \"${1:https://example.com/authorize}\",\n  tokenUrl: \"${2:https://example.com/token}\",\n  scopes: [\n    // TODO: List the API scopes to request, if any.\n  ],\n  getConnectionName: async function (context) {\n    // TODO: Fetch the name of the account.\n    let name = \"\";\n    return name;\n  },\n});",
     "scope": "javascript,typescript"
   },
+  "setUserAuthentication:OAuth2DCR": {
+    "prefix": "/setUserAuthentication:OAuth2DCR",
+    "description": "Sets per-user, OAuth2 authentication for the Pack using dynamic client registration.",
+    "body": "connector.setUserAuthentication({\n  type: sdk.AuthenticationType.OAuth2,\n  useDynamicClientRegistration: true,\n  useProofKeyForCodeExchange: true,\n  scopes: [\n    // TODO: List the API scopes to request, if any.\n  ],\n});",
+    "scope": "javascript,typescript"
+  },
   "setUserAuthentication:OAuth2ClientCredentials": {
     "prefix": "/setUserAuthentication:OAuth2ClientCredentials",
     "description": "Sets per-user, OAuth2 authentication for the Pack using the Client Credentials flow.",
@@ -291,6 +297,42 @@
     "prefix": "/addMcpServer",
     "description": "Adds an MCP server.",
     "body": "connector.addMCPServer({\n  name: \"${1:MyMCPServer}\",\n  endpointUrl: \"${2:https://my-mcp-server.com/mcp}\",\n});",
+    "scope": "javascript,typescript"
+  },
+  "setTools": {
+    "prefix": "/setTools",
+    "description": "Sets the tools and connectors the agent can use.",
+    "body": "agent.setTools({\n  docs: ${1:true},\n  mail: ${2:true},\n  webSearch: ${3:true},\n  connectors: [\n    // TODO: Add connectors here.\n  ],\n});",
+    "scope": "javascript,typescript"
+  },
+  "addDefaultRoutine": {
+    "prefix": "/addDefaultRoutine",
+    "description": "Adds a while-writing routine that can comment on or rewrite text.",
+    "body": "agent.addDefaultRoutine({\n  name: \"${1:Routine name}\",\n  trigger: {\n    kind: sdk.DefaultTriggerKind.WhileWriting,\n    condition: \"${2:The writing this routine should react to.}\",\n  },\n  instructions: `\n    ${3:Instructions for the routine.}\n  `,\n});",
+    "scope": "javascript,typescript"
+  },
+  "addDefaultRoutine:schedule": {
+    "prefix": "/addDefaultRoutine:schedule",
+    "description": "Adds a routine that runs on a schedule.",
+    "body": "agent.addDefaultRoutine({\n  name: \"${1:Routine name}\",\n  trigger: {\n    kind: sdk.DefaultTriggerKind.Schedule,\n    rruleString: [\n      \"DTSTART:20260101T000000\",\n      \"RRULE:FREQ=${2:WEEKLY};BYDAY=${3:MO};BYHOUR=${4:9};BYMINUTE=0\",\n    ].join(\"\\n\"),\n  },\n  instructions: `\n    ${5:Instructions for the routine.}\n  `,\n});",
+    "scope": "javascript,typescript"
+  },
+  "addDefaultRoutine:mail": {
+    "prefix": "/addDefaultRoutine:mail",
+    "description": "Adds a routine that runs when a Mail message is received or sent.",
+    "body": "agent.addDefaultRoutine({\n  name: \"${1:Log invoices}\",\n  trigger: {\n    kind: sdk.DefaultTriggerKind.Event,\n    type: sdk.EventTriggerType.Mail,\n    eventType: sdk.MailEventType.$2,\n    filters: {\n      conditions: [\n        {\n          field: sdk.MailFilterField.$4,\n          operator: sdk.FilterOperator.$5,\n          value: \"${6:Value}\",\n        },\n        // TODO: Add more conditions here.\n      ],\n    },\n  },\n  instructions: `\n    ${3:Instructions for the routine.}\n  `,\n});",
+    "scope": "javascript,typescript"
+  },
+  "addDefaultRoutine:slack": {
+    "prefix": "/addDefaultRoutine:slack",
+    "description": "Adds a routine that runs when a Slack message contains a keyword.",
+    "body": "agent.addDefaultRoutine({\n  name: \"${1:Routine name}\",\n  trigger: {\n    kind: sdk.DefaultTriggerKind.Event,\n    type: sdk.EventTriggerType.Slack,\n    eventType: sdk.SlackEventType.MessageKeyword,\n    keywords: [\n      // TODO: Add keywords here.\n    ],\n  },\n  instructions: `\n    ${3:Instructions for the routine.}\n  `,\n});",
+    "scope": "javascript,typescript"
+  },
+  "addSuggestedPrompt": {
+    "prefix": "/addSuggestedPrompt",
+    "description": "Adds a suggested prompt that appears as a button in chat.",
+    "body": "// Add at most three suggested prompts.\nagent.addSuggestedPrompt({\n  name: \"${1:MyPrompt}\",\n  displayName: \"${2:My display name}\",\n  prompt: \"${3:The prompt text.}\",\n});",
     "scope": "javascript,typescript"
   }
 }

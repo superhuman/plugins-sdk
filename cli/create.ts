@@ -3,6 +3,7 @@ import type {ConnectorAccessArgs} from './connector_access';
 import {PACK_ID_FILE_NAME} from './config_storage';
 import {assertApiToken} from './helpers';
 import {createCodaClient} from './helpers';
+import {deriveBrowserEndpoint} from './helpers';
 import {formatEndpoint} from './helpers';
 import {formatError} from './errors';
 import {formatResponseError} from './errors';
@@ -84,7 +85,7 @@ export async function createPack(
     );
     const packId = response.packId;
     storePackId(manifestDir, packId, apiEndpoint);
-    return printAndExit(`created pack_id: ${packId}\nurl: ${apiEndpoint}/p/${packId}`, 0);
+    return printAndExit(`created pack_id: ${packId}\nurl: ${deriveBrowserEndpoint(formattedEndpoint)}/p/${packId}`, 0);
   } catch (err: any) {
     if (isResponseError(err)) {
       return printAndExit(`Unable to create your pack, received error: ${await formatResponseError(err)}`);

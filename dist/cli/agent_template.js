@@ -22,11 +22,15 @@ agent.setTools({
 
 // Each installer gets a paused schedule at 9 AM in their time zone.
 // Add TZID to use one time zone for all installers.
-// agent.setDefaultScheduleTrigger({
-//   rruleString: [
-//     "DTSTART:20260101T090000",
-//     "RRULE:FREQ=WEEKLY;BYDAY=MO;BYHOUR=9;BYMINUTE=0",
-//   ].join("\\n"),
+// agent.addDefaultRoutine({
+//   name: "Weekly check-in",
+//   trigger: {
+//     kind: sdk.DefaultTriggerKind.Schedule,
+//     rruleString: [
+//       "DTSTART:20260101T090000",
+//       "RRULE:FREQ=WEEKLY;BYDAY=MO;BYHOUR=9;BYMINUTE=0",
+//     ].join("\\n"),
+//   },
 // });
 `;
 }

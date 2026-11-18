@@ -27,8 +27,32 @@ export function createCodaClient(apiToken: string, protocolAndHost?: string) {
   return new Client({protocolAndHost, apiToken});
 }
 
+/**
+ * Adds `https://` to an API endpoint if needed.
+ *
+ * @example
+ * ```ts
+ * formatEndpoint('my-company.coda.io'); // 'https://my-company.coda.io'
+ * ```
+ */
 export function formatEndpoint(endpoint: string) {
   return endpoint.startsWith('https://') ? endpoint : `https://${endpoint}`;
+}
+
+const DEFAULT_WEB_ENDPOINT = 'https://docs.superhuman.com';
+
+/**
+ * Derives a browser link base URL from a formatted API endpoint.
+ *
+ * @example
+ * ```ts
+ * deriveBrowserEndpoint('https://coda.io'); // 'https://docs.superhuman.com'
+ * deriveBrowserEndpoint('https://my-company.coda.io/'); // 'https://my-company.coda.io'
+ * ```
+ */
+export function deriveBrowserEndpoint(formattedApiEndpoint: string): string {
+  const normalizedEndpoint = formattedApiEndpoint.replace(/\/+$/, '');
+  return normalizedEndpoint === DEFAULT_API_ENDPOINT ? DEFAULT_WEB_ENDPOINT : normalizedEndpoint;
 }
 
 export function isTestCommand() {
@@ -93,7 +117,7 @@ export function assertPackIdOrUrl(packIdOrUrl: string): number {
     return printAndExit(
       `Error: Not a valid pack ID or URL: ${packIdOrUrl}\n` +
         `  packs clone 1234\n` +
-        `  packs clone https://coda.io/p/1234`,
+        `  packs clone ${DEFAULT_WEB_ENDPOINT}/p/1234`,
     );
   }
   return packId;

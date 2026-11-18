@@ -1,7 +1,7 @@
 # MkDocs options.
 # See: https://www.mkdocs.org/user-guide/configuration/
-site_name: Superhuman Packs SDK
-site_description: "Documentation for the SDK to build Superhuman Packs."
+site_name: Superhuman Plugins SDK
+site_description: "Documentation for the SDK to build Superhuman plugins."
 site_url: !ENV [MK_DOCS_SITE_URL, "https://docs.superhuman.com/packs/build/latest/"]
 repo_url: https://github.com/superhuman/plugins-sdk
 repo_name: superhuman/plugins-sdk
@@ -78,8 +78,8 @@ plugins:
     - llmstxt:
         enabled: !ENV [MK_DOCS_GENERATE_ASSETS, true]
         markdown_description: >
-          A Pack is an extension that adds new powers to the Superhuman suite.
-          What other platforms call plugins, add-ons, or extensions, we call "Packs".
+          A plugin (formerly Pack) is an extension that adds new features to the Superhuman suite.
+          Use plugins to build agents and connectors for Superhuman Go and Docs.
         full_output: llms-full.txt
         sections:
           Documentation:

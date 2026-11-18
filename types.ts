@@ -1591,14 +1591,12 @@ export interface MCPTool extends BaseTool<ToolType.MCP> {
 export interface ContactResolutionTool extends BaseTool<ToolType.ContactResolution> {}
 
 /**
- * Tool that provides access to Superhuman Docs documents and tables capabilities.
- * @internal
+ * Lets the agent read and write Superhuman Docs documents and tables.
  */
 export interface CodaDocsAndTablesTool extends BaseTool<ToolType.CodaDocsAndTables> {}
 
 /**
- * Tool that provides access to Superhuman Mail email and calendar capabilities.
- * @internal
+ * Lets the agent read and send Superhuman Mail messages and read the calendar.
  */
 export interface MailAndCalendarTool extends BaseTool<ToolType.MailAndCalendar> {}
 
@@ -1885,33 +1883,32 @@ export interface SuggestedPrompt {
 
 /**
  * The definition of an agent.
- *
- * @internal
- * @hidden
  */
 export interface AgentDefinition {
   /**
-   * What the agent is told to do. A missing `setInstructions()` fails at `packs validate`.
+   * Instructions guide what the agent does. Required for all agents.
    */
   instructions: string;
   /**
-   * The tools the agent may use. An empty list means no tools, not a default set.
+   * The products and sources this agent can use, such as Docs, Mail, web search, or connectors.
+   * If this list is empty, none are configured. Go's built-in platform features remain available to the LLM.
    */
   tools: AgentTool[];
 }
 
 /**
  * A tool an agent can use.
- *
- * @internal
- * @hidden
  */
 export type AgentTool =
   | CodaDocsAndTablesTool
   | MailAndCalendarTool
   | WebSearchTool
   | (Omit<PackTool, 'packId'> & {
+      /** The connector's pack id. `setTools` writes `connectorId` here, because hosts read `packId`. */
       packId: number;
+      /**
+       * MCP tools to offer from this connector. Omit to offer every tool the connector's MCP servers list.
+       */
       mcpTools?: AgentConnectorMcpTool[];
       /**
        * Whether the agent needs this connector. `true` means it needs this one. `{groupName}` means
@@ -1924,10 +1921,7 @@ export type AgentTool =
     });
 
 /**
- * An MCP tool an agent can call on a connector pack, named as the MCP server lists it.
- *
- * @internal
- * @hidden
+ * An MCP tool an agent can call through a connector. Use the name listed by the MCP server.
  */
 export interface AgentConnectorMcpTool {
   /**
@@ -1935,16 +1929,13 @@ export interface AgentConnectorMcpTool {
    */
   toolName: string;
   /**
-   * The MCP server the tool belongs to. Omit it to match the name on every MCP server the pack declares.
+   * The MCP server that provides the tool. If omitted, the name is matched against every MCP server the pack declares.
    */
   serverName?: string;
 }
 
 /**
- * How an agent names a connector in `setTools`. Set exactly one of the two fields.
- *
- * @internal
- * @hidden
+ * Identify a connector in `setTools` with one field. Use `connectorId` or the deprecated `packId`, but not both.
  */
 export type AgentConnectorId =
   | {
@@ -1959,10 +1950,8 @@ export type AgentConnectorId =
     };
 
 /**
- * The tools an agent can use, as written on the builder.
- *
- * @internal
- * @hidden
+ * Options for giving the agent access to tools and connectors.
+ * Go's built-in platform features are always available to the LLM.
  */
 export interface AgentToolsDef {
   /**
@@ -1970,23 +1959,34 @@ export interface AgentToolsDef {
    */
   docs?: boolean;
   /**
-   * Read and send Superhuman Mail email, and read the calendar.
+   * Read and send Superhuman Mail messages and read the calendar.
    */
   mail?: boolean;
   /**
    * Search the public internet, optionally restricted to `allowedDomains`.
    */
-  webSearch?: boolean | {allowedDomains?: string[]};
+  webSearch?:
+    | boolean
+    | {
+        /**
+         * Domains to restrict search results to. Omit the HTTP prefix, for example `docs.example.com`.
+         * Subdomains are included. Maximum of 100 domains.
+         */
+        allowedDomains?: string[];
+      };
   /**
-   * Connectors this agent can call, one entry per connector. Name each connector with `connectorId`,
-   * or with the deprecated `packId`, not both.
+   * Connectors this agent can call, one per connector. Users are prompted to install missing connectors.
+   * Connectors are specified by ID, using `connectorId`.
    */
   connectors?: Array<
     AgentConnectorId & {
       /**
        * The formulas to offer, if not all of them.
        */
-      formulas?: Array<{formulaName: string}>;
+      formulas?: Array<{
+        /** The name of the formula to offer. */
+        formulaName: string;
+      }>;
       /**
        * The MCP tools to offer, if not all of them. At runtime the agent gets only these tools from the
        * connector's MCP servers; every other MCP tool is dropped. Leave this out to offer all of them.
@@ -2013,81 +2013,53 @@ export interface AgentToolsDef {
 }
 
 /**
- * How proactively a while-writing trigger offers help.
- * Absent defaults to `Proactive`.
- *
- * @internal
- * @hidden
+ * Controls when a while-writing trigger offers help. Defaults to `Proactive`.
  */
 export enum ContextualTriggerAssistMode {
+  /** Offers help occasionally. */
   Balanced = 'balanced',
+  /** Offers help only when the user asks. */
   OnDemand = 'on_demand',
+  /** Offers help as the user writes. */
   Proactive = 'proactive',
-}
-
-/**
- * The color a while-writing trigger's suggestion renders in. Absent defaults to `Purple`.
- *
- * @internal
- * @hidden
- */
-export enum ContextualTriggerSuggestionColor {
-  Blue = 'blue',
-  Green = 'green',
-  Mulberry = 'mulberry',
-  Neutral = 'neutral',
-  Orange = 'orange',
-  Purple = 'purple',
-  Red = 'red',
-  Yellow = 'yellow',
-}
-
-/**
- * How a while-writing trigger's suggestion renders. Absent defaults to `Auto`, which leaves the
- * choice to the client.
- *
- * @internal
- * @hidden
- */
-export enum ContextualTriggerDecorationStyle {
-  Auto = 'auto',
-  Underline = 'underline',
 }
 
 /**
  * Where a while-writing agent may offer help. Absent defaults to every surface.
  *
- * @internal
  * @hidden
  */
 export enum ContextualTriggerSurface {
+  /** Chat and messaging apps. */
   ChatAndMessages = 'chat_messages',
+  /** Code editors and IDEs. */
   CodingEnvironment = 'coding_environment',
+  /** Customer service tools. */
   CustomerService = 'customer_service',
+  /** Documents. */
   Docs = 'docs',
+  /** Email. */
   Email = 'email',
+  /** Search and the browser. */
   SearchAndBrowser = 'search_browser',
+  /** Social media. */
   SocialMedia = 'social_media',
 }
 
 /**
- * Which kind of default trigger an entry declares. More kinds join this enum as they become
- * authorable.
- *
- * @internal
- * @hidden
+ * The type triggers available.
  */
 export enum DefaultTriggerKind {
+  /** Runs when an event arrives from another product, such as Mail or Slack. */
   Event = 'event',
+  /** Runs on a fixed schedule. */
   Schedule = 'schedule',
+  /** Runs as the user writes. */
   WhileWriting = 'whileWriting',
 }
 
 /**
- * Base interface for all default trigger definitions.
- *
- * @internal
- * @hidden
+ * Shared fields for a trigger.
  */
 export interface BaseDefaultTrigger<T extends DefaultTriggerKind> {
   /** The kind identifier for this trigger. */
@@ -2095,88 +2067,93 @@ export interface BaseDefaultTrigger<T extends DefaultTriggerKind> {
 }
 
 /**
- * A default schedule trigger a pack's agent ships with. Adopters receive it paused.
- *
- * @internal
- * @hidden
+ * A schedule trigger definition. It defaults to inactive when a user installs the agent.
+ * An agent can have only one schedule routine.
  */
 export interface ScheduleTriggerDefinition extends BaseDefaultTrigger<DefaultTriggerKind.Schedule> {
   /**
-   * The recurrence, as an RFC 5545 `RRULE`, with a `DTSTART` line.
-   * If `DTSTART` has a local date and time with no `TZID`, the schedule uses each installer's time zone.
-   * Set `TZID` to use one time zone for all installers. Use `Z` to set UTC.
+   * An RFC 5545 recurrence rule with a `DTSTART` line.
+   * Without `TZID`, a local start time uses each installer's time zone.
+   * Set `TZID` to use one time zone for all installers.
+   * Add `Z` to use UTC.
    *
-   * Takes `FREQ` of `HOURLY` through `YEARLY`, with `INTERVAL`, `COUNT`, `UNTIL`, `WKST`, `BYDAY`,
-   * `BYHOUR`, `BYMINUTE`, `BYMONTH`, `BYMONTHDAY`, and `BYSETPOS`. Rules the builder's picker
-   * cannot draw, such as `FREQ=YEARLY` or `BYMONTHDAY=-1`, upload and render read-only.
+   * Use `FREQ` from `HOURLY` through `YEARLY`, with `INTERVAL`, `COUNT`, `UNTIL`, `WKST`, `BYDAY`,
+   * `BYHOUR`, `BYMINUTE`, `BYMONTH`, `BYMONTHDAY`, and `BYSETPOS`.
+   * The builder's picker cannot create every valid rule.
+   * Rules such as `FREQ=YEARLY` or `BYMONTHDAY=-1` still upload but appear read-only.
    *
-   * Rejected: a schedule firing more than once an hour, an rrule set, an unresolvable `TZID`, a
-   * date that does not exist, an `UNTIL` before the `DTSTART`, and a rule over 512 characters.
+   * Schedules cannot run more than once an hour. Upload rejects multiple `RRULE` lines, an unknown `TZID`,
+   * invalid dates, an `UNTIL` before `DTSTART`, and rules over 512 characters.
    */
   rruleString: string;
 }
 
 /**
- * A default while-writing trigger a pack's agent ships with.
- *
- * @internal
- * @hidden
+ * A while-writing trigger definition. An agent can have only one while-writing routine.
+ * It can show screen annotations on editable text.
  */
 export interface WhileWritingTriggerDefinition extends BaseDefaultTrigger<DefaultTriggerKind.WhileWriting> {
-  /** Natural language condition the trigger fires on, e.g. "Offer a citation when the user asserts a statistic". */
+  /**
+   * A lightweight model checks this description to decide whether to start a run.
+   * This is separate from the agent's instructions.
+   */
   condition: string;
+  /** Controls when this trigger offers help. Defaults to {@link ContextualTriggerAssistMode.Proactive}. */
   assistMode?: ContextualTriggerAssistMode;
-  suggestionColor?: ContextualTriggerSuggestionColor;
-  decorationStyle?: ContextualTriggerDecorationStyle;
+  /**
+   * Where this trigger may offer help. Absent means every surface.
+   * @hidden
+   */
   surfaces?: ContextualTriggerSurface[];
-  /** Domains this trigger will not activate on. Max 50. */
+  /** Domains where this trigger will not run. List up to 50. */
   blockedDomains?: string[];
 }
 
 /**
- * Which product's events a default event trigger listens to.
- *
- * @internal
- * @hidden
+ * The product this event trigger listens to.
  */
 export enum EventTriggerType {
+  /** Events from Superhuman Mail. */
   Mail = 'mail',
+  /**
+   * Events from the notetaker.
+   * @hidden
+   */
   Notetaker = 'notetaker',
+  /** Events from Slack. */
   Slack = 'slack',
 }
 
 /**
- * Base interface for all default event trigger definitions.
- *
- * @internal
- * @hidden
+ * Shared fields for default event triggers.
  */
 export interface BaseEventTrigger<T extends EventTriggerType> extends BaseDefaultTrigger<DefaultTriggerKind.Event> {
-  /** Which product's events this trigger listens to. */
+  /** The product this trigger listens to. */
   type: T;
 }
 
 /**
  * How a filter condition compares its field to its value.
- *
- * @internal
- * @hidden
  */
 export enum FilterOperator {
+  /** The field is at least this number. */
   NumberAtLeast = 'numberAtLeast',
+  /** The field is at most this number. */
   NumberAtMost = 'numberAtMost',
+  /** The field equals this number. */
   NumberEquals = 'numberEquals',
+  /** The field contains this text. */
   TextContains = 'textContains',
+  /** The field does not contain this text. */
   TextDoesNotContain = 'textDoesNotContain',
+  /** The field is not exactly this text. */
   TextDoesNotEqual = 'textDoesNotEqual',
+  /** The field is exactly this text. */
   TextEquals = 'textEquals',
 }
 
 /**
- * The operators an address field accepts: whole value or substring.
- *
- * @internal
- * @hidden
+ * Operators for matching an address field against the full value or part of it.
  */
 export type AddressFilterOperator =
   | FilterOperator.TextContains
@@ -2185,26 +2162,17 @@ export type AddressFilterOperator =
   | FilterOperator.TextEquals;
 
 /**
- * The operators a free-text field accepts: substring only.
- *
- * @internal
- * @hidden
+ * Operators for matching part of a text field.
  */
 export type TextFilterOperator = FilterOperator.TextContains | FilterOperator.TextDoesNotContain;
 
 /**
- * The operators an identifier field accepts: whole value only.
- *
- * @internal
- * @hidden
+ * Operators for matching an identifier against its full value.
  */
 export type IdFilterOperator = FilterOperator.TextDoesNotEqual | FilterOperator.TextEquals;
 
 /**
- * The operators a numeric field accepts.
- *
- * @internal
- * @hidden
+ * Operators for comparing a number with a threshold or exact value.
  */
 export type NumericFilterOperator =
   | FilterOperator.NumberAtLeast
@@ -2212,61 +2180,53 @@ export type NumericFilterOperator =
   | FilterOperator.NumberEquals;
 
 /**
- * How a filter's conditions combine. Absent means `And`.
- *
- * @internal
- * @hidden
+ * Choose whether all filter conditions must match or any one can match.
  */
 export enum FilterCombinator {
+  /** Every condition must match. */
   And = 'and',
+  /** Any condition can match. */
   Or = 'or',
 }
 
 /**
- * The mail events a default trigger can fire on.
- *
- * @internal
- * @hidden
+ * Mail events that can trigger an agent routine.
  */
 export enum MailEventType {
+  /** The user receives an email. */
   MessageReceived = 'message_received',
+  /** The user sends an email. */
   MessageSent = 'message_sent',
 }
 
 /**
- * The part of a message a mail filter condition matches on.
- *
- * @internal
- * @hidden
+ * Message fields that a mail filter can match.
  */
 export enum MailFilterField {
+  /** The message body. */
   Body = 'body',
+  /** The From address. */
   From = 'from',
+  /** The subject line. */
   Subject = 'subject',
+  /** The To address. */
   To = 'to',
 }
 
 /**
- * Base interface for all mail filter conditions. Each field admits only the operators that make
- * sense for it.
- *
- * @internal
- * @hidden
+ * Shared fields for mail filter conditions. Each field supports only the operators that apply to it.
  */
 export interface BaseMailFilterCondition<F extends MailFilterField, O extends FilterOperator> {
   /** The part of the message to match on. */
   field: F;
   /** How to compare the field to {@link value}. */
   operator: O;
-  /** What to match the field against. Max 320 characters on an address field, 998 on a text field. */
+  /** Value to match. Address values can be up to 320 characters. Text values can be up to 998. */
   value: string;
 }
 
 /**
  * A condition on an address field.
- *
- * @internal
- * @hidden
  */
 export type MailAddressFilterCondition = BaseMailFilterCondition<
   MailFilterField.From | MailFilterField.To,
@@ -2275,9 +2235,6 @@ export type MailAddressFilterCondition = BaseMailFilterCondition<
 
 /**
  * A condition on a text field.
- *
- * @internal
- * @hidden
  */
 export type MailTextFilterCondition = BaseMailFilterCondition<
   MailFilterField.Body | MailFilterField.Subject,
@@ -2286,59 +2243,50 @@ export type MailTextFilterCondition = BaseMailFilterCondition<
 
 /**
  * A single condition on a mail event trigger.
- *
- * @internal
- * @hidden
  */
 export type MailEventFilterCondition = MailAddressFilterCondition | MailTextFilterCondition;
 
 /**
- * Which messages a mail event trigger fires on.
- *
- * @internal
- * @hidden
+ * Filters that decide which messages fire the trigger.
  */
 export interface MailEventFilters {
-  /** The conditions to match. One to 20 of them. */
+  /** Use 1 to 20 conditions. */
   conditions: MailEventFilterCondition[];
+  /** How to combine conditions. Defaults to {@link FilterCombinator.And}. */
   combinator?: FilterCombinator;
 }
 
 /**
- * A default mail event trigger a pack's agent ships with. The mailbox is bound at install.
- *
- * @internal
- * @hidden
+ * A mail event trigger included with a pack's agent. The user needs a Mail plan and a configured mailbox.
+ * The user's mailbox is bound at install.
  */
 export interface MailEventTriggerDefinition extends BaseEventTrigger<EventTriggerType.Mail> {
   /** The mail event that fires the trigger. */
-  mailEventType: MailEventType;
+  eventType: MailEventType;
   /** Which messages fire the trigger. */
   filters: MailEventFilters;
 }
 
 /**
- * The Slack events a default trigger can fire on.
- *
- * @internal
- * @hidden
+ * Slack events that can trigger an agent routine.
  */
 export enum SlackEventType {
+  /** A channel message contains one of the listed keywords. */
   MessageKeyword = 'message_keyword',
 }
 
 /**
- * A default Slack event trigger a pack's agent ships with. The workspace and channels are bound
- * at install.
- *
- * @internal
- * @hidden
+ * A Slack event trigger definition. The agent gets its own Slack identity and can read earlier
+ * thread messages, reply, and react. The user connects a workspace and selects channels at install.
  */
 export interface SlackEventTriggerDefinition extends BaseEventTrigger<EventTriggerType.Slack> {
   /** The Slack event that fires the trigger. */
   eventType: SlackEventType;
-  /** Keywords to match, case insensitively. One to 50, each up to 200 characters. */
-  keywords: [string, ...string[]];
+  /**
+   * Keywords to match, case insensitively. Up to 50, each up to 200 characters. Omit, or pass an
+   * empty list, to fire on every top-level message in the bound channels.
+   */
+  keywords?: string[];
 }
 
 /**
@@ -2473,10 +2421,7 @@ export interface NotetakerEventTriggerDefinition extends BaseEventTrigger<EventT
 }
 
 /**
- * A single default event trigger a pack's agent ships with.
- *
- * @internal
- * @hidden
+ * An event trigger included with a pack's agent by default.
  */
 export type EventTriggerDefinition =
   | MailEventTriggerDefinition
@@ -2484,10 +2429,7 @@ export type EventTriggerDefinition =
   | SlackEventTriggerDefinition;
 
 /**
- * A single default trigger a pack's agent ships with.
- *
- * @internal
- * @hidden
+ * A trigger included with a pack's agent by default.
  */
 export type DefaultTriggerDefinition =
   | EventTriggerDefinition
@@ -2495,19 +2437,44 @@ export type DefaultTriggerDefinition =
   | WhileWritingTriggerDefinition;
 
 /**
- * A named action or instruction that runs when its trigger fires.
- * At least one of `name` or `instructions` must contain non-whitespace text.
- *
- * @internal
- * @hidden
+ * A routine runs when its trigger fires and can add instructions for that run.
+ * When a user installs the agent, its routines are copied to that installation. Users can edit or delete them.
+ * Later releases do not update existing installations.
+ * Provide a name or instructions.
+ * At least one must contain non-whitespace text.
  */
 export interface AgentRoutineDefinition {
-  /** The routine's label in the agent builder. Max 80 characters. */
+  /** The routine name shown in the agent builder. Up to 80 characters. */
   name?: string;
-  /** Instructions added to the agent's base instructions for this routine's run. Max 20,000 characters. */
+  /** Extra instructions for the agent to follow when this routine runs. Up to 20,000 characters. */
   instructions?: string;
-  /** The single trigger this routine runs on. Shares limits with plain default triggers. */
+  /** The trigger that runs this routine. It follows the same limits as other default triggers. */
   trigger: DefaultTriggerDefinition;
+}
+
+/**
+ * A mail event trigger as it appears in an uploaded pack. `addDefaultRoutine()` stores
+ * {@link MailEventTriggerDefinition.eventType} here as `mailEventType`.
+ */
+export interface MailEventTriggerMetadata extends Omit<MailEventTriggerDefinition, 'eventType'> {
+  /** The mail event that fires the trigger. */
+  mailEventType: MailEventType;
+}
+
+/**
+ * A default trigger as it appears in an uploaded pack. Only mail triggers differ from {@link DefaultTriggerDefinition}.
+ */
+export type DefaultTriggerMetadata =
+  | Exclude<DefaultTriggerDefinition, MailEventTriggerDefinition>
+  | MailEventTriggerMetadata;
+
+/**
+ * A routine as it appears in an uploaded pack. `addDefaultRoutine()` stores each {@link AgentRoutineDefinition}
+ * in this shape.
+ */
+export interface AgentRoutineMetadata extends Omit<AgentRoutineDefinition, 'trigger'> {
+  /** The trigger that runs this routine. */
+  trigger: DefaultTriggerMetadata;
 }
 
 // Consumers can add fields to the Pack-named interfaces from their own .d.ts files, with `declare module`.
@@ -2630,26 +2597,20 @@ export interface ComponentVersionDefinition {
    */
   suggestionProviders?: SuggestionProvider[];
   /**
-   * The agent defined by this pack, if it defines one. Authored via `sdk.newAgent()`.
-   *
-   * @internal
-   * @hidden
+   * The agent this pack defines. Create it with `sdk.newAgent()`.
    */
   agent?: AgentDefinition;
   /**
-   * The triggers this pack's agent ships with, if it defines any. Authored via `sdk.newAgent()`.
+   * The triggers this pack's agent ships with outside a routine.
    *
-   * @internal
    * @hidden
+   * @deprecated Author routines with `addDefaultRoutine` instead.
    */
-  defaultTriggers?: DefaultTriggerDefinition[];
+  defaultTriggers?: DefaultTriggerMetadata[];
   /**
-   * The routines this agent ships with. Authored via `sdk.newAgent().addDefaultRoutine()`.
-   *
-   * @internal
-   * @hidden
+   * Default routines for this agent. Add them with `sdk.newAgent().addDefaultRoutine()`.
    */
-  defaultRoutines?: AgentRoutineDefinition[];
+  defaultRoutines?: AgentRoutineMetadata[];
 }
 
 /**

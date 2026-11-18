@@ -41,5 +41,13 @@
     </a>
   {% endif %}
 
+  {% if "icons" in page.meta.hide %}
+    <style>
+      .md-content__button {
+        display: none;
+      }
+    </style>
+  {% endif %}
+
   {{ super() }}
 {% endblock %}

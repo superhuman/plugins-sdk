@@ -69,7 +69,11 @@ const CommandExamples: Record<string, Array<[string, string]>> = {
   extensions: [['$0 extensions vscode', 'Install VS Code snippets for Packs.']],
   clone: [
     ['$0 clone 1234', 'Download the latest Pack Studio source into this directory.'],
-    ['$0 clone https://coda.io/p/1234 --yes', 'Overwrite pack.ts without prompting.'],
+    ['$0 clone https://docs.superhuman.com/p/1234 --yes', 'Overwrite pack.ts without prompting.'],
+    [
+      '$0 clone https://my-company.coda.io/p/1234 --apiEndpoint https://my-company.coda.io',
+      'Clone a Pack from a single-tenant instance.',
+    ],
   ],
   register: [
     ['$0 register <token>', 'Validate and store a Pack API token.'],

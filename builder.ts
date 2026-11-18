@@ -2,6 +2,7 @@ import type {AdminAuthentication} from './types';
 import type {AdminAuthenticationDef} from './types';
 import type {AgentDefinition} from './types';
 import type {AgentRoutineDefinition} from './types';
+import type {AgentRoutineMetadata} from './types';
 import type {AgentTool} from './types';
 import type {AgentToolsDef} from './types';
 import type {AllowedAuthentication} from './types';
@@ -11,28 +12,22 @@ import {AuthenticationType} from './types';
 import type {BasicComponentDefinition} from './types';
 import {ConnectionRequirement} from './api_types';
 import type {DeepReadonly} from './type_utils';
-import type {DefaultTriggerDefinition} from './types';
 import {DefaultTriggerKind} from './types';
-import type {DistributiveOmit} from './type_utils';
 import type {DynamicSyncTableOptions} from './api';
-import type {EventTriggerDefinition} from './types';
 import {EventTriggerType} from './types';
 import type {Format} from './types';
 import type {Formula} from './api';
 import type {FormulaDefinitionOptions} from './api';
 import type {MCPServer} from './types';
-import type {MailEventTriggerDefinition} from './types';
-import type {NotetakerEventTriggerDefinition} from './types';
+import type {MailEventTriggerMetadata} from './types';
 import type {ObjectSchema} from './schema';
 import type {ObjectSchemaDefinition} from './schema';
 import type {PackVersionDefinition} from './types';
 import type {ParamDefs} from './api_types';
 import type {PartialSkillDef} from './types';
-import type {ScheduleTriggerDefinition} from './types';
 import type {Schema} from './schema';
 import type {Skill} from './types';
 import type {SkillEntrypoints} from './types';
-import type {SlackEventTriggerDefinition} from './types';
 import type {SuggestedPrompt} from './types';
 import type {SuggestionProvider} from './types';
 import type {SyncExecutionContext} from './api_types';
@@ -44,7 +39,6 @@ import type {SystemAuthenticationDef} from './types';
 import {ToolType} from './types';
 import type {UserAuthenticationDef} from './api_types';
 import type {ValueType} from './schema';
-import type {WhileWritingTriggerDefinition} from './types';
 import {deepCopy} from './helpers/object_utils';
 import {deepFreeze} from './helpers/object_utils';
 import {isDynamicSyncTable} from './api';
@@ -95,16 +89,13 @@ export function newPack(
 }
 
 /**
- * Creates a new skeleton agent definition that can be added to.
+ * Creates a new agent definition you can configure with builder methods.
  *
  * @example
  * ```
  * export const agent = newAgent();
  * agent.setInstructions('You help a team run async standups. Keep replies short.');
  * ```
- *
- * @internal
- * @hidden
  */
 export function newAgent(): AgentDefinitionBuilder {
   return new AgentDefinitionBuilder();
@@ -132,7 +123,7 @@ export class BaseDefinitionBuilder {
    *
    * @example
    * ```
-   * connector.setVersion('1.2.3');
+   * builder.setVersion('1.2.3');
    * ```
    */
   setVersion(version: string): this {
@@ -710,11 +701,23 @@ function frozenCopy<T extends {}>(value: T): T {
   return deepFreeze(deepCopy(value)) as T;
 }
 
+// Uploads name a mail trigger's event `mailEventType`, the name upload validation and Docs storage expect.
+function routineMetadata({trigger, ...routine}: AgentRoutineDefinition): AgentRoutineMetadata {
+  if (trigger.kind !== DefaultTriggerKind.Event || trigger.type !== EventTriggerType.Mail) {
+    return {...routine, trigger};
+  }
+  const {eventType, ...rest} = trigger;
+  if (eventType === undefined) {
+    // Code written for SDK 1.21.0 or earlier passes `mailEventType` instead.
+    return {...routine, trigger: trigger as unknown as MailEventTriggerMetadata};
+  }
+  return {...routine, trigger: {...rest, mailEventType: eventType}};
+}
+
 interface AgentBuilderState {
   agent: Partial<AgentDefinition>;
-  defaultTriggers?: DefaultTriggerDefinition[];
   suggestedPrompts?: SuggestedPrompt[];
-  defaultRoutines?: AgentRoutineDefinition[];
+  defaultRoutines?: AgentRoutineMetadata[];
 }
 
 // Off the instance: an own property leaks into the metadata, and `#private` breaks pre-ES2015 .d.ts consumers.
@@ -725,10 +728,7 @@ function stateOf(builder: AgentDefinitionBuilder): AgentBuilderState {
 }
 
 /**
- * A class that assists in constructing an agent definition. Use {@link newAgent} to create one.
- *
- * @internal
- * @hidden
+ * Builds an agent definition. Use {@link newAgent} to create a builder.
  */
 export class AgentDefinitionBuilder extends BaseDefinitionBuilder {
   /**
@@ -736,31 +736,30 @@ export class AgentDefinitionBuilder extends BaseDefinitionBuilder {
    */
   declare readonly agent: DeepReadonly<Partial<AgentDefinition>>;
   /**
-   * See {@link ComponentVersionDefinition.defaultTriggers}. Set via {@link setDefaultWhileWritingTrigger},
-   * {@link addDefaultMailEventTrigger}, {@link addDefaultSlackEventTrigger},
-   * {@link addDefaultNotetakerEventTrigger}, and {@link setDefaultScheduleTrigger}.
-   */
-  declare readonly defaultTriggers?: DeepReadonly<DefaultTriggerDefinition[]>;
-  /**
    * See {@link ComponentVersionDefinition.suggestedPrompts}. Set via {@link addSuggestedPrompt}.
    */
   declare readonly suggestedPrompts?: DeepReadonly<SuggestedPrompt[]>;
-  /** See {@link ComponentVersionDefinition.defaultRoutines}. Set via {@link addDefaultRoutine}. */
-  declare readonly defaultRoutines?: DeepReadonly<AgentRoutineDefinition[]>;
+  /**
+   * See {@link ComponentVersionDefinition.defaultRoutines}. Set via {@link addDefaultRoutine}.
+   * Mail triggers here name their event `mailEventType`, as in an uploaded pack.
+   */
+  declare readonly defaultRoutines?: DeepReadonly<AgentRoutineMetadata[]>;
 
+  /**
+   * Creates an agent builder. Use {@link newAgent} instead of calling this constructor directly.
+   */
   constructor() {
     super();
     const state: AgentBuilderState = {agent: frozenCopy({tools: []})};
     agentBuilderStates.set(this, state);
     // Own and enumerable, unlike a class getter, so compilePackMetadata's object rest still copies them.
     Object.defineProperty(this, 'agent', {enumerable: true, get: () => state.agent});
-    Object.defineProperty(this, 'defaultTriggers', {enumerable: true, get: () => state.defaultTriggers});
     Object.defineProperty(this, 'suggestedPrompts', {enumerable: true, get: () => state.suggestedPrompts});
     Object.defineProperty(this, 'defaultRoutines', {enumerable: true, get: () => state.defaultRoutines});
   }
 
   /**
-   * Adds a routine with its own name or instructions and one trigger.
+   * Adds a routine that runs when its trigger fires.
    *
    * @example
    * ```
@@ -785,7 +784,10 @@ export class AgentDefinitionBuilder extends BaseDefinitionBuilder {
       }
     }
     const state = stateOf(this);
-    state.defaultRoutines = frozenCopy<AgentRoutineDefinition[]>([...(state.defaultRoutines ?? []), routine]);
+    state.defaultRoutines = frozenCopy<AgentRoutineMetadata[]>([
+      ...(state.defaultRoutines ?? []),
+      routineMetadata(routine),
+    ]);
     return this;
   }
 
@@ -804,21 +806,14 @@ export class AgentDefinitionBuilder extends BaseDefinitionBuilder {
   }
 
   /**
-   * Sets the tools this agent can use. Anything left out is off.
+   * Choose which products and sources your agent can use, such as Docs, Mail, web search, or connectors.
+   * Go's built-in platform features are available automatically, so you don't need to add them here.
    *
    * @example
    * ```
    * agent.setTools({docs: true, mail: true, webSearch: {allowedDomains: ['docs.example.com']}});
    * agent.setTools({connectors: [{connectorId: 1234, formulas: [{formulaName: 'CreateTask'}]}]});
    * agent.setTools({connectors: [{connectorId: 5678, mcpTools: [{toolName: 'search_issues'}]}]});
-   * // Needs 1001, and either 2001 or 2002.
-   * agent.setTools({
-   *   connectors: [
-   *     {connectorId: 1001, required: true},
-   *     {connectorId: 2001, required: {groupName: 'email'}},
-   *     {connectorId: 2002, required: {groupName: 'email'}},
-   *   ],
-   * });
    * ```
    */
   setTools({docs, mail, webSearch, connectors}: AgentToolsDef): this {
@@ -868,126 +863,6 @@ export class AgentDefinitionBuilder extends BaseDefinitionBuilder {
   addSuggestedPrompt(prompt: SuggestedPrompt): this {
     const state = stateOf(this);
     state.suggestedPrompts = frozenCopy<SuggestedPrompt[]>([...(state.suggestedPrompts ?? []), prompt]);
-    return this;
-  }
-
-  /**
-   * Sets the while-writing trigger this agent runs on.
-   *
-   * @example
-   * ```
-   * agent.setDefaultWhileWritingTrigger({
-   *   condition: 'Offer a citation when the user asserts a statistic',
-   *   surfaces: [sdk.ContextualTriggerSurface.Docs, sdk.ContextualTriggerSurface.Email],
-   * });
-   * ```
-   */
-  setDefaultWhileWritingTrigger(contextualTrigger: Omit<WhileWritingTriggerDefinition, 'kind'>): this {
-    const state = stateOf(this);
-    const otherTriggers = (state.defaultTriggers ?? []).filter(
-      trigger => trigger.kind !== DefaultTriggerKind.WhileWriting,
-    );
-    state.defaultTriggers = frozenCopy<DefaultTriggerDefinition[]>([
-      ...otherTriggers,
-      {kind: DefaultTriggerKind.WhileWriting, ...contextualTrigger},
-    ]);
-    return this;
-  }
-
-  /**
-   * Adds a mail event trigger this agent runs on.
-   *
-   * @example
-   * ```
-   * agent.addDefaultMailEventTrigger({
-   *   mailEventType: sdk.MailEventType.MessageReceived,
-   *   filters: {
-   *     conditions: [
-   *       {
-   *         field: sdk.MailFilterField.From,
-   *         operator: sdk.FilterOperator.TextContains,
-   *         value: '@customers.example.com',
-   *       },
-   *     ],
-   *   },
-   * });
-   * ```
-   */
-  addDefaultMailEventTrigger(trigger: DistributiveOmit<MailEventTriggerDefinition, 'kind' | 'type'>): this {
-    return this._addDefaultEventTrigger({type: EventTriggerType.Mail, ...trigger});
-  }
-
-  /**
-   * Adds a Slack event trigger this agent runs on. The workspace and channels are bound at install.
-   *
-   * @example
-   * ```
-   * agent.addDefaultSlackEventTrigger({
-   *   eventType: sdk.SlackEventType.MessageKeyword,
-   *   keywords: ['deploy', 'rollback'],
-   * });
-   * ```
-   */
-  addDefaultSlackEventTrigger(trigger: DistributiveOmit<SlackEventTriggerDefinition, 'kind' | 'type'>): this {
-    return this._addDefaultEventTrigger({type: EventTriggerType.Slack, ...trigger});
-  }
-
-  /**
-   * Adds a notetaker event trigger this agent runs on.
-   *
-   * @hidden In early access, live in production for Codans only, but the shape may change.
-   *
-   * @example
-   * ```
-   * agent.addDefaultNotetakerEventTrigger({
-   *   eventType: sdk.NotetakerEventType.MeetingSummaryCompleted,
-   *   filters: {
-   *     conditions: [
-   *       {
-   *         field: sdk.NotetakerFilterField.DurationMinutes,
-   *         operator: sdk.FilterOperator.NumberAtLeast,
-   *         value: '30',
-   *       },
-   *     ],
-   *   },
-   * });
-   * ```
-   */
-  addDefaultNotetakerEventTrigger(trigger: DistributiveOmit<NotetakerEventTriggerDefinition, 'kind' | 'type'>): this {
-    return this._addDefaultEventTrigger({type: EventTriggerType.Notetaker, ...trigger});
-  }
-
-  private _addDefaultEventTrigger(eventTrigger: DistributiveOmit<EventTriggerDefinition, 'kind'>): this {
-    const state = stateOf(this);
-    state.defaultTriggers = frozenCopy<DefaultTriggerDefinition[]>([
-      ...(state.defaultTriggers ?? []),
-      {kind: DefaultTriggerKind.Event, ...eventTrigger},
-    ]);
-    return this;
-  }
-
-  /**
-   * Sets the schedule this agent runs on. Throws on a recurrence the runtime cannot fire, including
-   * one with no DTSTART to anchor it.
-   *
-   * @example
-   * ```
-   * agent.setDefaultScheduleTrigger({
-   *   rruleString: 'DTSTART:20260101T090000\nRRULE:FREQ=WEEKLY;BYDAY=MO',
-   * });
-   * ```
-   */
-  setDefaultScheduleTrigger(scheduleTrigger: Omit<ScheduleTriggerDefinition, 'kind'>): this {
-    const message = validateRRuleString(scheduleTrigger.rruleString);
-    if (message) {
-      throw new Error(message);
-    }
-    const state = stateOf(this);
-    const otherTriggers = (state.defaultTriggers ?? []).filter(trigger => trigger.kind !== DefaultTriggerKind.Schedule);
-    state.defaultTriggers = frozenCopy<DefaultTriggerDefinition[]>([
-      ...otherTriggers,
-      {kind: DefaultTriggerKind.Schedule, ...scheduleTrigger},
-    ]);
     return this;
   }
 }

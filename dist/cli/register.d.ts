@@ -5,6 +5,6 @@ interface RegisterArgs {
     open?: boolean;
     yes?: boolean;
 }
-export declare function getApiTokenCreationUrl(apiEndpoint: string): string;
+export declare function getApiTokenCreationUrl(formattedEndpoint: string): string;
 export declare function handleRegister({ apiToken, apiEndpoint, open: openBrowser, yes, }: ArgumentsCamelCase<RegisterArgs>): Promise<never>;
 export {};

@@ -1,11 +1,11 @@
 ---
-name: plugin-tools
-description: Add formulas, actions, or indexed sync tables to a Superhuman connector plugin. Use when editing these capabilities or improving tool discovery and data retrieval in an existing plugin.
+name: connector-tools
+description: Add formulas, actions, or indexed sync tables to a Superhuman connector. Use when editing these capabilities or improving tool discovery and data retrieval in an existing connector.
 ---
 
-# Add connector plugin tools and data
+# Add connector tools and data
 
-Use the installed SDK types and the [SDK reference](https://docs.superhuman.com/packs/build/latest/reference/sdk/) to check available fields. The human-facing term is connector plugin. Keep the definition variable created by the scaffold (`connector`, or `pack` on older SDKs). The examples below use `connector`; use `pack` for their builder calls when following the older-SDK fallback.
+Use the installed SDK types and the [SDK reference](https://docs.superhuman.com/packs/build/latest/reference/sdk/) to check available fields. The human-facing term is "connector". Keep the definition variable created by the scaffold (`connector`, or `pack` on older SDKs). The examples below use `connector`; use `pack` for their builder calls when following the older-SDK fallback.
 
 ## Tools
 
@@ -57,4 +57,4 @@ In Docs, users add a sync table to import rows into a document; indexing is need
 
 Use continuations to page remote results. A local sync execution proves the returned rows, but indexing and retrieval need a test in Go. For updates from Go, expose an action rather than relying on two-way sync.
 
-Before completing a tool or data change, follow the [local checks](../plugin-test-upload/SKILL.md#local-checks) and require successful validation and build, or report the specific blocker. Upload only when the user requests it.
+Before completing a tool or data change, follow the [local checks](../connector-test-upload/SKILL.md#local-checks) and require successful validation and build, or report the specific blocker. Upload only when the user requests it.

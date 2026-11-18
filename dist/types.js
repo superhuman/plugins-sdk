@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SuggestionProviderType = exports.HttpStatusCode = exports.NotetakerFilterField = exports.NotetakerEventType = exports.SlackEventType = exports.MailFilterField = exports.MailEventType = exports.FilterCombinator = exports.FilterOperator = exports.EventTriggerType = exports.DefaultTriggerKind = exports.ContextualTriggerSurface = exports.ContextualTriggerDecorationStyle = exports.ContextualTriggerSuggestionColor = exports.ContextualTriggerAssistMode = exports.SkillModel = exports.EmbeddedContentType = exports.ScreenAnnotationType = exports.KnowledgeToolSourceType = exports.ToolType = exports.SyncInterval = exports.QuotaLimitType = exports.FeatureSet = exports.ReservedAuthenticationNames = exports.TokenExchangeCredentialsLocation = exports.EndpointSetBy = exports.AdminSetupRequirement = exports.PostSetupType = exports.AuthenticationType = exports.PackCategory = void 0;
+exports.SuggestionProviderType = exports.HttpStatusCode = exports.NotetakerFilterField = exports.NotetakerEventType = exports.SlackEventType = exports.MailFilterField = exports.MailEventType = exports.FilterCombinator = exports.FilterOperator = exports.EventTriggerType = exports.DefaultTriggerKind = exports.ContextualTriggerSurface = exports.ContextualTriggerAssistMode = exports.SkillModel = exports.EmbeddedContentType = exports.ScreenAnnotationType = exports.KnowledgeToolSourceType = exports.ToolType = exports.SyncInterval = exports.QuotaLimitType = exports.FeatureSet = exports.ReservedAuthenticationNames = exports.TokenExchangeCredentialsLocation = exports.EndpointSetBy = exports.AdminSetupRequirement = exports.PostSetupType = exports.AuthenticationType = exports.PackCategory = void 0;
 /**
  * @deprecated
  */
@@ -385,147 +385,126 @@ var SkillModel;
     SkillModel["OpenAIGPT5"] = "OpenAIGPT5";
 })(SkillModel || (exports.SkillModel = SkillModel = {}));
 /**
- * How proactively a while-writing trigger offers help.
- * Absent defaults to `Proactive`.
- *
- * @internal
- * @hidden
+ * Controls when a while-writing trigger offers help. Defaults to `Proactive`.
  */
 var ContextualTriggerAssistMode;
 (function (ContextualTriggerAssistMode) {
+    /** Offers help occasionally. */
     ContextualTriggerAssistMode["Balanced"] = "balanced";
+    /** Offers help only when the user asks. */
     ContextualTriggerAssistMode["OnDemand"] = "on_demand";
+    /** Offers help as the user writes. */
     ContextualTriggerAssistMode["Proactive"] = "proactive";
 })(ContextualTriggerAssistMode || (exports.ContextualTriggerAssistMode = ContextualTriggerAssistMode = {}));
 /**
- * The color a while-writing trigger's suggestion renders in. Absent defaults to `Purple`.
- *
- * @internal
- * @hidden
- */
-var ContextualTriggerSuggestionColor;
-(function (ContextualTriggerSuggestionColor) {
-    ContextualTriggerSuggestionColor["Blue"] = "blue";
-    ContextualTriggerSuggestionColor["Green"] = "green";
-    ContextualTriggerSuggestionColor["Mulberry"] = "mulberry";
-    ContextualTriggerSuggestionColor["Neutral"] = "neutral";
-    ContextualTriggerSuggestionColor["Orange"] = "orange";
-    ContextualTriggerSuggestionColor["Purple"] = "purple";
-    ContextualTriggerSuggestionColor["Red"] = "red";
-    ContextualTriggerSuggestionColor["Yellow"] = "yellow";
-})(ContextualTriggerSuggestionColor || (exports.ContextualTriggerSuggestionColor = ContextualTriggerSuggestionColor = {}));
-/**
- * How a while-writing trigger's suggestion renders. Absent defaults to `Auto`, which leaves the
- * choice to the client.
- *
- * @internal
- * @hidden
- */
-var ContextualTriggerDecorationStyle;
-(function (ContextualTriggerDecorationStyle) {
-    ContextualTriggerDecorationStyle["Auto"] = "auto";
-    ContextualTriggerDecorationStyle["Underline"] = "underline";
-})(ContextualTriggerDecorationStyle || (exports.ContextualTriggerDecorationStyle = ContextualTriggerDecorationStyle = {}));
-/**
  * Where a while-writing agent may offer help. Absent defaults to every surface.
  *
- * @internal
  * @hidden
  */
 var ContextualTriggerSurface;
 (function (ContextualTriggerSurface) {
+    /** Chat and messaging apps. */
     ContextualTriggerSurface["ChatAndMessages"] = "chat_messages";
+    /** Code editors and IDEs. */
     ContextualTriggerSurface["CodingEnvironment"] = "coding_environment";
+    /** Customer service tools. */
     ContextualTriggerSurface["CustomerService"] = "customer_service";
+    /** Documents. */
     ContextualTriggerSurface["Docs"] = "docs";
+    /** Email. */
     ContextualTriggerSurface["Email"] = "email";
+    /** Search and the browser. */
     ContextualTriggerSurface["SearchAndBrowser"] = "search_browser";
+    /** Social media. */
     ContextualTriggerSurface["SocialMedia"] = "social_media";
 })(ContextualTriggerSurface || (exports.ContextualTriggerSurface = ContextualTriggerSurface = {}));
 /**
- * Which kind of default trigger an entry declares. More kinds join this enum as they become
- * authorable.
- *
- * @internal
- * @hidden
+ * The type triggers available.
  */
 var DefaultTriggerKind;
 (function (DefaultTriggerKind) {
+    /** Runs when an event arrives from another product, such as Mail or Slack. */
     DefaultTriggerKind["Event"] = "event";
+    /** Runs on a fixed schedule. */
     DefaultTriggerKind["Schedule"] = "schedule";
+    /** Runs as the user writes. */
     DefaultTriggerKind["WhileWriting"] = "whileWriting";
 })(DefaultTriggerKind || (exports.DefaultTriggerKind = DefaultTriggerKind = {}));
 /**
- * Which product's events a default event trigger listens to.
- *
- * @internal
- * @hidden
+ * The product this event trigger listens to.
  */
 var EventTriggerType;
 (function (EventTriggerType) {
+    /** Events from Superhuman Mail. */
     EventTriggerType["Mail"] = "mail";
+    /**
+     * Events from the notetaker.
+     * @hidden
+     */
     EventTriggerType["Notetaker"] = "notetaker";
+    /** Events from Slack. */
     EventTriggerType["Slack"] = "slack";
 })(EventTriggerType || (exports.EventTriggerType = EventTriggerType = {}));
 /**
  * How a filter condition compares its field to its value.
- *
- * @internal
- * @hidden
  */
 var FilterOperator;
 (function (FilterOperator) {
+    /** The field is at least this number. */
     FilterOperator["NumberAtLeast"] = "numberAtLeast";
+    /** The field is at most this number. */
     FilterOperator["NumberAtMost"] = "numberAtMost";
+    /** The field equals this number. */
     FilterOperator["NumberEquals"] = "numberEquals";
+    /** The field contains this text. */
     FilterOperator["TextContains"] = "textContains";
+    /** The field does not contain this text. */
     FilterOperator["TextDoesNotContain"] = "textDoesNotContain";
+    /** The field is not exactly this text. */
     FilterOperator["TextDoesNotEqual"] = "textDoesNotEqual";
+    /** The field is exactly this text. */
     FilterOperator["TextEquals"] = "textEquals";
 })(FilterOperator || (exports.FilterOperator = FilterOperator = {}));
 /**
- * How a filter's conditions combine. Absent means `And`.
- *
- * @internal
- * @hidden
+ * Choose whether all filter conditions must match or any one can match.
  */
 var FilterCombinator;
 (function (FilterCombinator) {
+    /** Every condition must match. */
     FilterCombinator["And"] = "and";
+    /** Any condition can match. */
     FilterCombinator["Or"] = "or";
 })(FilterCombinator || (exports.FilterCombinator = FilterCombinator = {}));
 /**
- * The mail events a default trigger can fire on.
- *
- * @internal
- * @hidden
+ * Mail events that can trigger an agent routine.
  */
 var MailEventType;
 (function (MailEventType) {
+    /** The user receives an email. */
     MailEventType["MessageReceived"] = "message_received";
+    /** The user sends an email. */
     MailEventType["MessageSent"] = "message_sent";
 })(MailEventType || (exports.MailEventType = MailEventType = {}));
 /**
- * The part of a message a mail filter condition matches on.
- *
- * @internal
- * @hidden
+ * Message fields that a mail filter can match.
  */
 var MailFilterField;
 (function (MailFilterField) {
+    /** The message body. */
     MailFilterField["Body"] = "body";
+    /** The From address. */
     MailFilterField["From"] = "from";
+    /** The subject line. */
     MailFilterField["Subject"] = "subject";
+    /** The To address. */
     MailFilterField["To"] = "to";
 })(MailFilterField || (exports.MailFilterField = MailFilterField = {}));
 /**
- * The Slack events a default trigger can fire on.
- *
- * @internal
- * @hidden
+ * Slack events that can trigger an agent routine.
  */
 var SlackEventType;
 (function (SlackEventType) {
+    /** A channel message contains one of the listed keywords. */
     SlackEventType["MessageKeyword"] = "message_keyword";
 })(SlackEventType || (exports.SlackEventType = SlackEventType = {}));
 /**

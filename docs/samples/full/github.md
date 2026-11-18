@@ -30,7 +30,7 @@ The Pack uses OAuth2 to connect to a user's GitHub account. A more extensive Git
     // How many items to fetch per-page when making API list requests.
     const PageSize = 50;
 
-    // Allow the Pack to access the GitHub domain.
+    // Allow the connector to access the GitHub domain.
     connector.addNetworkDomain("github.com");
 
     // Setup per-user authentication using GitHub's OAuth2.

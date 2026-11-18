@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.backfillFromPackConfig = exports.assertPackIdOrUrl = exports.assertPackId = exports.assertApiToken = exports.importManifest = exports.getPackAuth = exports.makeManifestFullPath = exports.isTestCommand = exports.formatEndpoint = exports.createCodaClient = exports.spawnProcess = void 0;
+exports.backfillFromPackConfig = exports.assertPackIdOrUrl = exports.assertPackId = exports.assertApiToken = exports.importManifest = exports.getPackAuth = exports.makeManifestFullPath = exports.isTestCommand = exports.deriveBrowserEndpoint = exports.formatEndpoint = exports.createCodaClient = exports.spawnProcess = void 0;
 const coda_1 = require("../helpers/external-api/coda");
 const config_storage_1 = require("./config_storage");
 const config_storage_2 = require("./config_storage");
@@ -52,10 +52,33 @@ function createCodaClient(apiToken, protocolAndHost) {
     return new coda_1.Client({ protocolAndHost, apiToken });
 }
 exports.createCodaClient = createCodaClient;
+/**
+ * Adds `https://` to an API endpoint if needed.
+ *
+ * @example
+ * ```ts
+ * formatEndpoint('my-company.coda.io'); // 'https://my-company.coda.io'
+ * ```
+ */
 function formatEndpoint(endpoint) {
     return endpoint.startsWith('https://') ? endpoint : `https://${endpoint}`;
 }
 exports.formatEndpoint = formatEndpoint;
+const DEFAULT_WEB_ENDPOINT = 'https://docs.superhuman.com';
+/**
+ * Derives a browser link base URL from a formatted API endpoint.
+ *
+ * @example
+ * ```ts
+ * deriveBrowserEndpoint('https://coda.io'); // 'https://docs.superhuman.com'
+ * deriveBrowserEndpoint('https://my-company.coda.io/'); // 'https://my-company.coda.io'
+ * ```
+ */
+function deriveBrowserEndpoint(formattedApiEndpoint) {
+    const normalizedEndpoint = formattedApiEndpoint.replace(/\/+$/, '');
+    return normalizedEndpoint === config_storage_1.DEFAULT_API_ENDPOINT ? DEFAULT_WEB_ENDPOINT : normalizedEndpoint;
+}
+exports.deriveBrowserEndpoint = deriveBrowserEndpoint;
 function isTestCommand() {
     var _a;
     return (_a = process.argv[1]) === null || _a === void 0 ? void 0 : _a.endsWith('cli/index.ts');
@@ -112,7 +135,7 @@ function assertPackIdOrUrl(packIdOrUrl) {
     if (!packId) {
         return (0, helpers_2.printAndExit)(`Error: Not a valid pack ID or URL: ${packIdOrUrl}\n` +
             `  packs clone 1234\n` +
-            `  packs clone https://coda.io/p/1234`);
+            `  packs clone ${DEFAULT_WEB_ENDPOINT}/p/1234`);
     }
     return packId;
 }

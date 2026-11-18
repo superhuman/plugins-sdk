@@ -4,10 +4,21 @@ This changelog keeps track of all changes to the Packs SDK. We follow convention
 
 ## [Unreleased]
 
+### Added
+
+- New slash commands for agent features, which you can use in the Pack Studio and VSCode.
+
+### Changed
+
+- Mail event triggers now name their event with `eventType`, the same field Slack event triggers use. Rename `mailEventType` to `eventType` in your mail triggers. Code that still passes `mailEventType` keeps uploading but no longer type-checks.
+
+- The coding-agent skills have new invocation names. After upgrading, use `create-agent` instead of `create-agent-pack`, `create-connector` instead of `plugin-scaffold`, `connector-tools` instead of `plugin-tools`, and `connector-test-upload` instead of `plugin-test-upload`.
+
 ## [1.21.0] - 2026-11-13
 
 ### Added
 
+- Agent authoring with `newAgent()` is now part of the public SDK reference, including `setInstructions()`, `setTools()`, `addDefaultRoutine()`, `addSuggestedPrompt()`, and the trigger and tool types those methods use. `setTools()` connectors can limit which MCP tools they offer with `mcpTools`.
 - Schema identities and agent `setTools()` connectors accept `connectorId` in place of `packId`.
 - Types now have Connector, Component, and Formula names that match `newConnector()`, such as `ConnectorDefinitionBuilder`, `ComponentVersionDefinition`, `FormulaDef`, and `ConnectorTool`. Code that uses the Pack names keeps compiling.
 
@@ -15,6 +26,7 @@ This changelog keeps track of all changes to the Packs SDK. We follow convention
 
 - `upload`, `build`, `validate`, `setOption`, `extensions`, and `whoami` now print the same `key: value` success output as `create`, `link`, `clone`, and `register`, so scripts and agents can parse every command the same way. `validate` prints `valid`. Update any script that matches the old messages.
 - `packs init --agent` now scaffolds an agent that exports `agent` and calls `agent.setInstructions()`. Agents that export `pack` keep working, so you do not need to rename an existing export.
+- The Packs CLI prints links on `docs.superhuman.com` for the default endpoint. You can paste those links into `packs link` or `packs clone`.
 
 ### Deprecated
 
