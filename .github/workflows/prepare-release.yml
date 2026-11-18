@@ -3,11 +3,11 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Exact stable version, for example 1.17.7 (--version)'
+        description: 'New package.json stable version, e.g. 1.21.0 (--version)'
         required: true
         type: string
       plugin-version:
-        description: 'Optional new .agents/plugin.json version, for example 0.2.0'
+        description: 'New .agents/plugin.json stable version, e.g. 0.2.0 (optional, leave empty if .agents/ is unchanged)'
         required: false
         default: ''
         type: string
