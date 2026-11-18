@@ -310,7 +310,7 @@ connector.setUserAuthentication({
   },
 });
 
-// Allow the Pack to access the GitHub domain.
+// Allow the connector to access the GitHub domain.
 connector.addNetworkDomain("github.com");
 {% endraw %}
 ```

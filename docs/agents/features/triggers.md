@@ -110,7 +110,7 @@ agent.addDefaultRoutine({
   trigger: {
     kind: sdk.DefaultTriggerKind.Event,
     type: sdk.EventTriggerType.Mail,
-    mailEventType: sdk.MailEventType.MessageReceived,
+    eventType: sdk.MailEventType.MessageReceived,
     filters: {
       conditions: [
         {

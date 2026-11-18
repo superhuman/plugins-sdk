@@ -7,6 +7,7 @@ import {build} from './build';
 import {confirmOrFail} from './confirm';
 import {createCodaClient} from './helpers';
 import {createGitTag} from './git_helpers';
+import {deriveBrowserEndpoint} from './helpers';
 import {formatEndpoint} from './helpers';
 import {formatError} from './errors';
 import {formatResponseError} from './errors';
@@ -112,7 +113,7 @@ export async function handleRelease({
   print(`released ${packVersion}`);
   print(`pack_id: ${packId}`);
   print(`release_id: ${releaseResponse.releaseId}`);
-  print(`url: ${formattedEndpoint}/p/${packId}`);
+  print(`url: ${deriveBrowserEndpoint(formattedEndpoint)}/p/${packId}`);
 
   // Create git tag if enabled
   if (gitTag && gitState.isGitRepo) {

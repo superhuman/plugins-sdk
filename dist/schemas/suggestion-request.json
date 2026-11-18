@@ -5,6 +5,111 @@
         "text": {
             "type": "string",
             "description": "The exact, complete text to check, without trimming or Unicode normalization."
+        },
+        "dirtyRanges": {
+            "description": "Regions that triggered the check, using inclusive start and exclusive end UTF-16 offsets in text. Equal offsets represent an empty region, such as a deletion. Omitted when unavailable.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "startOffset": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                    },
+                    "endOffset": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                    }
+                },
+                "required": [
+                    "startOffset",
+                    "endOffset"
+                ],
+                "additionalProperties": false
+            }
+        },
+        "currentSuggestions": {
+            "description": "Suggestions currently displayed by this provider; offsets are omitted.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "original": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "explanation": {
+                        "type": "string"
+                    },
+                    "replacement": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "original",
+                    "title",
+                    "explanation"
+                ],
+                "additionalProperties": false
+            }
+        },
+        "acceptedSuggestions": {
+            "description": "Previously accepted suggestions from this provider; original text may have changed.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "original": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "explanation": {
+                        "type": "string"
+                    },
+                    "replacement": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "original",
+                    "title",
+                    "explanation"
+                ],
+                "additionalProperties": false
+            }
+        },
+        "dismissedSuggestions": {
+            "description": "Previously dismissed suggestions from this provider; original text may have changed.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "original": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "explanation": {
+                        "type": "string"
+                    },
+                    "replacement": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "original",
+                    "title",
+                    "explanation"
+                ],
+                "additionalProperties": false
+            }
         }
     },
     "required": [

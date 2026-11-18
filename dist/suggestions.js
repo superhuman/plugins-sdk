@@ -2,26 +2,53 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SuggestionEndpointResponseJsonSchema = exports.SuggestionEndpointRequestJsonSchema = void 0;
 const zod_1 = require("zod");
-// Runtime constraints and published JSON Schemas for the public payload types.
-const SuggestionEndpointRequestSchema = zod_1.z.strictObject({
-    text: zod_1.z.string().describe('The exact, complete text to check, without trimming or Unicode normalization.'),
+const SuggestionContentSchema = zod_1.z.strictObject({
+    original: zod_1.z.string(),
+    title: zod_1.z.string(),
+    explanation: zod_1.z.string(),
+    replacement: zod_1.z.string().optional(),
 });
 // .int() adds JavaScript's safe-integer ceiling, not a text-size limit.
 // Consumers must also validate each range and original against the request text.
-const SuggestionSchema = zod_1.z.strictObject({
+const SuggestionSchema = SuggestionContentSchema.extend({
     startOffset: zod_1.z.number().int().nonnegative().describe('Inclusive start position in UTF-16 code units; zero-based.'),
     endOffset: zod_1.z
         .number()
         .int()
         .positive()
         .describe('Exclusive end position in UTF-16 code units; greater than startOffset.'),
-    original: zod_1.z.string().min(1).describe('The exact portion of the request text between the two offsets.'),
-    title: zod_1.z.string().min(1).describe('Short heading displayed on the suggestion card.'),
-    explanation: zod_1.z.string().min(1).describe('Explanation displayed on the suggestion card.'),
-    replacement: zod_1.z
-        .string()
+    original: SuggestionContentSchema.shape.original
+        .min(1)
+        .describe('The exact portion of the request text between the two offsets.'),
+    title: SuggestionContentSchema.shape.title.min(1).describe('Short heading displayed on the suggestion card.'),
+    explanation: SuggestionContentSchema.shape.explanation
+        .min(1)
+        .describe('Explanation displayed on the suggestion card.'),
+    replacement: SuggestionContentSchema.shape.replacement.describe('Plain-text replacement. Omit for advice only; an empty string deletes the selected text.'),
+});
+// Runtime constraints and published JSON Schemas for the public payload types.
+const SuggestionEndpointRequestSchema = zod_1.z.strictObject({
+    text: zod_1.z.string().describe('The exact, complete text to check, without trimming or Unicode normalization.'),
+    dirtyRanges: zod_1.z
+        .array(zod_1.z.strictObject({
+        startOffset: zod_1.z.number().int().nonnegative(),
+        endOffset: zod_1.z.number().int().nonnegative(),
+    }))
         .optional()
-        .describe('Plain-text replacement. Omit for advice only; an empty string deletes the selected text.'),
+        .describe('Regions that triggered the check, using inclusive start and exclusive end UTF-16 offsets in text. ' +
+        'Equal offsets represent an empty region, such as a deletion. Omitted when unavailable.'),
+    currentSuggestions: zod_1.z
+        .array(SuggestionContentSchema)
+        .optional()
+        .describe('Suggestions currently displayed by this provider; offsets are omitted.'),
+    acceptedSuggestions: zod_1.z
+        .array(SuggestionContentSchema)
+        .optional()
+        .describe('Previously accepted suggestions from this provider; original text may have changed.'),
+    dismissedSuggestions: zod_1.z
+        .array(SuggestionContentSchema)
+        .optional()
+        .describe('Previously dismissed suggestions from this provider; original text may have changed.'),
 });
 const SuggestionEndpointResponseSchema = zod_1.z.union([
     zod_1.z.strictObject({

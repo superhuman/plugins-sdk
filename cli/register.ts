@@ -1,7 +1,7 @@
 import type {ArgumentsCamelCase} from 'yargs';
-import {DEFAULT_API_ENDPOINT} from './config_storage';
 import {confirmOrFail} from './confirm';
 import {createCodaClient} from './helpers';
+import {deriveBrowserEndpoint} from './helpers';
 import {formatEndpoint} from './helpers';
 import {formatResponseError} from './errors';
 import {isInteractive} from './confirm';
@@ -20,12 +20,8 @@ interface RegisterArgs {
   yes?: boolean;
 }
 
-const DEFAULT_ACCOUNT_ENDPOINT = 'https://docs.superhuman.com';
-
-export function getApiTokenCreationUrl(apiEndpoint: string): string {
-  const normalizedEndpoint = apiEndpoint.replace(/\/+$/, '');
-  const accountEndpoint = normalizedEndpoint === DEFAULT_API_ENDPOINT ? DEFAULT_ACCOUNT_ENDPOINT : normalizedEndpoint;
-  return `${accountEndpoint}/account?openDialog=CREATE_API_TOKEN&scopeType=pack#apiSettings`;
+export function getApiTokenCreationUrl(formattedEndpoint: string): string {
+  return `${deriveBrowserEndpoint(formattedEndpoint)}/account?openDialog=CREATE_API_TOKEN&scopeType=pack#apiSettings`;
 }
 
 export async function handleRegister({

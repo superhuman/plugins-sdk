@@ -11,20 +11,21 @@ const confirm_1 = require("./confirm");
 const helpers_3 = require("./helpers");
 const git_helpers_1 = require("./git_helpers");
 const helpers_4 = require("./helpers");
+const helpers_5 = require("./helpers");
 const errors_1 = require("./errors");
 const errors_2 = require("./errors");
 const git_helpers_2 = require("./git_helpers");
 const git_helpers_3 = require("./git_helpers");
-const helpers_5 = require("./helpers");
+const helpers_6 = require("./helpers");
 const coda_1 = require("../helpers/external-api/coda");
 const confirm_2 = require("./confirm");
 const path_1 = __importDefault(require("path"));
-const helpers_6 = require("../testing/helpers");
 const helpers_7 = require("../testing/helpers");
+const helpers_8 = require("../testing/helpers");
 const errors_3 = require("./errors");
 async function handleRelease({ manifestFile, packVersion: explicitPackVersion, apiEndpoint, notes, apiToken, gitTag, yes, useLatest, }) {
     const manifestDir = path_1.default.dirname(manifestFile);
-    const formattedEndpoint = (0, helpers_4.formatEndpoint)(apiEndpoint);
+    const formattedEndpoint = (0, helpers_5.formatEndpoint)(apiEndpoint);
     apiToken = (0, helpers_1.assertApiToken)(apiEndpoint, apiToken);
     const packId = (0, helpers_2.assertPackId)(manifestDir, apiEndpoint);
     const codaClient = (0, helpers_3.createCodaClient)(apiToken, formattedEndpoint);
@@ -33,7 +34,7 @@ async function handleRelease({ manifestFile, packVersion: explicitPackVersion, a
     if (gitState.isGitRepo) {
         // Block release if there are uncommitted changes
         if (gitState.isDirty) {
-            return (0, helpers_7.printAndExit)('Cannot release with uncommitted changes.\n' +
+            return (0, helpers_8.printAndExit)('Cannot release with uncommitted changes.\n' +
                 'Please commit your changes first, then run the release command again.');
         }
         // Warn if not on main/master branch
@@ -51,19 +52,19 @@ async function handleRelease({ manifestFile, packVersion: explicitPackVersion, a
     if (!packVersion) {
         try {
             const bundleFilename = await (0, build_1.build)(manifestFile);
-            const manifest = await (0, helpers_5.importManifest)(bundleFilename);
+            const manifest = await (0, helpers_6.importManifest)(bundleFilename);
             if ('version' in manifest) {
                 packVersion = manifest.version;
             }
         }
         catch (err) {
-            return (0, helpers_7.printAndExit)(`Got an error while building your pack to get the current pack version: ${(0, errors_1.formatError)(err)}`);
+            return (0, helpers_8.printAndExit)(`Got an error while building your pack to get the current pack version: ${(0, errors_1.formatError)(err)}`);
         }
     }
     if (!packVersion) {
         const { items: versions } = await codaClient.listPackVersions(packId, { limit: 1 });
         if (!versions.length) {
-            (0, helpers_7.printAndExit)('No version was found to release for your Pack.');
+            (0, helpers_8.printAndExit)('No version was found to release for your Pack.');
         }
         const [latestPackVersionData] = versions;
         const { packVersion: latestPackVersion } = latestPackVersionData;
@@ -74,28 +75,28 @@ async function handleRelease({ manifestFile, packVersion: explicitPackVersion, a
     }
     // Create release via API
     const releaseResponse = await handleResponse(codaClient.createPackRelease(packId, {}, { packVersion, releaseNotes: notes }));
-    (0, helpers_6.print)(`released ${packVersion}`);
-    (0, helpers_6.print)(`pack_id: ${packId}`);
-    (0, helpers_6.print)(`release_id: ${releaseResponse.releaseId}`);
-    (0, helpers_6.print)(`url: ${formattedEndpoint}/p/${packId}`);
+    (0, helpers_7.print)(`released ${packVersion}`);
+    (0, helpers_7.print)(`pack_id: ${packId}`);
+    (0, helpers_7.print)(`release_id: ${releaseResponse.releaseId}`);
+    (0, helpers_7.print)(`url: ${(0, helpers_4.deriveBrowserEndpoint)(formattedEndpoint)}/p/${packId}`);
     // Create git tag if enabled
     if (gitTag && gitState.isGitRepo) {
         const releaseGitTag = `pack/${packId}/v${packVersion}`;
         if ((0, git_helpers_3.gitTagExists)(releaseGitTag, manifestDir)) {
-            (0, helpers_6.print)(`Git tag ${releaseGitTag} already exists, skipping.`);
+            (0, helpers_7.print)(`Git tag ${releaseGitTag} already exists, skipping.`);
         }
         else {
             const tagMessage = buildTagMessage(releaseResponse.releaseId, releaseResponse.releaseNotes);
             if ((0, git_helpers_1.createGitTag)(releaseGitTag, tagMessage, manifestDir)) {
-                (0, helpers_6.print)(`Created git tag: ${releaseGitTag}`);
-                (0, helpers_6.print)(`Run 'git push --tags' to push the tag to remote.`);
+                (0, helpers_7.print)(`Created git tag: ${releaseGitTag}`);
+                (0, helpers_7.print)(`Run 'git push --tags' to push the tag to remote.`);
             }
             else {
-                (0, helpers_6.print)(`Warning: Failed to create git tag ${releaseGitTag}`);
+                (0, helpers_7.print)(`Warning: Failed to create git tag ${releaseGitTag}`);
             }
         }
     }
-    return (0, helpers_7.printAndExit)('Done!', 0);
+    return (0, helpers_8.printAndExit)('Done!', 0);
 }
 exports.handleRelease = handleRelease;
 function buildTagMessage(releaseId, notes) {
@@ -111,9 +112,9 @@ async function handleResponse(p) {
     }
     catch (err) {
         if ((0, coda_1.isResponseError)(err)) {
-            return (0, helpers_7.printAndExit)(`Error while creating pack release: ${await (0, errors_2.formatResponseError)(err)}`);
+            return (0, helpers_8.printAndExit)(`Error while creating pack release: ${await (0, errors_2.formatResponseError)(err)}`);
         }
         const errors = [`Unexpected error while creating release: ${(0, errors_1.formatError)(err)}`, (0, errors_3.tryParseSystemError)(err)];
-        return (0, helpers_7.printAndExit)(errors.join('\n'));
+        return (0, helpers_8.printAndExit)(errors.join('\n'));
     }
 }

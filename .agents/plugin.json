@@ -1,9 +1,42 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "superhuman-plugin",
+  "name": "plugins-sdk",
   "version": "0.1.1",
-  "description": "Build, validate, and upload Superhuman plugins with the Plugins SDK.",
-  "author": {"name": "Superhuman"},
+  "description": "Build, validate, and upload Superhuman agents and connectors with the Plugins SDK.",
+  "author": {
+    "name": "Superhuman"
+  },
+  "homepage": "https://docs.superhuman.com/packs/build/latest",
+  "repository": "https://github.com/superhuman/plugins-sdk",
   "license": "MIT",
-  "keywords": ["superhuman", "plugins-sdk", "connectors", "agents", "routines"]
+  "keywords": [
+    "superhuman",
+    "plugins-sdk",
+    "connectors",
+    "agents",
+    "routines"
+  ],
+  "extensions": {
+    "com.openai": {
+      "requires_local_executor": true,
+      "interface": {
+        "displayName": "Superhuman Plugins SDK",
+        "shortDescription": "Build agents and connectors",
+        "longDescription": "Create agents for Superhuman Go, and connectors for Go and Docs, with the Plugins SDK (@superhuman/plugins-sdk). The skills scaffold a project, write agent instructions and routines, add formulas, actions, and sync tables, and run the SDK's local checks. They can also upload an agent or connector to your Superhuman account. Uploads and releases run only when you ask for them.\n\nFor developers who build agents or connectors for Superhuman. The skills run Node.js and the SDK's command-line tool on your computer, so the plugin works only in local threads in the ChatGPT desktop app and Codex. Uploading needs a Superhuman account and an API token that you create.",
+        "developerName": "Superhuman",
+        "category": "Developer Tools",
+        "websiteURL": "https://docs.superhuman.com/packs/build/latest",
+        "defaultPrompt": [
+          "Create a Superhuman Go agent with a daily routine.",
+          "Scaffold a Superhuman connector for the GitHub API.",
+          "Validate and upload my Superhuman connector."
+        ],
+        "composerIcon": "./assets/logo.svg",
+        "logo": "./assets/logo.svg"
+      },
+      "publication": {
+        "release_notes": "Adds ChatGPT and Codex listing details and an icon. Renames the skills to create-agent, create-connector, connector-tools, and connector-test-upload; invoke them by their new names. The skills now run the plugins CLI, and fall back to packs on SDKs before 1.20.0."
+      }
+    }
+  }
 }

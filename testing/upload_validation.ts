@@ -5,7 +5,7 @@ import type {AdminAuthenticationTypes} from '../types';
 import {AdminSetupRequirement} from '../types';
 import type {AgentConnectorMcpTool} from '../types';
 import type {AgentDefinition} from '../types';
-import type {AgentRoutineDefinition} from '../types';
+import type {AgentRoutineMetadata} from '../types';
 import type {AgentTool} from '../types';
 import {AllPrecannedDates} from '../api_types';
 import type {ArraySchema} from '../schema';
@@ -24,8 +24,6 @@ import {ConnectionRequirement} from '../api_types';
 import type {ContactResolutionTool} from '../types';
 import {ContentCategorizationType} from '../schema';
 import {ContextualTriggerAssistMode} from '../types';
-import {ContextualTriggerDecorationStyle} from '../types';
-import {ContextualTriggerSuggestionColor} from '../types';
 import {ContextualTriggerSurface} from '../types';
 import {CurrencyFormat} from '../schema';
 import type {CurrencySchema} from '../schema';
@@ -33,8 +31,8 @@ import type {CustomAuthentication} from '../types';
 import type {CustomHeaderTokenAuthentication} from '../types';
 import type {CustomIndexDefinition} from '../schema';
 import {DataIndexing} from '../api_types';
-import type {DefaultTriggerDefinition} from '../types';
 import {DefaultTriggerKind} from '../types';
+import type {DefaultTriggerMetadata} from '../types';
 import type {DetailedIndexedProperty} from '../schema';
 import type {DocumentContentCategorization} from '../schema';
 import type {DurationSchema} from '../schema';
@@ -76,7 +74,7 @@ import type {MCPTool} from '../types';
 import type {MailAddressFilterCondition} from '../types';
 import type {MailAndCalendarTool} from '../types';
 import type {MailEventFilters} from '../types';
-import type {MailEventTriggerDefinition} from '../types';
+import type {MailEventTriggerMetadata} from '../types';
 import {MailEventType} from '../types';
 import {MailFilterField} from '../types';
 import type {MailTextFilterCondition} from '../types';
@@ -2714,12 +2712,16 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
       message: 'Invalid domain. Instead of "https://www.example.com", just specify "example.com".',
     });
 
-  const whileWritingTriggerSchema = zodCompleteStrictObject<WhileWritingTriggerDefinition>({
+  // suggestionColor and decorationStyle were removed from the SDK, but already-built packs may still set them.
+  // TODO(parker.landon): drop validation support for these fields after 1.22.0 release
+  const whileWritingTriggerSchema = zodCompleteStrictObject<
+    WhileWritingTriggerDefinition & {suggestionColor?: unknown; decorationStyle?: unknown}
+  >({
     kind: z.literal(DefaultTriggerKind.WhileWriting),
     condition: z.string().min(1).max(Limits.ConditionLength),
     assistMode: z.nativeEnum(ContextualTriggerAssistMode).optional(),
-    suggestionColor: z.nativeEnum(ContextualTriggerSuggestionColor).optional(),
-    decorationStyle: z.nativeEnum(ContextualTriggerDecorationStyle).optional(),
+    suggestionColor: z.unknown().optional(),
+    decorationStyle: z.unknown().optional(),
     surfaces: z.array(z.nativeEnum(ContextualTriggerSurface)).optional(),
     blockedDomains: z.array(domainSchema).max(Limits.MaxBlockedDomains).optional(),
   });
@@ -2774,7 +2776,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
     combinator: z.nativeEnum(FilterCombinator).optional(),
   });
 
-  const mailEventTriggerSchema = zodCompleteStrictObject<MailEventTriggerDefinition>({
+  const mailEventTriggerSchema = zodCompleteStrictObject<MailEventTriggerMetadata>({
     kind: eventTriggerKindSchema,
     type: z.literal(EventTriggerType.Mail),
     mailEventType: z.nativeEnum(MailEventType),
@@ -2785,7 +2787,7 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
     kind: eventTriggerKindSchema,
     type: z.literal(EventTriggerType.Slack),
     eventType: z.nativeEnum(SlackEventType),
-    keywords: z.array(keywordSchema).min(1).max(Limits.MaxKeywords),
+    keywords: z.array(keywordSchema).max(Limits.MaxKeywords).optional(),
   });
 
   // Each notetaker field bounds its own value.
@@ -2857,8 +2859,8 @@ ${endpointKey ? 'endpointKey is set' : `requiresEndpointUrl is ${requiresEndpoin
     whileWritingTriggerSchema,
   ]);
 
-  const defaultTriggersSchema: z.ZodType<DefaultTriggerDefinition[]> = z.array(defaultTriggerSchema);
-  const routineSchema = zodCompleteStrictObject<AgentRoutineDefinition>({
+  const defaultTriggersSchema: z.ZodType<DefaultTriggerMetadata[]> = z.array(defaultTriggerSchema);
+  const routineSchema = zodCompleteStrictObject<AgentRoutineMetadata>({
     name: z.string().max(Limits.RoutineNameLength).optional(),
     instructions: z.string().max(Limits.PromptLength).optional(),
     trigger: defaultTriggerSchema,

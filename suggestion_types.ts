@@ -1,9 +1,24 @@
 /** @hidden In early access, live in production but the shape may change. */
+type SuggestionContent = Pick<Suggestion, 'original' | 'title' | 'explanation' | 'replacement'>;
+
+/** @hidden In early access, live in production but the shape may change. */
 export interface SuggestionRequest {
   /**
    * The exact, complete text to check, without trimming or Unicode normalization.
    */
   text: string;
+  /**
+   * Regions that triggered this check, relative to text after editor markers are removed.
+   * Offsets count UTF-16 code units; start is inclusive and end is exclusive.
+   * Equal offsets represent an empty region, such as a deletion. Omitted when unavailable.
+   */
+  dirtyRanges?: Array<{startOffset: number; endOffset: number}>;
+  /** Suggestions currently displayed by this provider. Omitted when unavailable. */
+  currentSuggestions?: SuggestionContent[];
+  /** Previously accepted suggestions from this provider. Their original text may have changed. */
+  acceptedSuggestions?: SuggestionContent[];
+  /** Previously dismissed suggestions from this provider. Their original text may have changed. */
+  dismissedSuggestions?: SuggestionContent[];
 }
 
 /** @hidden In early access, live in production but the shape may change. */

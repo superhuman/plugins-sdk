@@ -27,6 +27,12 @@ describe('published suggestion SDK', () => {
       const tools: AgentTool[] = [{type: 'Pack' as any, packId: 1, mcpTools: [mcp]}];
       const balanced = ContextualTriggerAssistMode.Balanced;
       const request: import('../dist').SuggestionRequest = {text: 'Text'};
+      const contextualRequest: import('../dist').SuggestionRequest = {
+        text: 'Text', dirtyRanges: [{startOffset: 0, endOffset: 0}],
+        currentSuggestions: [{original: 'Text', title: 'Title', explanation: 'Why'}],
+        acceptedSuggestions: [{original: 'Old', title: 'Title', explanation: 'Why', replacement: ''}],
+        dismissedSuggestions: [],
+      };
       const unavailable: import('../dist').SuggestionResponse = {suggestions: [], unavailable: 'Unsupported'};
       const suggestion: import('../dist').Suggestion = {startOffset: 0, endOffset: 1, original: 'X', title: 'Title', explanation: 'Why'};
       const completed: import('../dist').SuggestionResponse = {suggestions: [suggestion]};
@@ -37,7 +43,7 @@ describe('published suggestion SDK', () => {
       const withSummary: import('../dist').SuggestionResponse = {suggestions: [], summary: {title: 'Clear'}};
       void completed; void contradictory; void withSummary;
       newPack().addSuggestionProvider({type: SuggestionProviderType.Endpoint, name: 'Check', endpointUrl: 'https://example.com/check'});
-      void request; void unavailable; void SuggestionEndpointRequestJsonSchema; void SuggestionEndpointResponseJsonSchema;
+      void request; void contextualRequest; void unavailable; void SuggestionEndpointRequestJsonSchema; void SuggestionEndpointResponseJsonSchema;
       void tools; void balanced;`;
     testHelper.checkConsumer(source);
   });
@@ -65,6 +71,56 @@ describe('suggestion JSON Schemas', () => {
   it('accepts exact request text without a protocol version', () => {
     assert.deepEqual(request.parse({text: '😀 Repeated. Repeated.\n'}), {text: '😀 Repeated. Repeated.\n'});
     assert.isFalse(request.safeParse({text: 'Text', protocolVersion: 1}).success);
+  });
+
+  it('accepts dirty ranges and suggestion history without requiring historical text in the snapshot', () => {
+    const payload = {
+      text: '😀 New draft.',
+      dirtyRanges: [
+        {startOffset: 3, endOffset: 6},
+        {startOffset: 12, endOffset: 12},
+      ],
+      currentSuggestions: [{original: 'New', title: 'Clarify', explanation: 'Be precise'}],
+      acceptedSuggestions: [{original: 'Old', title: 'Remove', explanation: 'Redundant', replacement: ''}],
+      dismissedSuggestions: [{original: 'Earlier draft', title: 'Rewrite', explanation: 'Tone', replacement: 'Hello'}],
+    };
+    assert.deepEqual(request.parse(payload), payload);
+    assert.deepEqual(request.parse({text: '', dirtyRanges: [], currentSuggestions: []}), {
+      text: '',
+      dirtyRanges: [],
+      currentSuggestions: [],
+    });
+  });
+
+  it('accepts empty legacy history without allowing empty fields in new suggestions', () => {
+    const history = [{original: '', title: '', explanation: '', replacement: ''}];
+    const payload = {
+      text: 'New draft',
+      currentSuggestions: history,
+      acceptedSuggestions: history,
+      dismissedSuggestions: history,
+    };
+    assert.deepEqual(request.parse(payload), payload);
+    const suggestion = {startOffset: 0, endOffset: 1, original: 'X', title: 'Title', explanation: 'Why'};
+    for (const field of ['original', 'title', 'explanation']) {
+      assert.isFalse(response.safeParse({suggestions: [{...suggestion, [field]: ''}]}).success);
+    }
+  });
+
+  it('rejects invalid dirty offsets and history fields outside the public contract', () => {
+    for (const offset of [-1, 0.5, Number.MAX_SAFE_INTEGER + 1]) {
+      for (const field of ['startOffset', 'endOffset']) {
+        assert.isFalse(
+          request.safeParse({text: 'Text', dirtyRanges: [{startOffset: 0, endOffset: 1, [field]: offset}]}).success,
+        );
+      }
+    }
+    for (const field of ['currentSuggestions', 'acceptedSuggestions', 'dismissedSuggestions']) {
+      const history = {original: 'Earlier', title: 'Title', explanation: 'Why'};
+      assert.isFalse(request.safeParse({text: 'Text', [field]: [{...history, replacement: null}]}).success);
+      assert.isFalse(request.safeParse({text: 'Text', [field]: [{...history, startOffset: 0}]}).success);
+      assert.isFalse(request.safeParse({text: 'Text', [field]: [{...history, extras: {secret: 'private'}}]}).success);
+    }
   });
 
   it('publishes closed unavailable responses as standalone JSON', () => {

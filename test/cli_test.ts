@@ -20,10 +20,12 @@ import * as cliHelpers from '../cli/helpers';
 import {compilePackBundle} from '../testing/compile';
 import {compilePackMetadata} from '../helpers/metadata';
 import * as configStorage from '../cli/config_storage';
+import {deriveBrowserEndpoint} from '../cli/helpers';
 import {describeAge} from '../cli/agent_chat';
 import {describeRunReason} from '../cli/agent_chat';
 import {firstSessionId} from '../cli/agent_logs';
 import {formatAgentLog} from '../cli/agent_logs';
+import {formatEndpoint} from '../cli/helpers';
 import {formatWhoami} from '../cli/whoami';
 import fs from 'fs-extra';
 import {getApiTokenCreationUrl} from '../cli/register';
@@ -117,6 +119,15 @@ describe('CLI', () => {
       assert.equal(parsePackIdOrUrl('https://coda.io/packs/foo-bar-1234-5678'), 5678);
     });
 
+    it('parses Superhuman Docs URLs', () => {
+      assert.equal(parsePackIdOrUrl('https://docs.superhuman.com/p/1234'), 1234);
+      assert.equal(parsePackIdOrUrl('https://docs.superhuman.com/p/1234?section=listing'), 1234);
+      assert.equal(parsePackIdOrUrl('https://my-company.docs.superhuman.com/p/1234'), 1234);
+      assert.equal(parsePackIdOrUrl('https://docs.pp-sh.io/p/1234'), 1234);
+      assert.equal(parsePackIdOrUrl('https://docs.qa-sh.io:6780/p/1234'), 1234);
+      assert.equal(parsePackIdOrUrl('https://docs.superhuman.com/packs/foo-1234'), 1234);
+    });
+
     it('rejects bad IDs', () => {
       assert.equal(parsePackIdOrUrl('not a number'), null);
       assert.equal(parsePackIdOrUrl('12 34'), null);
@@ -126,6 +137,10 @@ describe('CLI', () => {
       assert.equal(parsePackIdOrUrl('https://codadoc.io/p/1234'), null);
       assert.equal(parsePackIdOrUrl('https://coda.io/packs/foo'), null);
       assert.equal(parsePackIdOrUrl('https://coda.io/packs/foo-1234/5678'), null);
+      assert.equal(parsePackIdOrUrl('https://superhuman.com/p/1234'), null);
+      assert.equal(parsePackIdOrUrl('https://go.superhuman.com/p/1234'), null);
+      assert.equal(parsePackIdOrUrl('https://evildocs.superhuman.com/p/1234'), null);
+      assert.equal(parsePackIdOrUrl('https://docs.superhuman.com.evil.com/p/1234'), null);
     });
   });
 
@@ -146,6 +161,19 @@ describe('CLI', () => {
         getApiTokenCreationUrl('https://tenant.example.com/'),
         'https://tenant.example.com/account?openDialog=CREATE_API_TOKEN&scopeType=pack#apiSettings',
       );
+    });
+  });
+
+  describe('web endpoint', () => {
+    it('uses Superhuman Docs for the default API endpoint', () => {
+      assert.equal(deriveBrowserEndpoint('https://coda.io'), 'https://docs.superhuman.com');
+      assert.equal(deriveBrowserEndpoint('https://coda.io/'), 'https://docs.superhuman.com');
+      assert.equal(deriveBrowserEndpoint(formatEndpoint('coda.io')), 'https://docs.superhuman.com');
+    });
+
+    it('preserves custom API endpoints', () => {
+      assert.equal(deriveBrowserEndpoint('https://my-company.coda.io/'), 'https://my-company.coda.io');
+      assert.equal(deriveBrowserEndpoint(formatEndpoint('my-company.coda.io')), 'https://my-company.coda.io');
     });
   });
 
@@ -177,13 +205,13 @@ describe('CLI', () => {
   });
 
   describe('agent template', () => {
-    it('renders an agent pack with instructions, tools, and a schedule trigger', () => {
+    it('renders an agent pack with instructions, tools, and a schedule routine', () => {
       const template = renderAgentPackTemplate('standup-bot');
       assert.include(template, 'export const agent = sdk.newAgent();');
       assert.include(template, 'agent.setInstructions(');
       assert.include(template, 'standup-bot');
       assert.include(template, 'agent.setTools({');
-      assert.include(template, 'agent.setDefaultScheduleTrigger({');
+      assert.include(template, 'agent.addDefaultRoutine({');
     });
 
     it('renders a template that compiles with quotes and backslashes in the name', async () => {

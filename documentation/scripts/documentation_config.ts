@@ -86,6 +86,11 @@ export const Snippets: AutocompleteSnippet[] = [
     codeFile: './samples/snippets/authentication/user_oauth2.ts',
   },
   {
+    triggerTokens: ['setUserAuthentication:OAuth2DCR', 'DCR', 'useDynamicClientRegistration'],
+    content: 'Sets per-user, OAuth2 authentication for the Pack using dynamic client registration.',
+    codeFile: './samples/snippets/authentication/user_oauth2_dcr.ts',
+  },
+  {
     triggerTokens: ['setUserAuthentication:OAuth2ClientCredentials'],
     content: 'Sets per-user, OAuth2 authentication for the Pack using the Client Credentials flow.',
     codeFile: './samples/snippets/authentication/user_oauth2_client_credentials.ts',
@@ -269,6 +274,36 @@ export const Snippets: AutocompleteSnippet[] = [
     triggerTokens: ['addMcpServer', 'McpServer', 'MCP'],
     content: 'Adds an MCP server.',
     codeFile: './samples/snippets/mcp/add_mcp_server.ts',
+  },
+  {
+    triggerTokens: ['setTools'],
+    content: 'Sets the tools and connectors the agent can use.',
+    codeFile: './samples/snippets/agents/set_tools.ts',
+  },
+  {
+    triggerTokens: ['addDefaultRoutine', 'addDefaultRoutine:whileWriting', 'WhileWriting'],
+    content: 'Adds a while-writing routine that can comment on or rewrite text.',
+    codeFile: './samples/snippets/agents/routine_while_writing.ts',
+  },
+  {
+    triggerTokens: ['addDefaultRoutine:schedule', 'Schedule'],
+    content: 'Adds a routine that runs on a schedule.',
+    codeFile: './samples/snippets/agents/routine_schedule.ts',
+  },
+  {
+    triggerTokens: ['addDefaultRoutine:mail', 'Mail'],
+    content: 'Adds a routine that runs when a Mail message is received or sent.',
+    codeFile: './samples/snippets/agents/routine_mail.ts',
+  },
+  {
+    triggerTokens: ['addDefaultRoutine:slack', 'Slack'],
+    content: 'Adds a routine that runs when a Slack message contains a keyword.',
+    codeFile: './samples/snippets/agents/routine_slack.ts',
+  },
+  {
+    triggerTokens: ['addSuggestedPrompt', 'suggestedPrompt', 'SuggestedPrompt'],
+    content: 'Adds a suggested prompt that appears as a button in chat.',
+    codeFile: './samples/snippets/agents/suggested_prompt.ts',
   },
 ];
 

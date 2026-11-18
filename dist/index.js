@@ -12,8 +12,8 @@
  * @module core
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PropertyLabelValueTemplate = exports.LinkDisplayType = exports.IndexingStrategy = exports.ImageOutline = exports.ImageShapeStyle = exports.ImageCornerStyle = exports.EmailDisplayType = exports.DurationUnit = exports.CurrencyFormat = exports.AttributionNodeType = exports.ensureUnreachable = exports.ensureNonEmptyString = exports.ensureExists = exports.assertCondition = exports.SvgConstants = exports.getEffectivePropertyKeysFromSchema = exports.withQueryParams = exports.joinUrl = exports.getQueryParams = exports.simpleAutocomplete = exports.makeSimpleAutocompleteMetadataFormula = exports.autocompleteSearchObjects = exports.makeParameter = exports.makeTranslateObjectFormula = exports.makeSyncTable = exports.makeFormula = exports.makeEmptyFormula = exports.makeDynamicSyncTable = exports.makePropertyOptionsFormula = exports.makeMetadataFormula = exports.ResponseSizeTooLargeError = exports.UserVisibleError = exports.Type = exports.MissingScopesError = exports.StatusCodeError = exports.PrecannedDateRange = exports.ParameterType = exports.NetworkConnection = exports.InvocationSource = exports.UpdateOutcome = exports.DataIndexing = exports.ConnectionRequirement = exports.OptionsType = exports.ConnectorDefinitionBuilder = exports.PackDefinitionBuilder = exports.newAgent = exports.newConnector = exports.newPack = exports.PostSetupType = exports.AuthenticationType = void 0;
-exports.SuggestionEndpointResponseJsonSchema = exports.SuggestionEndpointRequestJsonSchema = exports.SuggestionProviderType = exports.EmbeddedContentType = exports.ToolType = exports.ScreenAnnotationType = exports.KnowledgeToolSourceType = exports.SkillModel = exports.ContextualTriggerSurface = exports.ContextualTriggerDecorationStyle = exports.ContextualTriggerSuggestionColor = exports.ContextualTriggerAssistMode = exports.NotetakerFilterField = exports.NotetakerEventType = exports.SlackEventType = exports.MailFilterField = exports.MailEventType = exports.FilterCombinator = exports.FilterOperator = exports.EventTriggerType = exports.DefaultTriggerKind = exports.PermissionSyncMode = exports.EndpointSetBy = exports.AdminSetupRequirement = exports.TokenExchangeCredentialsLocation = exports.ValidFetchMethods = exports.withIdentity = exports.makeSchema = exports.makeReferenceSchemaFromObjectSchema = exports.makeObjectSchema = exports.makeAttributionNode = exports.generateSchema = exports.ValueType = exports.ValueHintType = exports.ScaleIconSet = void 0;
+exports.LinkDisplayType = exports.IndexingStrategy = exports.ImageOutline = exports.ImageShapeStyle = exports.ImageCornerStyle = exports.EmailDisplayType = exports.DurationUnit = exports.CurrencyFormat = exports.AttributionNodeType = exports.ensureUnreachable = exports.ensureNonEmptyString = exports.ensureExists = exports.assertCondition = exports.SvgConstants = exports.getEffectivePropertyKeysFromSchema = exports.withQueryParams = exports.joinUrl = exports.getQueryParams = exports.simpleAutocomplete = exports.makeSimpleAutocompleteMetadataFormula = exports.autocompleteSearchObjects = exports.makeParameter = exports.makeTranslateObjectFormula = exports.makeSyncTable = exports.makeFormula = exports.makeEmptyFormula = exports.makeDynamicSyncTable = exports.makePropertyOptionsFormula = exports.makeMetadataFormula = exports.ResponseSizeTooLargeError = exports.UserVisibleError = exports.Type = exports.MissingScopesError = exports.StatusCodeError = exports.PrecannedDateRange = exports.ParameterType = exports.NetworkConnection = exports.InvocationSource = exports.UpdateOutcome = exports.DataIndexing = exports.ConnectionRequirement = exports.OptionsType = exports.ConnectorDefinitionBuilder = exports.PackDefinitionBuilder = exports.AgentDefinitionBuilder = exports.newAgent = exports.newConnector = exports.newPack = exports.PostSetupType = exports.AuthenticationType = void 0;
+exports.SuggestionEndpointResponseJsonSchema = exports.SuggestionEndpointRequestJsonSchema = exports.SuggestionProviderType = exports.EmbeddedContentType = exports.ToolType = exports.ScreenAnnotationType = exports.KnowledgeToolSourceType = exports.SkillModel = exports.ContextualTriggerSurface = exports.ContextualTriggerAssistMode = exports.NotetakerFilterField = exports.NotetakerEventType = exports.SlackEventType = exports.MailFilterField = exports.MailEventType = exports.FilterCombinator = exports.FilterOperator = exports.EventTriggerType = exports.DefaultTriggerKind = exports.PermissionSyncMode = exports.EndpointSetBy = exports.AdminSetupRequirement = exports.TokenExchangeCredentialsLocation = exports.ValidFetchMethods = exports.withIdentity = exports.makeSchema = exports.makeReferenceSchemaFromObjectSchema = exports.makeObjectSchema = exports.makeAttributionNode = exports.generateSchema = exports.ValueType = exports.ValueHintType = exports.ScaleIconSet = exports.PropertyLabelValueTemplate = void 0;
 var types_1 = require("./types");
 Object.defineProperty(exports, "AuthenticationType", { enumerable: true, get: function () { return types_1.AuthenticationType; } });
 var types_2 = require("./types");
@@ -25,9 +25,11 @@ Object.defineProperty(exports, "newConnector", { enumerable: true, get: function
 var builder_3 = require("./builder");
 Object.defineProperty(exports, "newAgent", { enumerable: true, get: function () { return builder_3.newAgent; } });
 var builder_4 = require("./builder");
-Object.defineProperty(exports, "PackDefinitionBuilder", { enumerable: true, get: function () { return builder_4.PackDefinitionBuilder; } });
+Object.defineProperty(exports, "AgentDefinitionBuilder", { enumerable: true, get: function () { return builder_4.AgentDefinitionBuilder; } });
 var builder_5 = require("./builder");
-Object.defineProperty(exports, "ConnectorDefinitionBuilder", { enumerable: true, get: function () { return builder_5.ConnectorDefinitionBuilder; } });
+Object.defineProperty(exports, "PackDefinitionBuilder", { enumerable: true, get: function () { return builder_5.PackDefinitionBuilder; } });
+var builder_6 = require("./builder");
+Object.defineProperty(exports, "ConnectorDefinitionBuilder", { enumerable: true, get: function () { return builder_6.ConnectorDefinitionBuilder; } });
 var api_types_1 = require("./api_types");
 Object.defineProperty(exports, "OptionsType", { enumerable: true, get: function () { return api_types_1.OptionsType; } });
 var api_types_2 = require("./api_types");
@@ -170,23 +172,19 @@ Object.defineProperty(exports, "NotetakerFilterField", { enumerable: true, get: 
 var types_15 = require("./types");
 Object.defineProperty(exports, "ContextualTriggerAssistMode", { enumerable: true, get: function () { return types_15.ContextualTriggerAssistMode; } });
 var types_16 = require("./types");
-Object.defineProperty(exports, "ContextualTriggerSuggestionColor", { enumerable: true, get: function () { return types_16.ContextualTriggerSuggestionColor; } });
+Object.defineProperty(exports, "ContextualTriggerSurface", { enumerable: true, get: function () { return types_16.ContextualTriggerSurface; } });
 var types_17 = require("./types");
-Object.defineProperty(exports, "ContextualTriggerDecorationStyle", { enumerable: true, get: function () { return types_17.ContextualTriggerDecorationStyle; } });
+Object.defineProperty(exports, "SkillModel", { enumerable: true, get: function () { return types_17.SkillModel; } });
 var types_18 = require("./types");
-Object.defineProperty(exports, "ContextualTriggerSurface", { enumerable: true, get: function () { return types_18.ContextualTriggerSurface; } });
+Object.defineProperty(exports, "KnowledgeToolSourceType", { enumerable: true, get: function () { return types_18.KnowledgeToolSourceType; } });
 var types_19 = require("./types");
-Object.defineProperty(exports, "SkillModel", { enumerable: true, get: function () { return types_19.SkillModel; } });
+Object.defineProperty(exports, "ScreenAnnotationType", { enumerable: true, get: function () { return types_19.ScreenAnnotationType; } });
 var types_20 = require("./types");
-Object.defineProperty(exports, "KnowledgeToolSourceType", { enumerable: true, get: function () { return types_20.KnowledgeToolSourceType; } });
+Object.defineProperty(exports, "ToolType", { enumerable: true, get: function () { return types_20.ToolType; } });
 var types_21 = require("./types");
-Object.defineProperty(exports, "ScreenAnnotationType", { enumerable: true, get: function () { return types_21.ScreenAnnotationType; } });
+Object.defineProperty(exports, "EmbeddedContentType", { enumerable: true, get: function () { return types_21.EmbeddedContentType; } });
 var types_22 = require("./types");
-Object.defineProperty(exports, "ToolType", { enumerable: true, get: function () { return types_22.ToolType; } });
-var types_23 = require("./types");
-Object.defineProperty(exports, "EmbeddedContentType", { enumerable: true, get: function () { return types_23.EmbeddedContentType; } });
-var types_24 = require("./types");
-Object.defineProperty(exports, "SuggestionProviderType", { enumerable: true, get: function () { return types_24.SuggestionProviderType; } });
+Object.defineProperty(exports, "SuggestionProviderType", { enumerable: true, get: function () { return types_22.SuggestionProviderType; } });
 var suggestion_schemas_1 = require("./suggestion_schemas");
 Object.defineProperty(exports, "SuggestionEndpointRequestJsonSchema", { enumerable: true, get: function () { return suggestion_schemas_1.SuggestionEndpointRequestJsonSchema; } });
 Object.defineProperty(exports, "SuggestionEndpointResponseJsonSchema", { enumerable: true, get: function () { return suggestion_schemas_1.SuggestionEndpointResponseJsonSchema; } });

@@ -727,7 +727,7 @@ each time you build a version.
 #### Example
 
 ```
-connector.setVersion('1.2.3');
+builder.setVersion('1.2.3');
 ```
 
 #### Parameters

@@ -51,16 +51,13 @@ function newPack(definition) {
 }
 exports.newPack = newPack;
 /**
- * Creates a new skeleton agent definition that can be added to.
+ * Creates a new agent definition you can configure with builder methods.
  *
  * @example
  * ```
  * export const agent = newAgent();
  * agent.setInstructions('You help a team run async standups. Keep replies short.');
  * ```
- *
- * @internal
- * @hidden
  */
 function newAgent() {
     return new AgentDefinitionBuilder();
@@ -83,7 +80,7 @@ class BaseDefinitionBuilder {
      *
      * @example
      * ```
-     * connector.setVersion('1.2.3');
+     * builder.setVersion('1.2.3');
      * ```
      */
     setVersion(version) {
@@ -524,30 +521,41 @@ exports.PackDefinitionBuilder = PackDefinitionBuilder;
 function frozenCopy(value) {
     return (0, object_utils_2.deepFreeze)((0, object_utils_1.deepCopy)(value));
 }
+// Uploads name a mail trigger's event `mailEventType`, the name upload validation and Docs storage expect.
+function routineMetadata({ trigger, ...routine }) {
+    if (trigger.kind !== types_2.DefaultTriggerKind.Event || trigger.type !== types_3.EventTriggerType.Mail) {
+        return { ...routine, trigger };
+    }
+    const { eventType, ...rest } = trigger;
+    if (eventType === undefined) {
+        // Code written for SDK 1.21.0 or earlier passes `mailEventType` instead.
+        return { ...routine, trigger: trigger };
+    }
+    return { ...routine, trigger: { ...rest, mailEventType: eventType } };
+}
 // Off the instance: an own property leaks into the metadata, and `#private` breaks pre-ES2015 .d.ts consumers.
 const agentBuilderStates = new WeakMap();
 function stateOf(builder) {
     return agentBuilderStates.get(builder);
 }
 /**
- * A class that assists in constructing an agent definition. Use {@link newAgent} to create one.
- *
- * @internal
- * @hidden
+ * Builds an agent definition. Use {@link newAgent} to create a builder.
  */
 class AgentDefinitionBuilder extends BaseDefinitionBuilder {
+    /**
+     * Creates an agent builder. Use {@link newAgent} instead of calling this constructor directly.
+     */
     constructor() {
         super();
         const state = { agent: frozenCopy({ tools: [] }) };
         agentBuilderStates.set(this, state);
         // Own and enumerable, unlike a class getter, so compilePackMetadata's object rest still copies them.
         Object.defineProperty(this, 'agent', { enumerable: true, get: () => state.agent });
-        Object.defineProperty(this, 'defaultTriggers', { enumerable: true, get: () => state.defaultTriggers });
         Object.defineProperty(this, 'suggestedPrompts', { enumerable: true, get: () => state.suggestedPrompts });
         Object.defineProperty(this, 'defaultRoutines', { enumerable: true, get: () => state.defaultRoutines });
     }
     /**
-     * Adds a routine with its own name or instructions and one trigger.
+     * Adds a routine that runs when its trigger fires.
      *
      * @example
      * ```
@@ -573,7 +581,10 @@ class AgentDefinitionBuilder extends BaseDefinitionBuilder {
             }
         }
         const state = stateOf(this);
-        state.defaultRoutines = frozenCopy([...((_c = state.defaultRoutines) !== null && _c !== void 0 ? _c : []), routine]);
+        state.defaultRoutines = frozenCopy([
+            ...((_c = state.defaultRoutines) !== null && _c !== void 0 ? _c : []),
+            routineMetadata(routine),
+        ]);
         return this;
     }
     /**
@@ -590,21 +601,14 @@ class AgentDefinitionBuilder extends BaseDefinitionBuilder {
         return this;
     }
     /**
-     * Sets the tools this agent can use. Anything left out is off.
+     * Choose which products and sources your agent can use, such as Docs, Mail, web search, or connectors.
+     * Go's built-in platform features are available automatically, so you don't need to add them here.
      *
      * @example
      * ```
      * agent.setTools({docs: true, mail: true, webSearch: {allowedDomains: ['docs.example.com']}});
      * agent.setTools({connectors: [{connectorId: 1234, formulas: [{formulaName: 'CreateTask'}]}]});
      * agent.setTools({connectors: [{connectorId: 5678, mcpTools: [{toolName: 'search_issues'}]}]});
-     * // Needs 1001, and either 2001 or 2002.
-     * agent.setTools({
-     *   connectors: [
-     *     {connectorId: 1001, required: true},
-     *     {connectorId: 2001, required: {groupName: 'email'}},
-     *     {connectorId: 2002, required: {groupName: 'email'}},
-     *   ],
-     * });
      * ```
      */
     setTools({ docs, mail, webSearch, connectors }) {
@@ -655,121 +659,6 @@ class AgentDefinitionBuilder extends BaseDefinitionBuilder {
         var _a;
         const state = stateOf(this);
         state.suggestedPrompts = frozenCopy([...((_a = state.suggestedPrompts) !== null && _a !== void 0 ? _a : []), prompt]);
-        return this;
-    }
-    /**
-     * Sets the while-writing trigger this agent runs on.
-     *
-     * @example
-     * ```
-     * agent.setDefaultWhileWritingTrigger({
-     *   condition: 'Offer a citation when the user asserts a statistic',
-     *   surfaces: [sdk.ContextualTriggerSurface.Docs, sdk.ContextualTriggerSurface.Email],
-     * });
-     * ```
-     */
-    setDefaultWhileWritingTrigger(contextualTrigger) {
-        var _a;
-        const state = stateOf(this);
-        const otherTriggers = ((_a = state.defaultTriggers) !== null && _a !== void 0 ? _a : []).filter(trigger => trigger.kind !== types_2.DefaultTriggerKind.WhileWriting);
-        state.defaultTriggers = frozenCopy([
-            ...otherTriggers,
-            { kind: types_2.DefaultTriggerKind.WhileWriting, ...contextualTrigger },
-        ]);
-        return this;
-    }
-    /**
-     * Adds a mail event trigger this agent runs on.
-     *
-     * @example
-     * ```
-     * agent.addDefaultMailEventTrigger({
-     *   mailEventType: sdk.MailEventType.MessageReceived,
-     *   filters: {
-     *     conditions: [
-     *       {
-     *         field: sdk.MailFilterField.From,
-     *         operator: sdk.FilterOperator.TextContains,
-     *         value: '@customers.example.com',
-     *       },
-     *     ],
-     *   },
-     * });
-     * ```
-     */
-    addDefaultMailEventTrigger(trigger) {
-        return this._addDefaultEventTrigger({ type: types_3.EventTriggerType.Mail, ...trigger });
-    }
-    /**
-     * Adds a Slack event trigger this agent runs on. The workspace and channels are bound at install.
-     *
-     * @example
-     * ```
-     * agent.addDefaultSlackEventTrigger({
-     *   eventType: sdk.SlackEventType.MessageKeyword,
-     *   keywords: ['deploy', 'rollback'],
-     * });
-     * ```
-     */
-    addDefaultSlackEventTrigger(trigger) {
-        return this._addDefaultEventTrigger({ type: types_3.EventTriggerType.Slack, ...trigger });
-    }
-    /**
-     * Adds a notetaker event trigger this agent runs on.
-     *
-     * @hidden In early access, live in production for Codans only, but the shape may change.
-     *
-     * @example
-     * ```
-     * agent.addDefaultNotetakerEventTrigger({
-     *   eventType: sdk.NotetakerEventType.MeetingSummaryCompleted,
-     *   filters: {
-     *     conditions: [
-     *       {
-     *         field: sdk.NotetakerFilterField.DurationMinutes,
-     *         operator: sdk.FilterOperator.NumberAtLeast,
-     *         value: '30',
-     *       },
-     *     ],
-     *   },
-     * });
-     * ```
-     */
-    addDefaultNotetakerEventTrigger(trigger) {
-        return this._addDefaultEventTrigger({ type: types_3.EventTriggerType.Notetaker, ...trigger });
-    }
-    _addDefaultEventTrigger(eventTrigger) {
-        var _a;
-        const state = stateOf(this);
-        state.defaultTriggers = frozenCopy([
-            ...((_a = state.defaultTriggers) !== null && _a !== void 0 ? _a : []),
-            { kind: types_2.DefaultTriggerKind.Event, ...eventTrigger },
-        ]);
-        return this;
-    }
-    /**
-     * Sets the schedule this agent runs on. Throws on a recurrence the runtime cannot fire, including
-     * one with no DTSTART to anchor it.
-     *
-     * @example
-     * ```
-     * agent.setDefaultScheduleTrigger({
-     *   rruleString: 'DTSTART:20260101T090000\nRRULE:FREQ=WEEKLY;BYDAY=MO',
-     * });
-     * ```
-     */
-    setDefaultScheduleTrigger(scheduleTrigger) {
-        var _a;
-        const message = (0, rrule_validation_1.validateRRuleString)(scheduleTrigger.rruleString);
-        if (message) {
-            throw new Error(message);
-        }
-        const state = stateOf(this);
-        const otherTriggers = ((_a = state.defaultTriggers) !== null && _a !== void 0 ? _a : []).filter(trigger => trigger.kind !== types_2.DefaultTriggerKind.Schedule);
-        state.defaultTriggers = frozenCopy([
-            ...otherTriggers,
-            { kind: types_2.DefaultTriggerKind.Schedule, ...scheduleTrigger },
-        ]);
         return this;
     }
 }

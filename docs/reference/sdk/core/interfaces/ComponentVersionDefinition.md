@@ -21,6 +21,14 @@ A component is something a plugin exports, such as a connector or an agent.
 
 ## Properties
 
+### agent?
+
+> `optional` **agent**: [`AgentDefinition`](AgentDefinition.md)
+
+The agent this pack defines. Create it with `sdk.newAgent()`.
+
+***
+
 ### ~~benchInitializationSkill?~~
 
 > `optional` **benchInitializationSkill**: `Partial`\<[`Skill`](Skill.md)\>
@@ -68,6 +76,14 @@ No longer used, now that agents are connectors.
 > `optional` **defaultAuthentication**: [`Authentication`](../type-aliases/Authentication.md)
 
 If specified, the user must provide personal authentication credentials before using the pack.
+
+***
+
+### defaultRoutines?
+
+> `optional` **defaultRoutines**: [`AgentRoutineMetadata`](AgentRoutineMetadata.md)[]
+
+Default routines for this agent. Add them with `sdk.newAgent().addDefaultRoutine()`.
 
 ***
 

@@ -12,6 +12,7 @@ import {compilePack} from './validate';
 import {compilePackMetadata} from '../helpers/metadata';
 import {computeSha256} from '../helpers/crypto';
 import {createCodaClient} from './helpers';
+import {deriveBrowserEndpoint} from './helpers';
 import {formatEndpoint} from './helpers';
 import {formatError} from './errors';
 import {formatResponseError} from './errors';
@@ -193,7 +194,9 @@ export async function handleUpload({
   }
 
   cleanup(intermediateOutputDirectory, logger);
-  print(`uploaded pack_id: ${packId}\nversion: ${packVersion}\nurl: ${formattedEndpoint}/p/${packId}`);
+  print(
+    `uploaded pack_id: ${packId}\nversion: ${packVersion}\nurl: ${deriveBrowserEndpoint(formattedEndpoint)}/p/${packId}`,
+  );
 }
 
 async function uploadPack(uploadUrl: string, uploadPayload: string, headers: {[header: string]: any}) {

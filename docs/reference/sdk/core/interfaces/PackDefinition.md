@@ -24,6 +24,18 @@ This should only be used by legacy pack implementations.
 
 ## Properties
 
+### ~~agent?~~
+
+> `optional` **agent**: [`AgentDefinition`](AgentDefinition.md)
+
+The agent this pack defines. Create it with `sdk.newAgent()`.
+
+#### Inherited from
+
+[`PackVersionDefinition`](PackVersionDefinition.md).[`agent`](PackVersionDefinition.md#agent)
+
+***
+
 ### ~~benchInitializationSkill?~~
 
 > `optional` **benchInitializationSkill**: `Partial`\<[`Skill`](Skill.md)\>
@@ -89,6 +101,18 @@ If specified, the user must provide personal authentication credentials before u
 #### Inherited from
 
 [`PackVersionDefinition`](PackVersionDefinition.md).[`defaultAuthentication`](PackVersionDefinition.md#defaultauthentication)
+
+***
+
+### ~~defaultRoutines?~~
+
+> `optional` **defaultRoutines**: [`AgentRoutineMetadata`](AgentRoutineMetadata.md)[]
+
+Default routines for this agent. Add them with `sdk.newAgent().addDefaultRoutine()`.
+
+#### Inherited from
+
+[`PackVersionDefinition`](PackVersionDefinition.md).[`defaultRoutines`](PackVersionDefinition.md#defaultroutines)
 
 ***
 

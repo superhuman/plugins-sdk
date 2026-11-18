@@ -10,18 +10,6 @@
           "items": {
             "type": "object",
             "properties": {
-              "startOffset": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 9007199254740991,
-                "description": "Inclusive start position in UTF-16 code units; zero-based."
-              },
-              "endOffset": {
-                "type": "integer",
-                "exclusiveMinimum": 0,
-                "maximum": 9007199254740991,
-                "description": "Exclusive end position in UTF-16 code units; greater than startOffset."
-              },
               "original": {
                 "type": "string",
                 "minLength": 1,
@@ -40,14 +28,26 @@
               "replacement": {
                 "description": "Plain-text replacement. Omit for advice only; an empty string deletes the selected text.",
                 "type": "string"
+              },
+              "startOffset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Inclusive start position in UTF-16 code units; zero-based."
+              },
+              "endOffset": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Exclusive end position in UTF-16 code units; greater than startOffset."
               }
             },
             "required": [
-              "startOffset",
-              "endOffset",
               "original",
               "title",
-              "explanation"
+              "explanation",
+              "startOffset",
+              "endOffset"
             ],
             "additionalProperties": false
           }

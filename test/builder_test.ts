@@ -5,24 +5,21 @@ import {AuthenticationType} from '../types';
 import {BaseDefinitionBuilder} from '../builder';
 import {ConnectionRequirement} from '../api_types';
 import {ConnectorDefinitionBuilder} from '../builder';
-import {ContextualTriggerAssistMode} from '../types';
-import {ContextualTriggerSurface} from '../types';
 import type {DefaultTriggerDefinition} from '../types';
 import {DefaultTriggerKind} from '../types';
 import type {DynamicSyncTableDef} from '../api';
 import type {DynamicSyncTableOptions} from '../api';
 import {EventTriggerType} from '../types';
 import type {ExternalPackVersionMetadata} from '../compiled_types';
-import {FilterCombinator} from '../types';
 import {FilterOperator} from '../types';
 import type {GenericObjectSchema} from '../schema';
 import {KnowledgeToolSourceType} from '../types';
 import type {MailEventFilters} from '../types';
 import type {MailEventTriggerDefinition} from '../types';
+import type {MailEventTriggerMetadata} from '../types';
 import {MailEventType} from '../types';
 import {MailFilterField} from '../types';
 import type {MetadataFormulaDef} from '../api';
-import type {NotetakerEventFilters} from '../types';
 import {NotetakerEventType} from '../types';
 import type {ObjectFormulaDef} from '../api';
 import type {ObjectSchema} from '../schema';
@@ -781,17 +778,16 @@ describe('Agent builder', () => {
   });
 
   describe('routines', () => {
-    it('keeps routines separate from plain triggers through JSON compilation', () => {
+    it('carries routines through JSON compilation without plain triggers', () => {
       const routine = {
         name: 'Daily brief',
         instructions: 'Include source links.',
         trigger: {kind: DefaultTriggerKind.WhileWriting, condition: 'When writing statistics'},
       } satisfies AgentRoutineDefinition;
       assert.strictEqual(agent.addDefaultRoutine(routine), agent);
-      agent.addDefaultSlackEventTrigger({eventType: SlackEventType.MessageKeyword, keywords: ['deploy']});
       const metadata = JSON.parse(JSON.stringify(compilePackMetadata(agent as unknown as PackVersionDefinition)));
       assert.deepEqual(metadata.defaultRoutines, [routine]);
-      assert.lengthOf(metadata.defaultTriggers, 1);
+      assert.notProperty(metadata, 'defaultTriggers');
     });
 
     it('copies and freezes nested routine inputs without freezing caller objects', () => {
@@ -823,6 +819,44 @@ describe('Agent builder', () => {
       agent.addDefaultRoutine({instructions: 'Second action.', trigger});
       assert.lengthOf(first!, 1);
       assert.lengthOf(agent.defaultRoutines!, 2);
+    });
+
+    describe('mail triggers', () => {
+      const filters: MailEventFilters = {
+        conditions: [{field: MailFilterField.Subject, operator: FilterOperator.TextContains, value: 'invoice'}],
+      };
+      const uploaded: MailEventTriggerMetadata = {
+        kind: DefaultTriggerKind.Event,
+        type: EventTriggerType.Mail,
+        mailEventType: MailEventType.MessageReceived,
+        filters,
+      };
+
+      it('uploads eventType as mailEventType, which upload validation accepts', async () => {
+        agent.setVersion('1.0.0');
+        agent.setInstructions('Do a thing.');
+        agent.addDefaultRoutine({
+          name: 'Invoices',
+          trigger: {
+            kind: DefaultTriggerKind.Event,
+            type: EventTriggerType.Mail,
+            eventType: MailEventType.MessageReceived,
+            filters,
+          },
+        });
+        assert.deepEqual(agent.defaultRoutines?.[0].trigger, uploaded);
+        assert.isFalse(Object.isFrozen(filters));
+        const metadata = await validatePackVersionMetadata(
+          compilePackMetadata(agent as unknown as PackVersionDefinition),
+          undefined,
+        );
+        assert.deepEqual(metadata.defaultRoutines, [{name: 'Invoices', trigger: uploaded}]);
+      });
+
+      it('keeps mailEventType from an untyped caller written for SDK 1.21.0', () => {
+        agent.addDefaultRoutine({name: 'Invoices', trigger: uploaded as unknown as MailEventTriggerDefinition});
+        assert.deepEqual(agent.defaultRoutines?.[0].trigger, uploaded);
+      });
     });
 
     it('rejects an unsafe schedule before changing builder state', () => {
@@ -1151,190 +1185,6 @@ describe('Agent builder', () => {
     });
   });
 
-  describe('default while-writing trigger', () => {
-    const contextualTrigger = {condition: 'Offer a citation when the user asserts a statistic'};
-
-    it('has none until one is set', () => {
-      agent.setInstructions('Do a thing.');
-      assert.isUndefined(agent.defaultTriggers);
-    });
-
-    it('sets a trigger', () => {
-      agent.setDefaultWhileWritingTrigger(contextualTrigger);
-      assert.deepEqual(agent.defaultTriggers, [{kind: DefaultTriggerKind.WhileWriting, ...contextualTrigger}]);
-    });
-
-    it('takes assist mode and surfaces', () => {
-      agent.setDefaultWhileWritingTrigger({
-        ...contextualTrigger,
-        assistMode: ContextualTriggerAssistMode.OnDemand,
-        surfaces: [ContextualTriggerSurface.Docs, ContextualTriggerSurface.Email],
-      });
-      assert.deepEqual(agent.defaultTriggers, [
-        {
-          kind: DefaultTriggerKind.WhileWriting,
-          ...contextualTrigger,
-          assistMode: ContextualTriggerAssistMode.OnDemand,
-          surfaces: [ContextualTriggerSurface.Docs, ContextualTriggerSurface.Email],
-        },
-      ]);
-    });
-
-    it('replaces rather than appends on a second call', () => {
-      agent
-        .setDefaultWhileWritingTrigger({...contextualTrigger, surfaces: [ContextualTriggerSurface.Docs]})
-        .setDefaultWhileWritingTrigger(contextualTrigger);
-      assert.deepEqual(agent.defaultTriggers, [{kind: DefaultTriggerKind.WhileWriting, ...contextualTrigger}]);
-    });
-
-    it('leaves the agent definition alone', () => {
-      agent.setInstructions('Do a thing.').setDefaultWhileWritingTrigger(contextualTrigger);
-      assert.deepEqual(agent.agent, {instructions: 'Do a thing.', tools: []});
-    });
-
-    it('carries through compilePackMetadata', () => {
-      agent.setInstructions('Do a thing.').setDefaultWhileWritingTrigger(contextualTrigger).setVersion('1.0.0');
-      const metadata = compilePackMetadata(agent as unknown as PackVersionDefinition);
-      assert.deepEqual(metadata.defaultTriggers, [{kind: DefaultTriggerKind.WhileWriting, ...contextualTrigger}]);
-    });
-
-    it('does not add a defaultTriggers field to an ordinary pack', () => {
-      const metadata = compilePackMetadata(newPack().setVersion('1.0.0') as PackVersionDefinition);
-      assert.isUndefined(metadata.defaultTriggers);
-    });
-  });
-
-  describe('default schedule trigger', () => {
-    const scheduleTrigger = {
-      rruleString: 'DTSTART;TZID=America/New_York:20260105T090000\nRRULE:FREQ=WEEKLY;BYDAY=MO;BYHOUR=9;BYMINUTE=0',
-    };
-
-    it('sets a trigger', () => {
-      agent.setDefaultScheduleTrigger(scheduleTrigger);
-      assert.deepEqual(agent.defaultTriggers, [{kind: DefaultTriggerKind.Schedule, ...scheduleTrigger}]);
-    });
-
-    it('accepts a local start time with no author time zone', () => {
-      const localScheduleTrigger = {rruleString: 'DTSTART:20260105T090000\nRRULE:FREQ=WEEKLY;BYDAY=MO'};
-      agent.setDefaultScheduleTrigger(localScheduleTrigger);
-      assert.deepEqual(agent.defaultTriggers, [{kind: DefaultTriggerKind.Schedule, ...localScheduleTrigger}]);
-    });
-
-    it('rejects a trigger without DTSTART', () => {
-      assert.throws(
-        () => agent.setDefaultScheduleTrigger({rruleString: 'RRULE:FREQ=WEEKLY;BYDAY=MO;BYHOUR=9;BYMINUTE=0'}),
-        'A schedule trigger must have a DTSTART.',
-      );
-    });
-
-    it('replaces rather than appends on a second call', () => {
-      agent
-        .setDefaultScheduleTrigger({rruleString: 'DTSTART:20260101T090000Z\nRRULE:FREQ=DAILY'})
-        .setDefaultScheduleTrigger(scheduleTrigger);
-      assert.deepEqual(agent.defaultTriggers, [{kind: DefaultTriggerKind.Schedule, ...scheduleTrigger}]);
-    });
-
-    it('sits alongside a while-writing trigger', () => {
-      const contextualTrigger = {condition: 'Offer a citation when the user asserts a statistic'};
-      agent.setDefaultWhileWritingTrigger(contextualTrigger).setDefaultScheduleTrigger(scheduleTrigger);
-      assert.deepEqual(agent.defaultTriggers, [
-        {kind: DefaultTriggerKind.WhileWriting, ...contextualTrigger},
-        {kind: DefaultTriggerKind.Schedule, ...scheduleTrigger},
-      ]);
-    });
-
-    it('carries through compilePackMetadata', () => {
-      agent.setInstructions('Do a thing.').setDefaultScheduleTrigger(scheduleTrigger).setVersion('1.0.0');
-      const metadata = compilePackMetadata(agent as unknown as PackVersionDefinition);
-      assert.deepEqual(metadata.defaultTriggers, [{kind: DefaultTriggerKind.Schedule, ...scheduleTrigger}]);
-    });
-  });
-
-  describe('default event trigger', () => {
-    const mailFilters: MailEventFilters = {
-      conditions: [{field: MailFilterField.From, operator: FilterOperator.TextContains, value: '@example.com'}],
-    };
-    const notetakerFilters: NotetakerEventFilters = {keywords: ['renewal']};
-    const mailTrigger = {mailEventType: MailEventType.MessageReceived, filters: mailFilters};
-    const storedMailTrigger: MailEventTriggerDefinition = {
-      kind: DefaultTriggerKind.Event,
-      type: EventTriggerType.Mail,
-      ...mailTrigger,
-    };
-
-    it('adds a trigger', () => {
-      agent.addDefaultMailEventTrigger(mailTrigger);
-      assert.deepEqual(agent.defaultTriggers, [storedMailTrigger]);
-    });
-
-    it('appends rather than replaces on a second call', () => {
-      agent
-        .addDefaultMailEventTrigger(mailTrigger)
-        .addDefaultMailEventTrigger({mailEventType: MailEventType.MessageSent, filters: mailFilters});
-      assert.deepEqual(agent.defaultTriggers, [
-        storedMailTrigger,
-        {
-          kind: DefaultTriggerKind.Event,
-          type: EventTriggerType.Mail,
-          mailEventType: MailEventType.MessageSent,
-          filters: mailFilters,
-        },
-      ]);
-    });
-
-    it('takes a combinator over several conditions', () => {
-      const filters: MailEventFilters = {
-        combinator: FilterCombinator.Or,
-        conditions: [
-          {field: MailFilterField.From, operator: FilterOperator.TextContains, value: '@example.com'},
-          {field: MailFilterField.Subject, operator: FilterOperator.TextContains, value: 'invoice'},
-        ],
-      };
-      agent.addDefaultMailEventTrigger({...mailTrigger, filters});
-      assert.deepEqual(agent.defaultTriggers, [{...storedMailTrigger, filters}]);
-    });
-
-    it('adds a trigger of every event type', () => {
-      agent
-        .addDefaultMailEventTrigger(mailTrigger)
-        .addDefaultSlackEventTrigger({eventType: SlackEventType.MessageKeyword, keywords: ['deploy']})
-        .addDefaultNotetakerEventTrigger({
-          eventType: NotetakerEventType.MeetingSummaryCompleted,
-          filters: notetakerFilters,
-        });
-      assert.deepEqual(agent.defaultTriggers, [
-        storedMailTrigger,
-        {
-          kind: DefaultTriggerKind.Event,
-          type: EventTriggerType.Slack,
-          eventType: SlackEventType.MessageKeyword,
-          keywords: ['deploy'],
-        },
-        {
-          kind: DefaultTriggerKind.Event,
-          type: EventTriggerType.Notetaker,
-          eventType: NotetakerEventType.MeetingSummaryCompleted,
-          filters: notetakerFilters,
-        },
-      ]);
-    });
-
-    it('sits alongside the other kinds', () => {
-      const scheduleTrigger = {rruleString: 'DTSTART:20260101T090000Z\nRRULE:FREQ=DAILY'};
-      agent.setDefaultScheduleTrigger(scheduleTrigger).addDefaultMailEventTrigger(mailTrigger);
-      assert.deepEqual(agent.defaultTriggers, [
-        {kind: DefaultTriggerKind.Schedule, ...scheduleTrigger},
-        storedMailTrigger,
-      ]);
-    });
-
-    it('carries through compilePackMetadata', () => {
-      agent.setInstructions('Do a thing.').addDefaultMailEventTrigger(mailTrigger).setVersion('1.0.0');
-      const metadata = compilePackMetadata(agent as unknown as PackVersionDefinition);
-      assert.deepEqual(metadata.defaultTriggers, [storedMailTrigger]);
-    });
-  });
-
   it('rejects blank routines before appending them', () => {
     const agent = newAgent();
     const trigger = {kind: DefaultTriggerKind.WhileWriting as const, condition: 'x'};
@@ -1389,12 +1239,8 @@ describe('Agent builder', () => {
         builder.agent.tools = [];
         // @ts-expect-error which cannot be mutated in place either
         builder.agent.tools?.push({type: ToolType.CodaDocsAndTables});
-        // @ts-expect-error nor can the default triggers
-        builder.defaultTriggers?.push({kind: DefaultTriggerKind.Schedule, rruleString: 'RRULE:FREQ=DAILY'});
         // @ts-expect-error nor can the agent be replaced wholesale
         builder.agent = {tools: []};
-        // @ts-expect-error nor the default triggers
-        builder.defaultTriggers = [];
         const tool = builder.agent.tools![0];
         if (tool.type === ToolType.Pack) {
           // @ts-expect-error and it reaches into each tool
@@ -1402,9 +1248,9 @@ describe('Agent builder', () => {
           // @ts-expect-error including a connector's formula list
           tool.formulas?.push({formulaName: 'CreateTask'});
         }
-        const trigger = builder.defaultTriggers![0];
+        const trigger = builder.defaultRoutines![0].trigger;
         if (trigger.kind === DefaultTriggerKind.Schedule) {
-          // @ts-expect-error and into each trigger
+          // @ts-expect-error and into each routine trigger
           trigger.rruleString = 'RRULE:FREQ=DAILY';
         }
       }
@@ -1437,25 +1283,34 @@ describe('Agent builder', () => {
             {packId: 1234, formulas: [{formulaName: 'CreateTask'}], mcpTools: [{toolName: 'search_issues'}]},
           ],
         })
-        .setDefaultScheduleTrigger({rruleString: 'DTSTART:20260101T090000Z\nRRULE:FREQ=DAILY'});
+        .addDefaultRoutine({
+          name: 'Daily',
+          trigger: {kind: DefaultTriggerKind.Schedule, rruleString: 'DTSTART:20260101T090000Z\nRRULE:FREQ=DAILY'},
+        });
       const loose = agent as any;
       assert.throws(() => (loose.agent = {tools: []}), TypeError);
       assert.throws(() => (loose.agent.instructions = 'x'), TypeError);
       assert.throws(() => loose.agent.tools.push({type: ToolType.CodaDocsAndTables}), TypeError);
       assert.throws(() => loose.agent.tools[0].formulas.push({formulaName: 'Other'}), TypeError);
       assert.throws(() => loose.agent.tools[0].mcpTools.push({toolName: 'other'}), TypeError);
-      assert.throws(() => (loose.defaultTriggers = []), TypeError);
-      assert.throws(() => loose.defaultTriggers.push({kind: DefaultTriggerKind.Schedule}), TypeError);
-      assert.throws(() => (loose.defaultTriggers[0].rruleString = 'x'), TypeError);
+      assert.throws(() => (loose.defaultRoutines = []), TypeError);
+      assert.throws(() => loose.defaultRoutines.push({name: 'x'}), TypeError);
+      assert.throws(() => (loose.defaultRoutines[0].trigger.rruleString = 'x'), TypeError);
     });
 
     it("copies the caller's input rather than freezing it", () => {
       const formulas = [{formulaName: 'CreateTask'}];
       const mcpTools = [{toolName: 'search_issues'}];
       const keywords = ['renewal'];
-      agent
-        .setTools({connectors: [{packId: 1234, formulas, mcpTools}]})
-        .addDefaultNotetakerEventTrigger({eventType: NotetakerEventType.MeetingSummaryCompleted, filters: {keywords}});
+      agent.setTools({connectors: [{packId: 1234, formulas, mcpTools}]}).addDefaultRoutine({
+        name: 'Renewal follow-up',
+        trigger: {
+          kind: DefaultTriggerKind.Event,
+          type: EventTriggerType.Notetaker,
+          eventType: NotetakerEventType.MeetingSummaryCompleted,
+          filters: {keywords},
+        },
+      });
       assert.isFalse(Object.isFrozen(formulas));
       assert.isFalse(Object.isFrozen(mcpTools));
       assert.isFalse(Object.isFrozen(keywords));
@@ -1470,14 +1325,25 @@ describe('Agent builder', () => {
           webSearch: {allowedDomains: ['docs.example.com']},
           connectors: [{packId: 1234, formulas: [{formulaName: 'CreateTask'}]}],
         })
-        .setDefaultScheduleTrigger({rruleString: 'DTSTART:20260101T090000Z\nRRULE:FREQ=DAILY'})
-        .addDefaultSlackEventTrigger({eventType: SlackEventType.MessageKeyword, keywords: ['deploy']});
+        .addDefaultRoutine({
+          name: 'Daily',
+          trigger: {kind: DefaultTriggerKind.Schedule, rruleString: 'DTSTART:20260101T090000Z\nRRULE:FREQ=DAILY'},
+        })
+        .addDefaultRoutine({
+          name: 'Deploy watch',
+          trigger: {
+            kind: DefaultTriggerKind.Event,
+            type: EventTriggerType.Slack,
+            eventType: SlackEventType.MessageKeyword,
+            keywords: ['deploy'],
+          },
+        });
       const result = await validatePackVersionMetadata(
         compilePackMetadata(agent as unknown as PackVersionDefinition),
         undefined,
       );
       assert.lengthOf(result.agent!.tools, 3);
-      assert.lengthOf(result.defaultTriggers!, 2);
+      assert.lengthOf(result.defaultRoutines!, 2);
     });
   });
 });
