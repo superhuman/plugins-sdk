@@ -4,6 +4,8 @@ This changelog keeps track of all changes to the Packs SDK. We follow convention
 
 ## [Unreleased]
 
+## [1.22.0] - 2026-11-18
+
 ### Added
 
 - New slash commands for agent features, which you can use in the Pack Studio and VSCode.
@@ -1259,7 +1261,8 @@ await myHelper(context);
 
 - Beginning of alpha versioning.
 
-[Unreleased]: https://github.com/superhuman/plugins-sdk/compare/v1.21.0...HEAD
+[Unreleased]: https://github.com/superhuman/plugins-sdk/compare/v1.22.0...HEAD
+[1.22.0]: https://github.com/superhuman/plugins-sdk/compare/v1.21.0...v1.22.0
 [1.21.0]: https://github.com/superhuman/plugins-sdk/compare/v1.20.0...v1.21.0
 [1.20.0]: https://github.com/superhuman/plugins-sdk/compare/v1.19.0...v1.20.0
 [1.19.0]: https://github.com/superhuman/plugins-sdk/compare/v1.18.4...v1.19.0

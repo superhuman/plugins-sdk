@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "plugins-sdk",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Build, validate, and upload Superhuman agents and connectors with the Plugins SDK.",
   "author": {
     "name": "Superhuman"
