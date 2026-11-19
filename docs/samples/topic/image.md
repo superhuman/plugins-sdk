@@ -675,20 +675,31 @@ connector.addFormula({
     // Calculate the width of the generated image required to fit the text.
     // Using a fixed-width font to make this easy.
     let width = text.length * 6;
+    let escapedColor = escapeXml(color);
     // Generate the SVG markup. Prefer using a library for this when possible.
     let svg = `
-      <svg viewBox="0 0 ${width} 10" xmlns="http://www.w3.org/2000/svg">
-        <text x="0" y="8" font-family="Courier" font-size="10" fill="${color}">
-          ${text}
-        </text>
-      </svg>
-    `.trim();
+    <svg viewBox="0 0 ${width} 10" xmlns="http://www.w3.org/2000/svg">
+      <text x="0" y="8" font-family="Courier" font-size="10"
+        fill="${escapedColor}">
+        ${escapeXml(text)}
+      </text>
+    </svg>
+  `.trim();
     // Encode the markup as base64.
     let encoded = Buffer.from(svg).toString("base64");
     // Return the SVG as a data URL.
     return sdk.SvgConstants.DataUrlPrefix + encoded;
   },
 });
+
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
 {% endraw %}
 ```
 ## Dark mode SVG
