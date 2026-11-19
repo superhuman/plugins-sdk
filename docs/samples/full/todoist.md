@@ -456,7 +456,8 @@ The Pack uses OAuth2 to connect to a user's Todoist account, which you can creat
           id: taskId,
         };
         if (endOfDay) {
-          payload.due_date = date.toISOString().split("T")[0];
+          // Preserve the calendar date in the document's timezone.
+          payload.due_date = formatDateOnly(date, context.timezone);
         } else {
           payload.due_datetime = date.toISOString();
         }
@@ -673,6 +674,22 @@ The Pack uses OAuth2 to connect to a user's Todoist account, which you can creat
 
     function getUniqueId() {
       return Math.random().toString(36);
+    }
+
+    function formatDateOnly(date: Date, timeZone: string): string {
+      let formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: timeZone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+
+      let parts = formatter.formatToParts(date);
+      let year = parts.find(part => part.type === "year")!.value;
+      let month = parts.find(part => part.type === "month")!.value;
+      let day = parts.find(part => part.type === "day")!.value;
+
+      return `${year}-${month}-${day}`;
     }
 
     // #endregion
